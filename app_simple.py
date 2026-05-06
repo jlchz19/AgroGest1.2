@@ -66,7 +66,7 @@ def enviar_notificacion_email(usuario, alerta):
 
     try:
         email_usuario = os.getenv('EMAIL_USER', 'joseluischirinos380@gmail.com')
-        email_password = os.getenv('EMAIL_PASSWORD')  # clave de aplicación de Gmail
+        email_password = os.getenv('EMAIL_PASSWORD', 'aphtvabqvticwzwv')  # clave de aplicación de Gmail
 
         if not email_password:
             print("[ERROR] EMAIL_PASSWORD no está configurado. No se puede enviar el email de alerta.")
@@ -209,7 +209,7 @@ def enviar_email_recuperacion(usuario, token):
 
     try:
         email_usuario = os.getenv('EMAIL_USER', 'joseluischirinos380@gmail.com')
-        email_password = os.getenv('EMAIL_PASSWORD')  # clave de aplicación de Gmail
+        email_password = os.getenv('EMAIL_PASSWORD', 'aphtvabqvticwzwv')  # clave de aplicación de Gmail
 
         if not email_password:
             print("[ERROR] EMAIL_PASSWORD no está configurado. No se puede enviar el email de recuperación.")
