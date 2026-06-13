@@ -86,17 +86,17 @@ body.dark-theme .table-hover tbody tr:hover {
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0">
-                <i class="fas fa-weight text-primary me-2"></i>
+                <span style="font-size:1.5rem;margin-right:0.3rem;filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">⚖️</span>
                 Seguimiento de Peso
             </h2>
             <p class="text-muted mb-0">Monitoreo del peso y condición corporal del ganado</p>
         </div>
         <div>
             <a href="{{ url_for('nuevo_registro_peso') }}" class="btn btn-primary me-2">
-                <i class="fas fa-plus me-2"></i>Nuevo Registro
+                <span style="font-size:1rem;margin-right:0.3rem;">➕</span>Nuevo Registro
             </a>
             <a href="{{ url_for('reporte_peso_pdf') }}" class="btn btn-success">
-                <i class="fas fa-file-pdf me-2"></i>Descargar Reporte PDF
+                <span style="font-size:1rem;margin-right:0.3rem;">📄</span>Descargar Reporte PDF
             </a>
         </div>
     </div>
@@ -108,7 +108,7 @@ body.dark-theme .table-hover tbody tr:hover {
                 <div class="card-body text-center">
                     <div class="d-flex align-items-center justify-content-center mb-2">
                         <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                            <i class="fas fa-chart-line text-primary fa-2x"></i>
+                            <span style="font-size:1.5rem;margin-right:0.3rem;filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📈</span>
                         </div>
                     </div>
                     <h3 class="fw-bold text-primary mb-1">{{ stats.total_registros }}</h3>
@@ -121,7 +121,7 @@ body.dark-theme .table-hover tbody tr:hover {
                 <div class="card-body text-center">
                     <div class="d-flex align-items-center justify-content-center mb-2">
                         <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                            <i class="fas fa-cow text-success fa-2x"></i>
+                            <span style="font-size:1.5rem;margin-right:0.3rem;filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐄</span>
                         </div>
                     </div>
                     <h3 class="fw-bold text-success mb-1">{{ stats.total_animales }}</h3>
@@ -134,7 +134,7 @@ body.dark-theme .table-hover tbody tr:hover {
                 <div class="card-body text-center">
                     <div class="d-flex align-items-center justify-content-center mb-2">
                         <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                            <i class="fas fa-balance-scale text-info fa-2x"></i>
+                            <span style="font-size:1.5rem;margin-right:0.3rem;filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">⚖️</span>
                         </div>
                     </div>
                     <h3 class="fw-bold text-info mb-1">{{ stats.peso_promedio }} kg</h3>
@@ -147,7 +147,7 @@ body.dark-theme .table-hover tbody tr:hover {
                 <div class="card-body text-center">
                     <div class="d-flex align-items-center justify-content-center mb-2">
                         <div class="rounded-circle bg-warning bg-opacity-10 p-3">
-                            <i class="fas fa-chart-bar text-warning fa-2x"></i>
+                            <span style="font-size:1.5rem;margin-right:0.3rem;filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📊</span>
                         </div>
                     </div>
                     <h3 class="fw-bold text-warning mb-1">8.5</h3>
@@ -161,7 +161,7 @@ body.dark-theme .table-hover tbody tr:hover {
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-0 py-3">
             <h5 class="mb-0">
-                <i class="fas fa-history text-muted me-2"></i>
+                <span style="font-size:1rem;margin-right:0.3rem;">📜</span>
                 Registros Recientes
             </h5>
         </div>
@@ -171,12 +171,12 @@ body.dark-theme .table-hover tbody tr:hover {
                 <table class="table table-hover mb-0">
                     <thead class="bg-light">
                         <tr>
-                            <th class="border-0 ps-4">Animal</th>
-                            <th class="border-0">Peso</th>
-                            <th class="border-0">Condición Corporal</th>
-                            <th class="border-0">Fecha</th>
-                            <th class="border-0">Observaciones</th>
-                            <th class="border-0">Acciones</th>
+                            <th class="border-0 ps-4 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Animal</th>
+                            <th class="border-0 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Peso</th>
+                            <th class="border-0 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Condición Corporal</th>
+                            <th class="border-0 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Fecha</th>
+                            <th class="border-0 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Observaciones</th>
+                            <th class="border-0 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -185,7 +185,7 @@ body.dark-theme .table-hover tbody tr:hover {
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
                                     <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
-                                        <i class="fas fa-cow text-primary"></i>
+                                        <span style="font-size:1rem;margin-right:0.3rem;">🐄</span>
                                     </div>
                                     <div>
                                         <div class="fw-semibold">{{ numero }}</div>
@@ -226,15 +226,15 @@ body.dark-theme .table-hover tbody tr:hover {
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('detalle_registro_peso', registro_id=registro.id) }}" class="btn btn-action btn-info" title="Ver Detalles">
-                                        <i class="fas fa-eye"></i>
+                                          <span style="font-size:1rem;margin-right:0.2rem;">👁️</span>
                                     </a>
                                     <a href="{{ url_for('editar_registro_peso', registro_id=registro.id) }}" class="btn btn-action btn-outline-secondary" title="Editar">
-                                        <i class="fas fa-edit"></i>
+                                          <span style="font-size:1rem;margin-right:0.2rem;">✏️</span>
                                     </a>
                                     <button class="btn btn-action btn-outline-danger eliminar-peso-btn" title="Eliminar" 
                                         data-registro-id="{{ registro.id }}" 
                                         data-animal-nombre="{{ (numero ~ ' - ' ~ (nombre or 'Sin nombre'))|e }}">
-                                        <i class="fas fa-trash"></i>
+                                          <span style="font-size:1rem;margin-right:0.2rem;">🗑️</span>
                                     </button>
                                 </div>
                             </td>
@@ -245,11 +245,11 @@ body.dark-theme .table-hover tbody tr:hover {
             </div>
             {% else %}
             <div class="text-center py-5">
-                <i class="fas fa-weight fa-3x text-muted mb-3"></i>
+                <span style="font-size:3rem;opacity:0.5;display:block;margin-bottom:1rem;">⚖️</span>
                 <h5 class="text-muted">No hay registros de peso</h5>
                 <p class="text-muted mb-4">Comienza registrando el peso de tus animales</p>
                 <a href="{{ url_for('nuevo_registro_peso') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Crear Primer Registro
+                    <span style="font-size:1rem;margin-right:0.3rem;">➕</span>Crear Primer Registro
                 </a>
             </div>
             {% endif %}

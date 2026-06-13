@@ -25,38 +25,76 @@
     </div>
   </div>
 
-  {% if archivos %}
+  {% if grabaciones %}
+
   <div class="row">
+
     <div class="col-12">
+
       <div class="table-responsive">
+
         <table class="table table-hover align-middle">
+
           <thead>
+
             <tr>
-              <th>Fecha</th>
-              <th>Archivo</th>
+
+              <th>Cámara</th>
+
+              <th>Fecha y Hora</th>
+
+              <th>Duración</th>
+
+              <th>Tamaño (MB)</th>
+
               <th class="text-end">Acciones</th>
+
             </tr>
+
           </thead>
+
           <tbody>
-            {% for item in archivos %}
+
+            {% for item in grabaciones %}
+
             <tr>
-              <td>{{ item.fecha }}</td>
-              <td>{{ item.nombre }}</td>
+
+              <td><i class="fas fa-video me-1 text-muted"></i>{{ item.camara.nombre }}</td>
+
+              <td>{{ item.fecha_inicio.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+
+              <td>{{ item.duracion }}s</td>
+
+              <td>{{ item.tamano_mb }}</td>
+
               <td class="text-end">
-                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('static', filename='recordings/' ~ item.nombre) }}" target="_blank"><i class="fas fa-play me-1"></i>Reproducir</a>
-                <a class="btn btn-sm btn-outline-secondary ms-1" href="{{ url_for('static', filename='recordings/' ~ item.nombre) }}" download><i class="fas fa-download me-1"></i>Descargar</a>
+
+                <a class="btn btn-sm btn-outline-secondary ms-1" href="{{ url_for('static', filename='grabaciones/' ~ item.nombre_archivo) }}" download><i class="fas fa-download me-1"></i>Descargar</a>
+
               </td>
+
             </tr>
+
             {% endfor %}
+
           </tbody>
+
         </table>
+
       </div>
+
     </div>
+
   </div>
+
   {% else %}
+
   <div class="alert alert-info">
-    <i class="fas fa-info-circle me-2"></i>No hay grabaciones disponibles. Configura FFmpeg para grabar en <code>static/recordings/AAAA-MM-DD.mp4</code>.
+
+    <i class="fas fa-info-circle me-2"></i>No hay grabaciones disponibles para esta fecha. Ve a la vista de tu cámara para iniciar una nueva grabación.
+
   </div>
+
   {% endif %}
 </div>
 {% endblock %}

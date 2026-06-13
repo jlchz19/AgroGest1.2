@@ -111,7 +111,7 @@
     <div class="col-xl-3 col-md-6 mb-3">
         <div class="stats-card-modern total">
             <div class="stats-icon-modern">
-                <i class="fas fa-calendar-alt"></i>
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="calendar">📅</span>
             </div>
             <div class="stats-content-modern">
                 <div class="stats-number-modern">{{ eventos|length }}</div>
@@ -122,7 +122,7 @@
     <div class="col-xl-3 col-md-6 mb-3">
         <div class="stats-card-modern fallecidos">
             <div class="stats-icon-modern">
-                <i class="fas fa-skull-crossbones"></i>
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="skull">☠️</span>
             </div>
             <div class="stats-content-modern">
                 <div class="stats-number-modern">{{ eventos|selectattr('tipo_evento', 'equalto', 'fallecido')|list|length }}</div>
@@ -133,7 +133,7 @@
     <div class="col-xl-3 col-md-6 mb-3">
         <div class="stats-card-modern vendidos">
             <div class="stats-icon-modern">
-                <i class="fas fa-hand-holding-usd"></i>
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="money">💰</span>
             </div>
             <div class="stats-content-modern">
                 <div class="stats-number-modern">{{ eventos|selectattr('tipo_evento', 'equalto', 'vendido')|list|length }}</div>
@@ -144,7 +144,7 @@
     <div class="col-xl-3 col-md-6 mb-3">
         <div class="stats-card-modern transferidos">
             <div class="stats-icon-modern">
-                <i class="fas fa-exchange-alt"></i>
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="exchange">🔄</span>
             </div>
             <div class="stats-content-modern">
                 <div class="stats-number-modern">{{ eventos|selectattr('tipo_evento', 'equalto', 'transferido')|list|length }}</div>
@@ -155,14 +155,14 @@
     <div class="col-xl-3 col-md-6 mb-3">
         <div class="stats-card-modern notas">
             <div class="stats-icon-modern">
-                <i class="fas fa-sticky-note"></i>
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="note">📋</span>
             </div>
             <div class="stats-content-modern">
                 <div class="stats-number-modern">{{ total_notas or 0 }}</div>
                 <div class="stats-label-modern">Notas</div>
                 <div class="mt-2">
                     <a href="{{ url_for('nuevo_evento') }}" class="btn btn-sm btn-outline-warning">
-                        <i class="fas fa-plus"></i> Registrar Nota
+                        <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="add">➕</span> Registrar Nota
                     </a>
                 </div>
             </div>
@@ -174,10 +174,10 @@
 <div class="row mb-4">
     <div class="col-12">
         <a href="{{ url_for('nuevo_evento') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Registrar Nuevo Evento
+            <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="add">➕</span> Registrar Nuevo Evento
         </a>
         <a href="{{ url_for('reporte_eventos_pdf') }}" class="btn btn-danger ml-2">
-            <i class="fas fa-file-pdf"></i> Descargar Reporte en PDF
+            <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="pdf">📄</span> Descargar Reporte en PDF
         </a>
     </div>
 </div>
@@ -239,15 +239,15 @@
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ url_for('ver_evento', evento_id=evento.id) }}" class="btn btn-outline-info btn-sm" title="Ver Detalles del Evento">
-                                    <i class="fas fa-info-circle"></i>
+                                     <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="info">ℹ️</span>
                                 </a>
                                 <a href="{{ url_for('editar_evento', evento_id=evento.id) }}" class="btn btn-outline-warning btn-sm" title="Editar Evento">
-                                    <i class="fas fa-edit"></i>
+                                     <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="edit">✏️</span>
                                 </a>
                                 <button class="btn btn-outline-danger btn-sm eliminar-evento-btn" title="Eliminar Evento"
                                         data-event-id="{{ evento.id }}" 
                                         data-animal-info="{{ evento.animal.identificacion }} - {{ evento.animal.nombre or 'Sin nombre' }}">
-                                    <i class="fas fa-trash"></i>
+                                     <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="delete">🗑️</span>
                                 </button>
                             </div>
                         </td>
@@ -258,11 +258,11 @@
         </div>
         {% else %}
         <div class="text-center py-4">
-            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <span style="font-size:3rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); opacity:0.5;" role="img" aria-label="no-calendar">📅</span>
             <h5 class="text-muted">No hay eventos registrados</h5>
             <p class="text-muted">Comienza registrando eventos importantes de tus animales.</p>
             <a href="{{ url_for('nuevo_evento') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Registrar Primer Evento
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="add">➕</span> Registrar Primer Evento
             </a>
         </div>
         {% endif %}

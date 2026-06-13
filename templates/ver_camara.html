@@ -16,10 +16,11 @@
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <div class="ratio ratio-16x9">
+                {% set stream_url = url_for('stream_camara', id=camara.id) if camara.url.startswith('rtsp://') else camara.url %}
                 <div id="streamContainer" style="position: relative; width: 100%; height: 100%; background: #000;">
-                    <img id="cameraStream" src="{{ camara.url }}" 
+                    <img id="cameraStream" src="{{ stream_url }}" 
                          style="object-fit: contain; width: 100%; height: 100%;"
-                         data-url="{{ camara.url }}"
+                         data-url="{{ stream_url }}"
                          onerror="this.onerror=null; document.getElementById('streamError').style.display='block'; this.style.display='none';">
                     <div id="streamError" class="text-center text-white p-4" style="display: none; position: absolute; top: 50%; left: 0; right: 0; transform: translateY(-50%);">
                         <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
@@ -30,18 +31,61 @@
                         </button>
                     </div>
                     <!-- Controls Overlay -->
+
                     <div class="position-absolute top-0 end-0 m-3">
+
                         <div class="d-flex gap-2">
+
+                            <button class="btn btn-sm btn-outline-light" onclick="tomarCaptura()" title="Captura de pantalla">
+
+                                <i class="fas fa-camera"></i>
+
+                            </button>
+
                             <button class="btn btn-sm btn-outline-light" onclick="toggleFullscreen()" title="Pantalla completa">
+
                                 <i class="fas fa-expand"></i>
+
                             </button>
+
                             <button class="btn btn-sm btn-outline-light" onclick="recargarStream()" title="Refrescar">
+
                                 <i class="fas fa-sync-alt"></i>
+
                             </button>
-                            <button class="btn btn-sm btn-outline-light" onclick="toggleRecording()" title="Grabar">
-                                <i class="fas fa-record-vinyl"></i>
+
+                            <button class="btn btn-sm btn-outline-light" onclick="toggleRecording()" id="btnRecord" title="Grabar">
+
+                                <i class="fas fa-circle text-danger"></i>
+
                             </button>
+
                         </div>
+
+                    </div>
+
+                    <!-- PTZ Controls -->
+
+                    <div class="position-absolute bottom-0 end-0 m-3">
+
+                        <div class="d-flex flex-column align-items-center bg-dark bg-opacity-75 p-2 rounded">
+
+                            <button class="btn btn-sm btn-outline-light mb-1" onclick="moverPTZ('up')"><i class="fas fa-chevron-up"></i></button>
+
+                            <div class="d-flex gap-1 mb-1">
+
+                                <button class="btn btn-sm btn-outline-light" onclick="moverPTZ('left')"><i class="fas fa-chevron-left"></i></button>
+
+                                <button class="btn btn-sm btn-outline-light" onclick="moverPTZ('stop')"><i class="fas fa-stop" style="font-size: 0.6em;"></i></button>
+
+                                <button class="btn btn-sm btn-outline-light" onclick="moverPTZ('right')"><i class="fas fa-chevron-right"></i></button>
+
+                            </div>
+
+                            <button class="btn btn-sm btn-outline-light" onclick="moverPTZ('down')"><i class="fas fa-chevron-down"></i></button>
+
+                        </div>
+
                     </div>
                     <!-- Status Indicator -->
                     <div class="position-absolute bottom-0 start-0 m-3">
@@ -179,31 +223,156 @@ function recargarStream() {
     newImg.src = addTimestamp(img.getAttribute('data-url'));
 }
 
+function tomarCaptura() {
+
+    fetch(`/api/camara/{{ camara.id }}/captura`, { method: 'POST' })
+
+        .then(response => response.json())
+
+        .then(data => {
+
+            if (data.success) {
+
+                // Create a temporary link to download the image
+
+                const a = document.createElement('a');
+
+                a.href = data.url;
+
+                a.download = data.url.split('/').pop();
+
+                document.body.appendChild(a);
+
+                a.click();
+
+                document.body.removeChild(a);
+
+                alert('Captura guardada con éxito.');
+
+            } else {
+
+                alert('Error al capturar: ' + data.error);
+
+            }
+
+        }).catch(err => alert('Error de conexión'));
+
+}
+
+
+
+function moverPTZ(action) {
+
+    fetch(`/api/camara/{{ camara.id }}/ptz`, {
+
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ action: action })
+
+    }).then(response => response.json())
+
+      .then(data => {
+
+          if (data.error) {
+
+              console.log(data.error);
+
+              // We don't alert to not annoy the user if it's not supported
+
+          }
+
+      }).catch(err => console.log('Error PTZ:', err));
+
+}
+
+
+
+let isRecording = false;
+
 function toggleRecording() {
+
     const indicator = document.getElementById('recordingIndicator');
+
     const recordingTime = document.getElementById('recordingTime');
+
+    const btnRecord = document.getElementById('btnRecord');
+
     
-    if (indicator.style.display === 'none') {
-        // Start recording
-        indicator.style.display = 'block';
-        let seconds = 0;
-        recordingTime.textContent = '00:00';
-        
-        recordingInterval = setInterval(() => {
-            seconds++;
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            recordingTime.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }, 1000);
-        
-        // Here you would implement actual recording logic
-        console.log('Recording started');
+
+    if (!isRecording) {
+
+        // Start recording via API
+
+        fetch(`/api/camara/{{ camara.id }}/iniciar_grabacion`, { method: 'POST' })
+
+            .then(res => res.json())
+
+            .then(data => {
+
+                if (data.success) {
+
+                    isRecording = true;
+
+                    btnRecord.classList.add('btn-danger');
+
+                    indicator.style.display = 'block';
+
+                    let seconds = 0;
+
+                    recordingTime.textContent = '00:00';
+
+                    
+
+                    recordingInterval = setInterval(() => {
+
+                        seconds++;
+
+                        const mins = Math.floor(seconds / 60);
+
+                        const secs = seconds % 60;
+
+                        recordingTime.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                    }, 1000);
+
+                } else {
+
+                    alert(data.error || 'Error al iniciar grabación');
+
+                }
+
+            });
+
     } else {
-        // Stop recording
-        indicator.style.display = 'none';
-        clearInterval(recordingInterval);
-        console.log('Recording stopped');
+
+        // Stop recording via API
+
+        fetch(`/api/camara/{{ camara.id }}/detener_grabacion`, { method: 'POST' })
+
+            .then(res => res.json())
+
+            .then(data => {
+
+                isRecording = false;
+
+                btnRecord.classList.remove('btn-danger');
+
+                indicator.style.display = 'none';
+
+                clearInterval(recordingInterval);
+
+                if (data.success) {
+
+                    alert('Grabación guardada. Puedes verla en la sección de Grabaciones.');
+
+                }
+
+            });
+
     }
+
 }
 
 function toggleAutoRefresh() {

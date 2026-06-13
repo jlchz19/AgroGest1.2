@@ -18,9 +18,13 @@
     </div>
 </div>
 
+<!-- Barra de búsqueda -->
+<div class="mb-4">
+    <input type="text" id="searchInput" class="form-control rounded-pill shadow-sm px-4 py-2" placeholder="🔍 Buscar establo/corral por nombre..." onkeyup="filterCards()">
+</div>
 <div class="row">
     {% for establo in establos %}
-    <div class="col-md-6 col-lg-4 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4 filter-card">
         <div class="card h-100 border-0 shadow-sm hover-card">
             <div class="position-relative">
                 {% if establo.imagen %}
@@ -86,215 +90,182 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
     
-    <!-- Modal Detalles del Establo -->
-    <div class="modal fade" id="establoModal{{ establo.id }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header py-2">
-                    <h5 class="modal-title d-flex align-items-center">
-                        <i class="fas fa-horse me-2"></i>{{ establo.nombre }}
-                        <span class="badge ms-2 {% if establo.estado == 'disponible' %}bg-success{% elif establo.estado == 'ocupado' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-                            {{ establo.estado|title }}
-                        </span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <!-- Imagen principal -->
-                    <div class="position-relative">
-                        {% if establo.imagen %}
-                        <img src="{{ url_for('static', filename='imagenes_ubicaciones/' + establo.imagen) }}" 
-                             class="img-fluid w-100" 
-                             alt="{{ establo.nombre }}"
-                             style="height: 160px; object-fit: cover; border-radius: 0;">
-                        {% else %}
-                        <div class="bg-light text-center py-4" style="height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                            <i class="fas fa-horse fa-3x text-muted mb-2"></i>
-                            <p class="small text-muted mb-0">Sin imagen</p>
+    <!-- Modal Detalles del Establo Premium v2 -->
+    <div class="modal fade" id="establoModal{{ establo.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header del Modal con Degradado Temático según Estado -->
+                <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%;">
+                            <span style="font-size: 1.5rem;">🐴</span>
                         </div>
-                        {% endif %}
-                        
-                        <!-- Estadísticas rápidas -->
-                        <div class="position-absolute bottom-0 start-0 end-0 p-2" style="background: rgba(0,0,0,0.6);">
-                            <div class="d-flex justify-content-around text-white small">
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ establo.capacidad }}</div>
-                                    <div>Capacidad</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ animales_por_establo.get(establo.id, 0) }}</div>
-                                    <div>Ocupados</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ establo.capacidad - animales_por_establo.get(establo.id, 0) }}</div>
-                                    <div>Disponibles</div>
-                                </div>
-                                {% if establo.area %}
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ establo.area }}</div>
-                                    <div>m²</div>
-                                </div>
-                                {% endif %}
-                            </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white">{{ establo.nombre }}</h5>
+                            <small class="text-white text-opacity-80 fw-semibold">{{ establo.tipo_ubicacion|title }}</small>
                         </div>
                     </div>
-                    
-                    <!-- Información detallada en pestañas -->
-                    <div class="p-3">
-                        <ul class="nav nav-tabs nav-fill mb-3" id="establoTabs{{ establo.id }}" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info{{ establo.id }}" type="button" role="tab">
-                                    <i class="fas fa-info-circle me-1"></i> Información
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="equinos-tab" data-bs-toggle="tab" data-bs-target="#equinos{{ establo.id }}" type="button" role="tab">
-                                    <i class="fas fa-horse me-1"></i> Equinos
-                                    <span class="badge bg-primary rounded-pill ms-1">{{ animales_por_establo.get(establo.id, 0) }}</span>
-                                </button>
-                            </li>
-                        </ul>
-                        
-                        <div class="tab-content" id="establoTabsContent">
-                            <!-- Pestaña de Información -->
-                            <div class="tab-pane fade show active" id="info{{ establo.id }}" role="tabpanel">
-                                {% if establo.descripcion %}
-                                <div class="mb-3">
-                                    <h6 class="text-muted small text-uppercase mb-2">Descripción</h6>
-                                    <p class="mb-0 small">{{ establo.descripcion }}</p>
-                                </div>
-                                {% endif %}
-                                
-                                <div class="row small">
-                                    <div class="col-6">
-                                        <div class="mb-2">
-                                            <span class="text-muted">Tipo:</span>
-                                            <span class="fw-medium">{{ establo.tipo_ubicacion|title }}</span>
-                                        </div>
-                                        <div class="mb-2">
-                                            <span class="text-muted">Capacidad:</span>
-                                            <span class="fw-medium">{{ establo.capacidad }} equinos</span>
-                                        </div>
-                                    </div>
-                                    {% if establo.area %}
-                                    <div class="col-6">
-                                        <div class="mb-2">
-                                            <span class="text-muted">Área:</span>
-                                            <span class="fw-medium">{{ establo.area }} m²</span>
-                                        </div>
-                                        {% if establo.fecha_creacion %}
-                                        <div class="mb-2">
-                                            <span class="text-muted">Creado:</span>
-                                            <span class="fw-medium">{{ establo.fecha_creacion.strftime('%d/%m/%Y') if establo.fecha_creacion else 'No especificada' }}</span>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <!-- Pestaña de Equinos -->
-                            <div class="tab-pane fade" id="equinos{{ establo.id }}" role="tabpanel">
-                                <div id="equinosEstablo{{ establo.id }}" class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-                                    <div class="text-center py-4">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                            <span class="visually-hidden">Cargando...</span>
-                                        </div>
-                                        <p class="small text-muted mt-2">Cargando equinos...</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer py-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i> Cerrar
-                    </button>
-                    <a href="{{ url_for('editar_ubicacion', id=establo.id) }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-edit me-1"></i> Editar
-                    </a>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
-                <script>
-                // Cargar equinos al abrir el modal
-                $('#establoModal{{ establo.id }}').on('show.bs.modal', function () {
-                    const container = $('#equinosEstablo{{ establo.id }}');
-                    
-                    // Mostrar spinner de carga
-                    container.html(`
-                        <div class="text-center py-4">
-                            <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                <span class="visually-hidden">Cargando...</span>
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <!-- Métrica de Tarjetas Rápidas de Alta Tecnología -->
+                    <div class="row g-3 mb-4">
+                        <!-- Estado Badge Card -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-toggle-on me-1 text-primary"></i> Estado</div>
+                                <span class="badge rounded-pill d-inline-block py-2 {% if establo.estado == 'disponible' %}bg-success-soft text-success{% elif establo.estado == 'ocupado' %}bg-warning-soft text-warning-dark{% else %}bg-danger-soft text-danger{% endif %}" style="font-size: 0.8rem; font-weight: 700; width: fit-content;">
+                                    {{ establo.estado|upper }}
+                                </span>
                             </div>
-                            <p class="small text-muted mt-2">Cargando equinos...</p>
                         </div>
-                    `);
-                    
-                    // Simular carga de datos (reemplazar con llamada AJAX real si es necesario)
-                    setTimeout(() => {
-                        const equinos = [
-                            {% for animal in animales %}
-                            {% if animal.ubicacion_id == establo.id and animal.tipo|lower in ['equino', 'caballo', 'yegua', 'potro', 'potranca', 'caballos', 'yeguas'] %}
-                            {
-                                id: '{{ animal.identificacion }}',
-                                nombre: '{{ animal.nombre or "Sin nombre" }}',
-                                raza: '{{ animal.raza or "-" }}',
-                                edad: '{{ ((now - animal.fecha_nacimiento).days / 365)|round(1) if animal.fecha_nacimiento else "-" }}',
-                                tipo: '{{ animal.tipo or "Equino" }}'
-                            }{% if not loop.last %},{% endif %}
-                            {% endif %}
-                            {% endfor %}
-                        ];
                         
-                        if (equinos.length > 0) {
-                            let html = `
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th class="small">ID</th>
-                                            <th class="small">Nombre</th>
-                                            <th class="small">Raza</th>
-                                            <th class="small">Edad</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                            `;
-                            
-                            equinos.forEach(equino => {
-                                html += `
-                                    <tr>
-                                        <td class="small">${equino.id}</td>
-                                        <td class="small">${equino.nombre}</td>
-                                        <td class="small">${equino.raza}</td>
-                                        <td class="small">${equino.edad} ${equino.edad !== '-' ? 'años' : ''}</td>
-                                    </tr>
-                                `;
-                            });
-                            
-                            html += `
-                                    </tbody>
-                                </table>
-                            `;
-                            
-                            container.html(html);
-                        } else {
-                            container.html(`
-                                <div class="text-center py-4">
-                                    <i class="fas fa-horse fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted mb-0">No hay equinos en este {{ establo.tipo_ubicacion }}</p>
+                        <!-- Área -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-expand-arrows-alt me-1 text-info"></i> Superficie</div>
+                                <div class="fw-bold fs-5 text-dark">{{ establo.area or '0' }} <span class="small text-muted" style="font-size: 0.8rem;">m²</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Ubicación -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-home me-1 text-success"></i> Tipo</div>
+                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ establo.tipo_ubicacion|title }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Capacidad -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-chart-pie me-1 text-primary"></i> Capacidad Max</div>
+                                <div class="fw-bold fs-5 text-dark">{{ establo.capacidad }} <span class="small text-muted" style="font-size: 0.8rem;">animales</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Ocupados -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-paw me-1 text-warning-dark"></i> Ocupación Actual</div>
+                                <div class="fw-bold fs-5 text-dark">{{ animales_por_establo.get(establo.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">animales</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Disponibles -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-check-circle me-1 text-success"></i> Cupos Libres</div>
+                                <div class="fw-bold fs-5 {% if establo.capacidad - animales_por_establo.get(establo.id, 0) > 0 %}text-success{% else %}text-muted{% endif %}">
+                                    {{ establo.capacidad - animales_por_establo.get(establo.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">vacantes</span>
                                 </div>
-                            `);
-                        }
-                    }, 500);
-                });
-                </script>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if establo.descripcion %}
+                    <div class="bg-white rounded-3 p-3 shadow-xs mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            <small class="text-uppercase fw-semibold text-muted">Descripción / Notas</small>
+                        </div>
+                        <p class="mb-0 text-dark small lh-base">{{ establo.descripcion }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if establo.fecha_creacion %}
+                    <div class="mb-4 text-muted small px-2">
+                        <i class="fas fa-calendar-alt me-1"></i> <strong>Fecha de Creación:</strong> {{ establo.fecha_creacion.strftime('%d/%m/%Y') }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Panel de Animales Detallado -->
+                    <div class="card border-0 shadow-xs p-3" style="border-radius: 16px; background-color: #ffffff;">
+                        <h6 class="text-dark fw-bold mb-3 d-flex align-items-center">
+                            <span class="icon-circle bg-success-soft text-success me-2 d-flex align-items-center justify-content-center animate-pulse" style="width: 32px; height: 32px; border-radius: 50%;">
+                                🐴
+                            </span>
+                            Animales Asignados en este Establo/Corral ({{ animales_por_establo.get(establo.id, 0) }})
+                        </h6>
+                        
+                        <div id="equinosEstablo{{ establo.id }}" class="row g-2 overflow-auto" style="max-height: 240px; padding-bottom: 5px;">
+                            <div class="text-center w-100 py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando animales...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-between" style="border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cerrar
+                    </button>
+                    <a href="{{ url_for('editar_ubicacion', id=establo.id) }}" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm">
+                        <i class="fas fa-edit me-2"></i>Editar Establo
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+    
+    <script>
+    // Cargar animales al abrir el modal dinámicamente desde API
+    document.getElementById('establoModal{{ establo.id }}').addEventListener('show.bs.modal', function () {
+        const listContainer = document.getElementById('equinosEstablo{{ establo.id }}');
+        const establoId = {{ establo.id }};
+        
+        if (listContainer) {
+            listContainer.innerHTML = '<div class="text-center w-100 py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando animales...</div>';
+            
+            fetch(`/api/animales_en_ubicacion?tipo=ubicacion&id=${establoId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.animales && data.animales.length > 0) {
+                        let html = '';
+                        data.animales.forEach(animal => {
+                            let animalEmoji = '🐴';
+                            if (animal.tipo === 'Vaca') animalEmoji = '🐄';
+                            else if (animal.tipo === 'Cerdo') animalEmoji = '🐷';
+                            else if (animal.tipo === 'Cabra') animalEmoji = '🐐';
+                            else if (animal.tipo === 'Oveja') animalEmoji = '🐑';
+                            else if (animal.tipo === 'Pollo') animalEmoji = '🐔';
+                            
+                            html += `
+                                <div class="col-md-6 mb-2">
+                                    <div class="card border-0 bg-light p-2 d-flex flex-row align-items-center rounded-3 shadow-xs">
+                                        <div class="fs-3 me-3">${animalEmoji}</div>
+                                        <div>
+                                            <div class="fw-bold text-dark small">${animal.identificacion}</div>
+                                            <div class="text-muted" style="font-size: 11px;">${animal.nombre || 'Sin nombre'} · ${animal.tipo} ${animal.raza}</div>
+                                            <div class="badge bg-secondary-soft text-secondary mt-1" style="font-size: 9px;">${animal.peso} kg</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        listContainer.innerHTML = html;
+                    } else {
+                        listContainer.innerHTML = `
+                            <div class="text-center w-100 py-4 text-muted">
+                                <i class="fas fa-horse fa-2x mb-2 opacity-50"></i>
+                                <p class="mb-0 small">No hay animales en este establo/corral.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    listContainer.innerHTML = `
+                        <div class="text-center w-100 py-4 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                            <p class="mb-0 small">Error al cargar animales.</p>
+                        </div>
+                    `;
+                });
+        }
+    });
+    </script>
     
     <!-- Modal de Confirmación de Eliminación -->
     <div class="modal fade" id="deleteModal{{ establo.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ establo.id }}" aria-hidden="true">
@@ -371,5 +342,99 @@ document.addEventListener('click', function(e) {
         closeEstabloModal();
     }
 });
+
+// Filtro de búsqueda
+function filterCards() {
+    let input = document.getElementById('searchInput');
+    if (!input) return;
+    let filter = input.value.toLowerCase();
+    let cards = document.getElementsByClassName('filter-card');
+    for (let i = 0; i < cards.length; i++) {
+        let titleElement = cards[i].querySelector('.card-title');
+        if (titleElement) {
+            let title = titleElement.innerText.toLowerCase();
+            if (title.indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+}
 </script>
+
+
+<style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+.modal-header.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+/* Degradados Premium del Modal de Detalle */
+.modal-header.bg-gradient-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.modal-header.bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.modal-header.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+.bg-gradient-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+/* Colores Soft para Badges y Contenedores */
+.bg-success-soft {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+}
+.bg-warning-soft {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
+}
+.bg-danger-soft {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #ef4444 !important;
+}
+.bg-primary-soft {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    color: #3b82f6 !important;
+}
+.text-warning-dark {
+    color: #b45309 !important;
+}
+
+.shadow-xs {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+.animate-pulse {
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+/* Barra de Desplazamiento Personalizada para el Cuerpo del Modal */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>
 {% endblock %}

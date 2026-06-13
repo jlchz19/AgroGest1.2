@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Drones - AgroGest{% endblock %}
+{% block page_title %}Flota de Drones{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Drones de la Finca</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoDronModal">
+        <i class="fas fa-plus"></i> Registrar Nuevo Dron
+    </button>
+</div>
+
+<div class="row">
+    {% for dron in drones %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-helicopter me-2"></i>{{ dron.nombre }}</h5>
+                {% if dron.estado == 'Activo' %}
+                    <span class="badge bg-success">Activo</span>
+                {% else %}
+                    <span class="badge bg-warning">{{ dron.estado }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p><strong>Modelo:</strong> {{ dron.modelo }}</p>
+                <p><strong>S/N:</strong> <small class="text-muted">{{ dron.numero_serie or 'N/A' }}</small></p>
+                <div class="mb-3">
+                    <strong>Batería:</strong>
+                    <div class="progress mt-1" style="height: 10px;">
+                        <div class="progress-bar {% if dron.bateria > 50 %}bg-success{% elif dron.bateria > 20 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" style="width: {{ dron.bateria }}%;" 
+                             aria-valuenow="{{ dron.bateria }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">{{ dron.bateria }}% disponible</small>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pb-3">
+                <a href="{{ url_for('eliminar_dron', dron_id=dron.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Seguro que deseas eliminar este dron?');">
+                    <i class="fas fa-trash"></i> Eliminar
+                </a>
+                
+                <a href="{{ url_for('simulador_dron', dron_id=dron.id) }}" class="btn btn-success fw-bold">
+                    <i class="fas fa-satellite-dish me-1"></i> Conectar
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <div class="text-muted mb-3"><i class="fas fa-drone fa-4x opacity-50"></i></div>
+        <h4>No tienes drones registrados</h4>
+        <p class="text-muted">Añade un dron para poder iniciar el simulador y monitorear tus potreros.</p>
+        <button class="btn btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#nuevoDronModal">Registrar Dron</button>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal Nuevo Dron -->
+<div class="modal fade" id="nuevoDronModal" tabindex="-1" aria-labelledby="nuevoDronModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ url_for('nuevo_dron') }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nuevoDronModalLabel">Registrar Dron en Inventario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 300px; overflow-y: scroll !important;">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre / Apodo</label>
+                        <input type="text" name="nombre" class="form-control" placeholder="Ej. Dron Potreros Norte" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" name="modelo" class="form-control" placeholder="Ej. DJI Mavic 3 Enterprise" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Número de Serie</label>
+                        <input type="text" name="numero_serie" class="form-control" placeholder="Opcional">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estado Inicial</label>
+                        <select name="estado" class="form-select">
+                            <option value="Activo">Activo</option>
+                            <option value="En Mantenimiento">En Mantenimiento</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Registrar Dron</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

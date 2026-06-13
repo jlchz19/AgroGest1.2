@@ -146,9 +146,7 @@
 {% endblock %}
 
 {% block page_actions %}
-<a href="{{ url_for('nueva_alimentacion', animal_id=animal.id) }}" class="btn btn-primary">
-    <i class="fas fa-utensils me-2"></i>Nueva Alimentación
-</a>
+
 <a href="{{ url_for('nuevo_evento_salud', animal_id=animal.id) }}" class="btn btn-warning">
     <i class="fas fa-heartbeat me-2"></i>Nuevo Evento Salud
 </a>
@@ -312,9 +310,7 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('nueva_alimentacion', animal_id=animal.id) }}" class="btn btn-outline-primary">
-                        <i class="fas fa-utensils me-2"></i>Nueva Alimentación
-                    </a>
+
                     <a href="{{ url_for('nuevo_evento_salud', animal_id=animal.id) }}" class="btn btn-outline-success">
                         <i class="fas fa-heartbeat me-2"></i>Evento Salud
                     </a>
@@ -577,7 +573,7 @@
                                         <td>{{ prod.cantidad }}</td>
                                         <td>{{ prod.unidad }}</td>
                                         <td>
-                                            <span class="badge bg-{{ 'success' if prod.calidad == 'excelente' else 'success' if prod.calidad == 'buena' else 'info' if prod.calidad == 'regular' else 'danger' }}">
+                                            <span class="badge bg-{{ 'success' if prod.calidad == 'excelente' else 'warning' if prod.calidad == 'buena' else 'info' if prod.calidad == 'regular' else 'danger' }}">
                                                 {{ prod.calidad|title }}
                                             </span>
                                         </td>

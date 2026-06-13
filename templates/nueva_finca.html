@@ -8,39 +8,41 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0">
-                <i class="fas fa-plus-circle text-success me-2"></i>
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="text-success me-2" role="img" aria-label="plus">➕</span>
                 Agregar Nueva Finca
             </h2>
             <p class="text-muted mb-0">Registra los datos de tu nueva finca</p>
         </div>
         <a href="{{ url_for('fincas') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Volver a Fincas
+            <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="back">◀️</span>Volver a Fincas
         </a>
     </div>
 
     <div class="row">
         <!-- Formulario -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" id="formCard">
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="mb-0">
-                        <i class="fas fa-edit text-muted me-2"></i>
+                        <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="text-muted me-2" role="img" aria-label="edit">✏️</span>
                         Información de la Finca
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" id="nuevaFincaForm">
+                    <form method="POST" id="nuevaFincaForm" novalidate>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre" required>
                                     <label for="nombre">Nombre de la Finca *</label>
+                                    <div class="invalid-feedback">Por favor ingresa el nombre de la finca.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <input type="text" class="form-control" id="direccion" name="direccion" placeholder="Dirección" required>
                                     <label for="direccion">Dirección *</label>
+                                    <div class="invalid-feedback">Por favor ingresa la dirección de la finca.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -61,6 +63,13 @@
                                         <option value="Otro">Otro</option>
                                     </select>
                                     <label for="tipo_produccion">Tipo de Producción</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6" id="otro_tipo_produccion_container" style="display: none;">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="tipo_produccion_otro" name="tipo_produccion_otro" placeholder="Otro tipo de producción">
+                                    <label for="tipo_produccion_otro">Especifique otro tipo de producción *</label>
+                                    <div class="invalid-feedback">Por favor especifique el tipo de producción.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -89,11 +98,11 @@
                             </div>
                             <div class="col-12">
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control" id="ubicacion" name="ubicacion" placeholder="Ubicación">
+                                    <input type="text" class="form-control" id="ubicacion" name="ubicacion" placeholder="Ubicación" readonly>
                                     <label for="ubicacion">Ubicación en el mapa</label>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#mapModal">
-                                    <i class="fas fa-map-marker-alt me-2"></i>Seleccionar Ubicación
+                                    <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="location">📍</span>Definir en Mapa
                                 </button>
                                 <input type="hidden" name="lat" id="lat">
                                 <input type="hidden" name="lng" id="lng">
@@ -102,11 +111,11 @@
                         </div>
 
                         <div class="d-flex gap-2 mt-4">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save me-2"></i>Guardar Finca
+                            <button type="submit" class="btn btn-success btn-lg px-4" id="btnGuardar">
+                                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="save">💾</span><span>Guardar Finca</span>
                             </button>
-                            <a href="{{ url_for('fincas') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Cancelar
+                            <a href="{{ url_for('fincas') }}" class="btn btn-secondary text-white border-0 shadow-sm btn-lg">
+                                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="cancel">❌</span>Cancelar
                             </a>
                         </div>
                     </form>
@@ -119,7 +128,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
+                        <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="info">ℹ️</span>
                         Guía de Registro
                     </h6>
                 </div>
@@ -132,9 +141,9 @@
                     </div>
                     
                     <div class="mb-3">
-                        <h6 class="text-warning">Ubicación</h6>
+                        <h6 class="text-warning">Ubicación y Área</h6>
                         <p class="small text-muted mb-2">
-                            Usa el mapa para marcar la ubicación exacta y definir los límites de tu finca.
+                            Al dibujar los límites de tu finca en el mapa, calcularemos automáticamente la extensión en hectáreas.
                         </p>
                     </div>
                     
@@ -151,33 +160,8 @@
                     <ul class="small text-muted">
                         <li>Sé específico con la dirección</li>
                         <li>Incluye datos de contacto si es posible</li>
-                        <li>Define bien los límites en el mapa</li>
-                        <li>Añade una descripción detallada</li>
+                        <li>Define bien los límites en el mapa para mayor precisión</li>
                     </ul>
-                </div>
-            </div>
-
-            <!-- Estadísticas Rápidas -->
-            <div class="card border-0 shadow-sm mt-3">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">
-                        <i class="fas fa-chart-line me-2"></i>
-                        Información Adicional
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="small">Total Fincas:</span>
-                        <span class="fw-semibold">Calculando...</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="small">Extensión Total:</span>
-                        <span class="fw-semibold">Calculando...</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="small">Tipos de Producción:</span>
-                        <span class="fw-semibold">Variados</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -187,48 +171,32 @@
 <!-- Modal Mapa -->
 <div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-map me-2"></i>Definir ubicación y límites</h5>
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title"><span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="text-primary me-2" role="img" aria-label="map">🗺️</span>Definir ubicación y límites</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <div class="row g-3 mb-2">
-            <div class="col-md-5">
-                <div class="input-group">
-                    <span class="input-group-text">🔎</span>
-                        <div style="position:relative; width:100%;">
-                            <input id="searchPlace" class="form-control" placeholder="Buscar lugar (ej: Venezuela Maracaibo San Francisco Urbanización La Modelo)">
-                            <div id="searchResults" class="list-group" style="position:absolute; top:100%; left:0; right:0; z-index:1075; display:none; max-height:240px; overflow:auto;"></div>
-                        </div>
-                        <button class="btn btn-outline-secondary" type="button" id="btnSearch">Buscar</button>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="input-group">
-                    <span class="input-group-text">📍</span>
-                    <input id="gotoLat" class="form-control" placeholder="Lat">
-                    <input id="gotoLng" class="form-control" placeholder="Lng">
-                    <button class="btn btn-outline-secondary" type="button" id="btnGoto">Ir</button>
-                </div>
-            </div>
-            <div class="col-md-3 text-end">
-                <div class="btn-group">
-                    <button class="btn btn-outline-success" type="button" id="btnAddMarker">Marcador</button>
-                    <button class="btn btn-outline-warning" type="button" id="btnDrawPoly">Dibujar</button>
-                    <button class="btn btn-outline-secondary" type="button" id="btnClearPoly">Limpiar</button>
-                </div>
-            </div>
-        </div>
-        <div id="map" style="height: 520px; border-radius: 8px; background-color: #f0f8ff; border: 2px solid #007bff;"></div>
+      <div class="modal-body p-0">
+        <!-- Mapa ocupa todo el cuerpo del modal para un look más inmersivo -->
+        <div id="map" style="height: 600px; width: 100%; background-color: #e5e5e5;"></div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer bg-light">
+        <div class="me-auto text-muted small">
+            <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-1" role="img" aria-label="info">ℹ️</span> Usa la barra de búsqueda en el mapa para encontrar lugares.
+        </div>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-primary" id="btnSaveLocation" data-bs-dismiss="modal">Guardar ubicación</button>
+        <button type="button" class="btn btn-primary px-4" id="btnSaveLocation" data-bs-dismiss="modal">
+            <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="check">✅</span>Guardar ubicación
+        </button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Turf.js para cálculos de área -->
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
 <!-- Leaflet + Leaflet.draw -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous"/>
@@ -237,17 +205,55 @@
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 
 <!-- Leaflet-Geosearch -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-geosearch@3.6.0/dist/geosearch.css" />
-<script src="https://cdn.jsdelivr.net/npm/leaflet-geosearch@3.6.0/dist/bundle.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <style>
+/* Animaciones y diseño premium */
+#formCard {
+    transition: all 0.3s ease;
+}
+#formCard:hover {
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    transform: translateY(-2px);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+#btnGuardar {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+#btnGuardar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(25, 135, 84, 0.4);
+}
+#btnGuardar:active {
+    transform: translateY(0);
+}
+
+/* Modificar estilo de modal map */
 .modal #map { 
-    height: 520px; 
-    min-height: 520px; 
-    width: 100%; 
     touch-action: pan-x pan-y; 
 }
-.modal .leaflet-container, .modal .leaflet-pane, .modal .leaflet-top, .modal .leaflet-bottom, .modal .leaflet-control-container { z-index: 1065; }
+.leaflet-control-geocoder {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+
+/* Validaciones visuales suaves */
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+    background-image: none;
+}
+.form-control.is-valid, .form-select.is-valid {
+    border-color: #198754;
+    background-image: none;
+}
 </style>
 
 <script>
@@ -266,138 +272,149 @@ if (mapModalEl) {
 }
 
 function initMap(){
-    console.log('initMap() called, map exists:', !!map);
     if(map) { 
-        console.log('Map already exists, invalidating size');
         map.invalidateSize(); 
         return; 
-    }
-    console.log('Creating new map...');
-    const mapElement = document.getElementById('map');
-    console.log('Map element found:', !!mapElement);
-    if (!mapElement) {
-        console.error('Map element not found!');
-        return;
     }
     
     const latVal = parseFloat(document.getElementById('lat').value) || 4.711;
     const lngVal = parseFloat(document.getElementById('lng').value) || -74.072;
-    console.log('Initial coordinates:', latVal, lngVal);
     
-    try {
-        map = L.map('map').setView([latVal, lngVal], (latVal && lngVal) ? 15 : 6);
-        console.log('Map created successfully');
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-        console.log('Tile layer added');
+    map = L.map('map').setView([latVal, lngVal], (latVal && lngVal) ? 15 : 6);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-        drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-        drawControl = new L.Control.Draw({
-            draw: { polygon: { allowIntersection:false, showArea:true }, polyline:false, rectangle:false, circle:false, circlemarker:false, marker:false },
-            edit: { featureGroup: drawnItems }
+    // Integrar buscador en el mapa (Leaflet Control Geocoder)
+    const geocoder = L.Control.geocoder({
+        defaultMarkGeocode: false,
+        placeholder: "Buscar lugar o dirección...",
+        errorMessage: "No se encontraron resultados."
+    })
+    .on('markgeocode', function(e) {
+        const bbox = e.geocode.bbox;
+        const poly = L.polygon([
+            bbox.getSouthEast(),
+            bbox.getNorthEast(),
+            bbox.getNorthWest(),
+            bbox.getSouthWest()
+        ]);
+        map.fitBounds(poly.getBounds());
+        
+        const pos = e.geocode.center;
+        if(searchMarker){ map.removeLayer(searchMarker); }
+        searchMarker = L.marker(pos, {draggable:true}).addTo(map);
+        
+        searchMarker.on('dragend', ()=>{
+            // Update on drag
         });
-        map.addControl(drawControl);
-        console.log('Draw controls added');
+    })
+    .addTo(map);
 
-        document.getElementById('btnDrawPoly').onclick = () => { new L.Draw.Polygon(map, drawControl.options.draw.polygon).enable(); };
-        document.getElementById('btnClearPoly').onclick = () => { drawnItems.clearLayers(); };
-        document.getElementById('btnAddMarker').onclick = addDraggableMarker;
-        document.getElementById('btnGoto').onclick = gotoCoords;
-        document.getElementById('btnSearch').onclick = searchPlace;
+    drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    
+    // Configuración de controles de dibujo, permitimos polígonos y marcadores
+    drawControl = new L.Control.Draw({
+        draw: { 
+            polygon: { allowIntersection:false, showArea:true }, 
+            polyline:false, 
+            rectangle:false, 
+            circle:false, 
+            circlemarker:false, 
+            marker:true 
+        },
+        edit: { featureGroup: drawnItems }
+    });
+    map.addControl(drawControl);
 
-        // Si ya hay lat/lng en inputs, centrar y colocar marcador
-        const latInputVal = parseFloat(document.getElementById('lat')?.value) || null;
-        const lngInputVal = parseFloat(document.getElementById('lng')?.value) || null;
-        const polyVal = document.getElementById('polygon_geojson')?.value || '';
-        if(latInputVal && lngInputVal){
-            searchMarker = L.marker([latInputVal, lngInputVal], {draggable:true}).addTo(map);
-            map.setView([latInputVal, lngInputVal], 15);
-            searchMarker.on('dragend', ()=>{ const p = searchMarker.getLatLng(); document.getElementById('gotoLat').value = p.lat.toFixed(6); document.getElementById('gotoLng').value = p.lng.toFixed(6); });
-        }
-        if(polyVal){ try{ const geo = JSON.parse(polyVal); L.geoJSON(geo, { style: geoDisplayStyle }).addTo(drawnItems); } catch(e){ console.error('Polígono inválido', e); } }
-        
-    } catch(e) {
-        console.error('Error initializing map:', e);
-        console.error('Error details:', e.stack);
+    // Si ya hay lat/lng en inputs, centrar y colocar marcador
+    const latInputVal = parseFloat(document.getElementById('lat')?.value) || null;
+    const lngInputVal = parseFloat(document.getElementById('lng')?.value) || null;
+    const polyVal = document.getElementById('polygon_geojson')?.value || '';
+    
+    if(latInputVal && lngInputVal){
+        searchMarker = L.marker([latInputVal, lngInputVal], {draggable:true}).addTo(map);
+        map.setView([latInputVal, lngInputVal], 15);
+    }
+    
+    if(polyVal){ 
+        try{ 
+            const geo = JSON.parse(polyVal); 
+            L.geoJSON(geo, { style: geoDisplayStyle }).addTo(drawnItems); 
+        } catch(e){ 
+            console.error('Polígono inválido', e); 
+        } 
     }
 
-    map.on(L.Draw.Event.CREATED, function (e) { drawnItems.clearLayers(); drawnItems.addLayer(e.layer); });
-}
-
-function addDraggableMarker(){
-    const lat = parseFloat(document.getElementById('gotoLat').value) || map.getCenter().lat;
-    const lng = parseFloat(document.getElementById('gotoLng').value) || map.getCenter().lng;
-    if(searchMarker){ map.removeLayer(searchMarker); }
-    searchMarker = L.marker([lat, lng], {draggable:true}).addTo(map);
-    searchMarker.on('dragend', ()=>{
-        const p = searchMarker.getLatLng();
-        document.getElementById('gotoLat').value = p.lat.toFixed(6);
-        document.getElementById('gotoLng').value = p.lng.toFixed(6);
+    // Eventos de dibujo
+    map.on(L.Draw.Event.CREATED, function (e) { 
+        const type = e.layerType, layer = e.layer;
+        
+        if (type === 'marker') {
+            if(searchMarker){ map.removeLayer(searchMarker); }
+            searchMarker = layer;
+            searchMarker.options.draggable = true;
+            map.addLayer(searchMarker);
+        } else if (type === 'polygon') {
+            drawnItems.clearLayers(); 
+            drawnItems.addLayer(layer); 
+            
+            // Calcular área con Turf.js
+            try {
+                const geojson = layer.toGeoJSON();
+                // Turf area returns square meters
+                const areaSqMeters = turf.area(geojson);
+                const areaHectares = (areaSqMeters / 10000).toFixed(2);
+                
+                // Sugerir llenar la extensión
+                Swal.fire({
+                    title: 'Área calculada',
+                    text: `El polígono tiene un área aproximada de ${areaHectares} hectáreas. ¿Deseas actualizar el campo de Extensión?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, actualizar',
+                    cancelButtonText: 'No'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('extension').value = areaHectares;
+                        document.getElementById('extension').classList.add('is-valid');
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Actualizado!',
+                            text: 'El área ha sido registrada.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+                
+            } catch (error) {
+                console.error("Error al calcular el área:", error);
+            }
+        }
     });
 }
 
-function gotoCoords(){
-    const lat = parseFloat(document.getElementById('gotoLat').value);
-    const lng = parseFloat(document.getElementById('gotoLng').value);
-    if(!isNaN(lat) && !isNaN(lng)){
-        map.setView([lat, lng], 15);
-        if(searchMarker){ map.removeLayer(searchMarker); }
-        searchMarker = L.marker([lat, lng], {draggable:true}).addTo(map);
-        searchMarker.on('dragend', ()=>{
-            const p = searchMarker.getLatLng();
-            document.getElementById('gotoLat').value = p.lat.toFixed(6);
-            document.getElementById('gotoLng').value = p.lng.toFixed(6);
-        });
-    }
-}
-
-function searchPlace(){
-    const query = document.getElementById('searchPlace').value;
-    if(!query) return;
-    
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
-        .then(response => response.json())
-        .then(data => {
-            const resultsDiv = document.getElementById('searchResults');
-            resultsDiv.innerHTML = '';
-            if(data.length === 0){
-                resultsDiv.innerHTML = '<div class="list-group-item">No se encontraron resultados</div>';
-            } else {
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'list-group-item list-group-item-action';
-                    div.textContent = item.display_name;
-                    div.onclick = () => {
-                        const lat = parseFloat(item.lat);
-                        const lng = parseFloat(item.lon);
-                        map.setView([lat, lng], 15);
-                        if(searchMarker){ map.removeLayer(searchMarker); }
-                        searchMarker = L.marker([lat, lng], {draggable:true}).addTo(map);
-                        searchMarker.on('dragend', ()=>{
-                            const p = searchMarker.getLatLng();
-                            document.getElementById('gotoLat').value = p.lat.toFixed(6);
-                            document.getElementById('gotoLng').value = p.lng.toFixed(6);
-                        });
-                        document.getElementById('gotoLat').value = lat.toFixed(6);
-                        document.getElementById('gotoLng').value = lng.toFixed(6);
-                        resultsDiv.style.display = 'none';
-                    };
-                    resultsDiv.appendChild(div);
-                });
-                resultsDiv.style.display = 'block';
-            }
-        })
-        .catch(error => console.error('Error searching place:', error));
-}
-
-// Guardar ubicación
+// Guardar ubicación desde el modal
 document.getElementById('btnSaveLocation').onclick = function(){
     if(searchMarker){
         const pos = searchMarker.getLatLng();
         document.getElementById('lat').value = pos.lat.toFixed(6);
         document.getElementById('lng').value = pos.lng.toFixed(6);
         document.getElementById('ubicacion').value = `${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`;
+    } else if (drawnItems.getLayers().length > 0) {
+        // Si no hay marcador pero hay polígono, usar el centro del polígono
+        const layer = drawnItems.getLayers()[0];
+        const center = layer.getBounds().getCenter();
+        document.getElementById('lat').value = center.lat.toFixed(6);
+        document.getElementById('lng').value = center.lng.toFixed(6);
+        document.getElementById('ubicacion').value = `${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`;
     }
     
     if(drawnItems.getLayers().length > 0){
@@ -405,48 +422,125 @@ document.getElementById('btnSaveLocation').onclick = function(){
         const geojson = layers[0].toGeoJSON();
         document.getElementById('polygon_geojson').value = JSON.stringify(geojson);
     }
+    
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Ubicación guardada en el formulario',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
 };
 
-// Validación del formulario
+// Mostrar/Ocultar campo "Otro" tipo de producción
+const tipoProduccionSelect = document.getElementById('tipo_produccion');
+const otroTipoContainer = document.getElementById('otro_tipo_produccion_container');
+const otroTipoInput = document.getElementById('tipo_produccion_otro');
+
+function toggleOtroTipo() {
+    if (tipoProduccionSelect && tipoProduccionSelect.value === 'Otro') {
+        otroTipoContainer.style.display = 'block';
+        otroTipoInput.setAttribute('required', 'required');
+    } else {
+        otroTipoContainer.style.display = 'none';
+        otroTipoInput.removeAttribute('required');
+        otroTipoInput.value = '';
+        otroTipoInput.classList.remove('is-invalid');
+        otroTipoInput.classList.remove('is-valid');
+    }
+}
+
+if (tipoProduccionSelect) {
+    tipoProduccionSelect.addEventListener('change', toggleOtroTipo);
+    toggleOtroTipo();
+}
+
+// Validaciones en tiempo real
+const inputs = document.querySelectorAll('input[required], select[required]');
+inputs.forEach(input => {
+    input.addEventListener('blur', function() {
+        if (!this.value.trim()) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    input.addEventListener('input', function() {
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+        }
+    });
+});
+
+// Validación en tiempo real específica para el input dinámico
+if (otroTipoInput) {
+    otroTipoInput.addEventListener('blur', function() {
+        if (tipoProduccionSelect.value === 'Otro' && !this.value.trim()) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    otroTipoInput.addEventListener('input', function() {
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+        }
+    });
+}
+
+// Validación del formulario y Spinner
 document.getElementById('nuevaFincaForm').addEventListener('submit', function(e) {
-    const nombre = document.getElementById('nombre').value.trim();
-    const direccion = document.getElementById('direccion').value.trim();
+    e.preventDefault();
     
-    if (!nombre) {
-        e.preventDefault();
-        alert('Por favor ingresa el nombre de la finca');
+    const nombre = document.getElementById('nombre');
+    const direccion = document.getElementById('direccion');
+    let isValid = true;
+    
+    if (!nombre.value.trim()) {
+        nombre.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    if (!direccion.value.trim()) {
+        direccion.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    if (tipoProduccionSelect && tipoProduccionSelect.value === 'Otro') {
+        if (!otroTipoInput.value.trim()) {
+            otroTipoInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            otroTipoInput.classList.remove('is-invalid');
+        }
+    }
+    
+    if (!isValid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Datos Incompletos',
+            text: 'Por favor, completa los campos obligatorios (marcados con *).',
+            confirmButtonColor: '#0d6efd'
+        });
         return;
     }
     
-    if (!direccion) {
-        e.preventDefault();
-        alert('Por favor ingresa la dirección de la finca');
-        return;
-    }
+    // Mostrar spinner en el botón
+    const btnGuardar = document.getElementById('btnGuardar');
+    const originalText = btnGuardar.innerHTML;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+    
+    // Pequeño delay para que se vea el spinner y luego hacer el submit
+    setTimeout(() => {
+        this.submit();
+    }, 500);
 });
 </script>
-
-<style>
-.card {
-    transition: all 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-.btn {
-    transition: all 0.3s ease;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-}
-</style>
 {% endblock %}

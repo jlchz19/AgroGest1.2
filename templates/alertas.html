@@ -1,245 +1,964 @@
 {% extends "base.html" %}
-{% block title %}Sistema de Alertas - AgroGest{% endblock %}
+{% block title %}Centro de Control de Alertas - AgroGest{% endblock %}
 
-{% block extra_css %}
-<style>
-/* Dark theme fixes for alerts page */
-body.dark-theme .text-gray-800 {
-    color: #ffffff !important;
-}
-
-body.dark-theme .text-gray-600 {
-    color: #e5e7eb !important;
-}
-
-body.dark-theme .text-gray-500 {
-    color: #9ca3af !important;
-}
-
-body.dark-theme .badge {
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1b26 100%) !important;
-    color: #ffffff !important;
-    border: 1px solid #2d2e3f !important;
-}
-
-body.dark-theme .alert {
-    background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%) !important;
-    border: 1px solid #2d2e3f !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .alert .alert-heading {
-    color: #ffffff !important;
-}
-
-body.dark-theme .table {
-    background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%) !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .table th {
-    background: linear-gradient(135deg, #24283b 0%, #2d2e3f 100%) !important;
-    border-color: #2d2e3f !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .table td {
-    border-color: #2d2e3f !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .table-hover tbody tr:hover {
-    background: rgba(79, 70, 229, 0.05) !important;
-}
-</style>
-{% endblock %}
 {% block content %}
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-bell me-2"></i>Sistema de Alertas
-        </h1>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('nueva_alerta') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i>Nueva Alerta
-            </a>
+<style>
+    /* Estilos Premium del Centro de Control de Alertas */
+    .alert-inbox-container {
+        font-family: 'Outfit', sans-serif;
+    }
+    
+    .animate-pulse {
+        animation: pulse-animation 2s infinite;
+    }
+    
+    @keyframes pulse-animation {
+        0% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.08); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.9; }
+    }
+
+    /* Tarjetas de Estadísticas Modernas */
+    .stat-card-glass {
+        border-radius: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        background: #ffffff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        position: relative;
+    }
+    .stat-card-glass:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.07);
+    }
+    .stat-card-glass::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 4px; height: 100%;
+    }
+    .stat-blue::before { background-color: #3b82f6; }
+    .stat-green::before { background-color: #10b981; }
+    .stat-yellow::before { background-color: #f59e0b; }
+    .stat-red::before { background-color: #ef4444; }
+    .stat-purple::before { background-color: #8b5cf6; }
+
+    /* Barra Lateral de Categorías */
+    .glass-effect {
+        background: #ffffff !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
+    }
+    
+    .inbox-menu-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem 1.25rem;
+        border-radius: 12px;
+        color: #475569;
+        font-weight: 500;
+        transition: all 0.25s ease;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        border: 1px solid transparent;
+    }
+    .inbox-menu-item:hover {
+        background-color: rgba(14, 165, 233, 0.06);
+        color: #0ea5e9;
+        transform: translateX(4px);
+    }
+    .inbox-menu-item.active {
+        background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+    }
+    .inbox-menu-item.active .badge {
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        color: #ffffff !important;
+    }
+
+    /* Tarjetas de Alerta */
+    .alert-card {
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 16px;
+        padding: 1.3rem;
+        margin-bottom: 1.2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+    }
+    .alert-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
+    }
+    
+    .border-urgente {
+        border-left: 5px solid #ef4444 !important;
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.015) 0%, #ffffff 100%);
+    }
+    .border-advertencia {
+        border-left: 5px solid #f59e0b !important;
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.015) 0%, #ffffff 100%);
+    }
+    .border-info {
+        border-left: 5px solid #3b82f6 !important;
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.015) 0%, #ffffff 100%);
+    }
+
+    .icon-box-alert {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    .bg-urgente-soft { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .bg-advertencia-soft { background-color: rgba(245, 158, 11, 0.1); color: #d97706; }
+    .bg-info-soft { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+    .action-btn {
+        transition: all 0.2s ease;
+    }
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+
+    /* Modo Oscuro Soporte Completo */
+    html[data-theme="dark"] .stat-card-glass,
+    body.dark-theme .stat-card-glass {
+        background: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.06) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    
+    html[data-theme="dark"] .stat-card-glass .text-gray-800,
+    body.dark-theme .stat-card-glass .text-gray-800,
+    html[data-theme="dark"] .stat-card-glass h3,
+    body.dark-theme .stat-card-glass h3 {
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .glass-effect,
+    body.dark-theme .glass-effect {
+        background: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.06) !important;
+    }
+    
+    html[data-theme="dark"] .inbox-menu-item,
+    body.dark-theme .inbox-menu-item {
+        color: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] .inbox-menu-item:hover,
+    body.dark-theme .inbox-menu-item:hover {
+        background-color: rgba(14, 165, 233, 0.15) !important;
+        color: #38bdf8 !important;
+    }
+    html[data-theme="dark"] .inbox-menu-item.active,
+    body.dark-theme .inbox-menu-item.active {
+        background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%) !important;
+        color: #ffffff !important;
+    }
+
+    html[data-theme="dark"] .alert-card,
+    body.dark-theme .alert-card {
+        background: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    
+    html[data-theme="dark"] .border-urgente,
+    body.dark-theme .border-urgente {
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, #1e293b 100%) !important;
+    }
+    html[data-theme="dark"] .border-advertencia,
+    body.dark-theme .border-advertencia {
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, #1e293b 100%) !important;
+    }
+    html[data-theme="dark"] .border-info,
+    body.dark-theme .border-info {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, #1e293b 100%) !important;
+    }
+    
+    html[data-theme="dark"] .text-dark,
+    body.dark-theme .text-dark {
+        color: #f8fafc !important;
+    }
+    
+    html[data-theme="dark"] .text-muted,
+    body.dark-theme .text-muted {
+        color: #94a3b8 !important;
+    }
+
+    /* Modal Oscuro */
+    html[data-theme="dark"] .modal-content,
+    body.dark-theme .modal-content {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    html[data-theme="dark"] .modal-content .text-dark,
+    body.dark-theme .modal-content .text-dark,
+    html[data-theme="dark"] .modal-content label,
+    body.dark-theme .modal-content label {
+        color: #f8fafc !important;
+    }
+    html[data-theme="dark"] .modal-content .text-muted,
+    body.dark-theme .modal-content .text-muted {
+        color: #cbd5e1 !important;
+    }
+    html[data-theme="dark"] .modal-content input,
+    body.dark-theme .modal-content input,
+    html[data-theme="dark"] .modal-content textarea,
+    body.dark-theme .modal-content textarea,
+    html[data-theme="dark"] .modal-content select,
+    body.dark-theme .modal-content select {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* ===== MODAL NUEVA ALERTA - PREMIUM ===== */
+    #nuevaAlertaModal .modal-dialog {
+        max-width: 500px;
+    }
+    #nuevaAlertaModal .modal-content {
+        border-radius: 20px !important;
+        overflow: hidden;
+        border: none !important;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.18) !important;
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+    }
+    #nuevaAlertaModal .modal-header-custom {
+        background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #60a5fa 100%);
+        padding: 1.4rem 1.6rem;
+        position: relative;
+        flex-shrink: 0;
+    }
+    #nuevaAlertaModal .modal-header-custom::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: #f8fafc;
+        border-radius: 20px 20px 0 0;
+    }
+    html[data-theme="dark"] #nuevaAlertaModal .modal-header-custom::after,
+    body.dark-theme #nuevaAlertaModal .modal-header-custom::after {
+        background: #1e293b;
+    }
+    #nuevaAlertaModal .modal-body-scroll {
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 1.5rem 1.6rem 0.5rem;
+        flex: 1 1 auto;
+        background: #f8fafc;
+        scrollbar-width: thin;
+        scrollbar-color: #60a5fa #f1f5f9;
+    }
+    #nuevaAlertaModal .modal-body-scroll::-webkit-scrollbar {
+        width: 5px;
+    }
+    #nuevaAlertaModal .modal-body-scroll::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    #nuevaAlertaModal .modal-body-scroll::-webkit-scrollbar-thumb {
+        background: #60a5fa;
+        border-radius: 10px;
+    }
+    #nuevaAlertaModal .modal-body-scroll::-webkit-scrollbar-thumb:hover {
+        background: #3b82f6;
+    }
+    html[data-theme="dark"] #nuevaAlertaModal .modal-body-scroll,
+    body.dark-theme #nuevaAlertaModal .modal-body-scroll {
+        background: #1e293b;
+        scrollbar-color: #2563eb #0f172a;
+    }
+    #nuevaAlertaModal .modal-footer-custom {
+        background: #f8fafc;
+        border-top: 1px solid rgba(0,0,0,0.06);
+        padding: 1rem 1.6rem 1.3rem;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+    html[data-theme="dark"] #nuevaAlertaModal .modal-footer-custom {
+        background: #1e293b;
+        border-top-color: rgba(255,255,255,0.07);
+    }
+    #nuevaAlertaModal .field-group {
+        background: #ffffff;
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 14px;
+        padding: 1rem 1.1rem 0.8rem;
+        margin-bottom: 0.9rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    #nuevaAlertaModal .field-group:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    html[data-theme="dark"] #nuevaAlertaModal .field-group {
+        background: #0f172a;
+        border-color: rgba(255,255,255,0.08);
+    }
+    html[data-theme="dark"] #nuevaAlertaModal .field-group:focus-within {
+        border-color: #3b82f6;
+    }
+    #nuevaAlertaModal .field-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #2563eb;
+        margin-bottom: 0.45rem;
+    }
+    #nuevaAlertaModal .field-group .form-control,
+    #nuevaAlertaModal .field-group .form-select {
+        border: none !important;
+        padding: 0.25rem 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        font-size: 0.9rem;
+        color: #1e293b;
+    }
+    html[data-theme="dark"] #nuevaAlertaModal .field-group .form-control,
+    html[data-theme="dark"] #nuevaAlertaModal .field-group .form-select,
+    body.dark-theme #nuevaAlertaModal .field-group .form-control,
+    body.dark-theme #nuevaAlertaModal .field-group .form-select {
+        color: #f8fafc !important;
+        background: transparent !important;
+    }
+    #nuevaAlertaModal .field-group .form-control::placeholder {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+    #nuevaAlertaModal .field-group textarea.form-control {
+        resize: vertical;
+        min-height: 72px;
+        max-height: 140px;
+    }
+    #nuevaAlertaModal .tipo-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.12));
+        color: #2563eb;
+        margin-bottom: 0.2rem;
+    }
+    #nuevaAlertaModal .btn-cancel-custom {
+        background: #f1f5f9;
+        border: 1px solid rgba(0,0,0,0.09);
+        color: #64748b;
+        border-radius: 50px;
+        padding: 0.5rem 1.4rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+    #nuevaAlertaModal .btn-cancel-custom:hover {
+        background: #e2e8f0;
+        color: #475569;
+    }
+    html[data-theme="dark"] #nuevaAlertaModal .btn-cancel-custom {
+        background: #0f172a;
+        border-color: rgba(255,255,255,0.1);
+        color: #94a3b8;
+    }
+    #nuevaAlertaModal .btn-submit-custom {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        border: none;
+        color: #ffffff;
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        transition: all 0.2s ease;
+    }
+    #nuevaAlertaModal .btn-submit-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+        background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    }
+</style>
+
+<div class="container-fluid py-4 alert-inbox-container">
+    
+    <!-- Encabezado con Animación y Botón Principal -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800 fw-bold d-flex align-items-center">
+                <span style="font-size: 1.5rem; margin-right: 0.7rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🔔</span>Centro de Control de Alertas
+            </h1>
+            <p class="text-muted mb-0 small">Bandeja de entrada inteligente y unificada de notificaciones críticas de la finca.</p>
         </div>
+        <button class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#nuevaAlertaModal">
+            <span style="font-size: 1rem; margin-right: 0.3rem;">➕</span> Programar Alerta
+        </button>
     </div>
 
-    <!-- Filtros -->
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <label class="form-label">Estado</label>
-                    <select class="form-select" id="filtroEstado">
-                        <option value="">Todos</option>
-                        <option value="pendiente">Pendientes</option>
-                        <option value="enviada">Enviadas</option>
-                        <option value="cancelada">Canceladas</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Tipo</label>
-                    <select class="form-select" id="filtroTipo">
-                        <option value="">Todos</option>
-                        <option value="general">General</option>
-                        <option value="animal">Animal</option>
-                        <option value="vacuna">Vacuna</option>
-                        <option value="produccion">Producción</option>
-                        <option value="empleado">Empleado</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Fecha Desde</label>
-                    <input type="date" class="form-control" id="fechaDesde">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Fecha Hasta</label>
-                    <input type="date" class="form-control" id="fechaHasta">
-                </div>
+    <!-- Panel de Tarjetas de Estadísticas Rápidas -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3 col-lg">
+            <div class="stat-card-glass stat-blue p-3 h-100">
+                <div class="text-muted small fw-semibold uppercase tracking-wider mb-1">Total Activas</div>
+                <h3 class="mb-0 fw-bold text-gray-800">{{ total_alertas }}</h3>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg">
+            <div class="stat-card-glass stat-green p-3 h-100">
+                <div class="text-muted small fw-semibold uppercase tracking-wider mb-1">💉 Vacunas</div>
+                <h3 class="mb-0 fw-bold text-gray-800">{{ total_vacunas }}</h3>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg">
+            <div class="stat-card-glass stat-red p-3 h-100">
+                <div class="text-muted small fw-semibold uppercase tracking-wider mb-1">🌾 Inventario</div>
+                <h3 class="mb-0 fw-bold text-gray-800">{{ total_inventario }}</h3>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 col-lg">
+            <div class="stat-card-glass stat-yellow p-3 h-100">
+                <div class="text-muted small fw-semibold uppercase tracking-wider mb-1">🚜 Maquinaria</div>
+                <h3 class="mb-0 fw-bold text-gray-800">{{ total_maquinaria }}</h3>
+            </div>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+            <div class="stat-card-glass stat-purple p-3 h-100">
+                <div class="text-muted small fw-semibold uppercase tracking-wider mb-1">🔔 Personal</div>
+                <h3 class="mb-0 fw-bold text-gray-800">{{ total_personal }}</h3>
             </div>
         </div>
     </div>
 
-    <!-- Lista de Alertas -->
-    <div class="card shadow">
-        <div class="card-header py-3 bg-primary">
-            <h6 class="m-0 font-weight-bold text-white">
-                <i class="fas fa-calendar-alt me-2"></i>Alertas Programadas
-            </h6>
+    <div class="row g-4">
+        <!-- Columna de Filtros / Menú de Bandeja (3 columnas) -->
+        <div class="col-lg-3 col-md-4">
+            <div class="card border-0 p-3 glass-effect" style="border-radius: 16px;">
+                <h6 class="text-uppercase fw-bold text-muted small px-3 mb-3">Filtrar Bandeja</h6>
+                <div class="list-group list-group-flush border-0">
+                    <a href="javascript:void(0)" onclick="setActiveCategory('todas', this)" class="inbox-menu-item active">
+                        <span><span style="font-size: 1rem; margin-right: 0.3rem;">📥</span> Todas las Alertas</span>
+                        <span class="badge bg-danger rounded-pill px-2 py-1 text-white" id="count-todas">{{ total_alertas }}</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="setActiveCategory('vacunas', this)" class="inbox-menu-item">
+                        <span><span style="font-size: 1rem; margin-right: 0.3rem;">💉</span> 💉 Vacunas</span>
+                        <span class="badge bg-secondary rounded-pill px-2 py-1 text-white" id="count-vacunas">{{ total_vacunas }}</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="setActiveCategory('inventario', this)" class="inbox-menu-item">
+                        <span><span style="font-size: 1rem; margin-right: 0.3rem;">📦</span> 🌾 Inventario</span>
+                        <span class="badge bg-secondary rounded-pill px-2 py-1 text-white" id="count-inventario">{{ total_inventario }}</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="setActiveCategory('maquinaria', this)" class="inbox-menu-item">
+                        <span><span style="font-size: 1rem; margin-right: 0.3rem;">🚜</span> 🚜 Maquinaria</span>
+                        <span class="badge bg-secondary rounded-pill px-2 py-1 text-white" id="count-maquinaria">{{ total_maquinaria }}</span>
+                    </a>
+                    <a href="javascript:void(0)" onclick="setActiveCategory('personal', this)" class="inbox-menu-item">
+                        <span><span style="font-size: 1rem; margin-right: 0.3rem;">🔔</span> 🔔 Personalizadas</span>
+                        <span class="badge bg-secondary rounded-pill px-2 py-1 text-white" id="count-personal">{{ total_personal }}</span>
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            {% if alertas %}
-            <div class="table-responsive">
-                <table class="table table-bordered" id="alertasTable">
-                    <thead>
-                        <tr>
-                            <th>Título</th>
-                            <th>Tipo</th>
-                            <th>Fecha Programada</th>
-                            <th>Animal</th>
-                            <th>Estado</th>
-                            <th>Repetir</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for alerta in alertas %}
-                        <tr id="alerta-{{ alerta.id }}">
-                            <td>
-                                <strong class="text-dark">{{ alerta.titulo }}</strong>
-                                {% if alerta.descripcion %}
-                                <br><small class="text-muted">{{ alerta.descripcion[:100] }}{% if alerta.descripcion|length > 100 %}...{% endif %}</small>
+
+        <!-- Columna de Bandeja de Alertas (9 columnas) -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Toast o Feedback Visual Rápido -->
+            <div id="alertFeedback" class="alert d-none mb-3" role="alert"></div>
+
+            <div id="alertsInboxList" style="min-height: 400px;">
+                
+                <!-- Estado de Bandeja Completamente Vacía en AgroGest -->
+                {% if total_alertas == 0 %}
+                <div class="text-center py-5 glass-effect border-0 shadow-sm" style="border-radius: 20px;">
+                    <span style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem; display: block;">🔕</span>
+                    <h4 class="fw-bold text-gray-800">¡Bandeja Completamente Limpia!</h4>
+                    <p class="text-muted small mx-auto" style="max-width: 420px;">No tienes alertas de vacunación pendientes, desabastecimientos de stock, mantenimientos programados ni recordatorios activos. ¡Gran trabajo gestionando AgroGest!</p>
+                </div>
+                {% endif %}
+
+                <!-- 1. Vacunas Pendientes (< 7 días o ya retrasadas) -->
+                {% for vacuna in vacunas_urgentes %}
+                    {% set dias_vacuna = (vacuna.fecha_proxima - today).days %}
+                    {% set es_critico = (dias_vacuna < 0) %}
+                    
+                    <div class="alert-card border-{% if es_critico %}urgente{% else %}advertencia{% endif %} cat-vacunas">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="icon-box-alert bg-{% if es_critico %}urgente-soft{% else %}advertencia-soft{% endif %} mt-1">
+                                <span style="font-size: 1.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">💉</span>
+                            </div>
+                            
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold text-dark mb-0 fs-6">💉 Vacuna Pendiente: {{ vacuna.tipo_vacuna }}</h5>
+                                    
+                                    <span class="badge bg-{% if es_critico %}danger{% else %}warning text-dark{% endif %} rounded-pill py-1 px-2.5 small fw-bold">
+                                        {% if es_critico %}
+                                            ⚠️ RETRASADA POR {{ dias_vacuna | abs }} DÍAS
+                                        {% elif dias_vacuna == 0 %}
+                                            📅 HOY
+                                        {% else %}
+                                            ⏳ EN {{ dias_vacuna }} DÍAS
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                
+                                <p class="text-muted small mb-2">
+                                    <strong>Animal:</strong> {{ vacuna.animal.identificacion }} - {{ vacuna.animal.nombre or vacuna.animal.tipo.title() }} 
+                                    | <strong>Fecha Planeada:</strong> {{ vacuna.fecha_proxima.strftime('%d/%m/%Y') }}
+                                </p>
+                                
+                                {% if vacuna.observaciones %}
+                                <div class="p-2 bg-light rounded text-muted small mb-3 border-start border-3 border-secondary" style="font-size: 0.78rem;">
+                                    <span style="font-size: 1rem; margin-right: 0.2rem;">ℹ️</span> {{ vacuna.observaciones }}
+                                </div>
                                 {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge bg-{% if alerta.tipo_alerta == 'animal' %}primary{% elif alerta.tipo_alerta == 'vacuna' %}success{% elif alerta.tipo_alerta == 'produccion' %}warning{% elif alerta.tipo_alerta == 'empleado' %}info{% else %}secondary{% endif %}">
-                                    {{ alerta.tipo_alerta.title() }}
-                                </span>
-                            </td>
-                            <td>{{ alerta.fecha_programada.strftime('%d/%m/%Y %H:%M') }}</td>
-                            <td>
-                                {% if alerta.animal %}
-                                    <span class="badge bg-light text-dark">{{ alerta.animal.identificacion }}</span>
-                                {% else %}
-                                    <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge bg-{% if alerta.estado == 'pendiente' %}warning{% elif alerta.estado == 'enviada' %}success{% else %}danger{% endif %}">
-                                    {{ alerta.estado.title() }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if alerta.repetir %}
-                                    <i class="fas fa-repeat text-success" title="Repetir {{ alerta.frecuencia }}"></i>
-                                    {{ alerta.frecuencia }}
-                                {% else %}
-                                    <span class="text-muted">No</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-info" onclick="verDetalles('{{ alerta.id }}')" title="Ver detalles">
-                                        <span style="font-size: 1rem;">👁️</span>
-                                    </button>
-                                    {% if alerta.estado|lower != 'cancelada' and alerta.estado|lower != 'enviada' %}
-                                    <button class="btn btn-outline-warning" onclick="editarAlerta('{{ alerta.id }}')" title="Editar">
-                                        <span style="font-size: 1rem;">✏️</span>
-                                    </button>
-                                    <button class="btn btn-outline-success" onclick="completarAlerta('{{ alerta.id }}')" title="Marcar como completada">
-                                        <span style="font-size: 1rem;">✓</span>
-                                    </button>
-                                    <button class="btn btn-outline-secondary" onclick="cancelarAlerta('{{ alerta.id }}')" title="Cancelar">
-                                        <span style="font-size: 1rem;">❌</span>
-                                    </button>
-                                    {% endif %}
-                                    <button class="btn btn-outline-danger" onclick="eliminarAlerta('{{ alerta.id }}')" title="Eliminar permanentemente">
-                                        <span style="font-size: 1rem;">🗑️</span>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="/historial_animal/{{ vacuna.animal.id }}" class="text-primary small fw-semibold text-decoration-none">
+                                        <span style="font-size: 1rem; margin-right: 0.2rem;">🐾</span> Ficha del Animal
+                                    </a>
+                                    <button class="btn btn-sm btn-success rounded-pill px-3 action-btn fw-bold text-white shadow-xs" 
+                                            onclick="abrirAplicarVacunaModal({{ vacuna.id }}, '{{ vacuna.tipo_vacuna }}', '{{ vacuna.animal.identificacion }}')">
+                                        <span style="font-size: 1rem; margin-right: 0.2rem;">✅</span> Marcar Aplicada
                                     </button>
                                 </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- 2. Inventario Próximo a Caducar (< 30 días) -->
+                {% for inv in inventario_vencimiento %}
+                    {% set dias_vencimiento = (inv.fecha_vencimiento - today).days %}
+                    {% set es_critico = (dias_vencimiento <= 0) %}
+                    
+                    <div class="alert-card border-{% if es_critico %}urgente{% else %}advertencia{% endif %} cat-inventario">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="icon-box-alert bg-{% if es_critico %}urgente-soft{% else %}advertencia-soft{% endif %} mt-1">
+                                <span style="font-size: 1.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">⏳</span>
+                            </div>
+                            
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold text-dark mb-0 fs-6">🌾 Vencimiento de Insumo: {{ inv.producto }}</h5>
+                                    
+                                    <span class="badge bg-{% if es_critico %}danger{% else %}warning text-dark{% endif %} rounded-pill py-1 px-2.5 small fw-bold">
+                                        {% if es_critico %}
+                                            ⚠️ CADUCADO
+                                        {% elif dias_vencimiento == 0 %}
+                                            ⚠️ CADUCA HOY
+                                        {% else %}
+                                            ⏳ CADUCA EN {{ dias_vencimiento }} DÍAS
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                
+                                <p class="text-muted small mb-2">
+                                    <strong>Categoría:</strong> {{ inv.categoria.title() }} 
+                                    | <strong>Existencias:</strong> {{ inv.cantidad }} {{ inv.unidad }}
+                                    | <strong>Vence:</strong> {{ inv.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small"><span style="font-size: 1rem; margin-right: 0.2rem;">📦</span> Existencias</span>
+                                    <div class="d-flex gap-2">
+                                        <a href="/inventario" class="btn btn-sm btn-outline-primary rounded-pill px-3 action-btn fw-bold">
+                                            <span style="font-size: 1rem; margin-right: 0.2rem;">📦</span> Ver Inventario
+                                        </a>
+                                        {% if inv.alerta_asociada_id %}
+                                        <button class="btn btn-sm btn-success text-white rounded-pill px-3 action-btn fw-bold shadow-xs" 
+                                                onclick="resolverAlertaPersonalizada({{ inv.alerta_asociada_id }}, this)">
+                                            <span style="font-size: 1rem; margin-right: 0.2rem;">✅</span> Completar
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- 3. Inventario Bajo Stock (< 10) -->
+                {% for inv in inventario_bajo %}
+                    <div class="alert-card border-urgente cat-inventario">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="icon-box-alert bg-urgente-soft mt-1">
+                                <span style="font-size: 1.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📦</span>
+                            </div>
+                            
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold text-dark mb-0 fs-6">📦 Stock Crítico de Insumo: {{ inv.producto }}</h5>
+                                    
+                                    <span class="badge bg-danger rounded-pill py-1 px-2.5 small fw-bold">
+                                        🚨 STOCK BAJO (< 10)
+                                    </span>
+                                </div>
+                                
+                                <p class="text-muted small mb-2">
+                                    <strong>Stock Disponible:</strong> <span class="text-danger fw-bold fs-6">{{ inv.cantidad }} {{ inv.unidad }}</span> 
+                                    | <strong>Categoría:</strong> {{ inv.categoria.title() }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small"><span style="font-size: 1rem; margin-right: 0.2rem;">💵</span> Precio Unitario: ${{ inv.precio_unitario }}</span>
+                                    <a href="/inventario" class="btn btn-sm btn-outline-danger rounded-pill px-3 action-btn fw-bold">
+                                        <span style="font-size: 1rem; margin-right: 0.2rem;">🛍️</span> Abastecer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- 4. Maquinaria Próximo Mantenimiento (< 7 días) -->
+                {% for maq in maquinaria_mantenimiento %}
+                    {% set dias_maq = (maq.proximo_mantenimiento - today).days %}
+                    {% set es_critico = (dias_maq < 0) %}
+                    
+                    <div class="alert-card border-{% if es_critico %}urgente{% else %}advertencia{% endif %} cat-maquinaria">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="icon-box-alert bg-{% if es_critico %}urgente-soft{% else %}advertencia-soft{% endif %} mt-1">
+                                <span style="font-size: 1.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🚜</span>
+                            </div>
+                            
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold text-dark mb-0 fs-6">🚜 Mantenimiento Requerido: {{ maq.nombre }}</h5>
+                                    
+                                    <span class="badge bg-{% if es_critico %}danger{% else %}warning text-dark{% endif %} rounded-pill py-1 px-2.5 small fw-bold">
+                                        {% if es_critico %}
+                                            ⚠️ VENCIDO HACE {{ dias_maq | abs }} DÍAS
+                                        {% elif dias_maq == 0 %}
+                                            🔧 REALIZAR HOY
+                                        {% else %}
+                                            ⏳ EN {{ dias_maq }} DÍAS
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                
+                                <p class="text-muted small mb-2">
+                                    <strong>Marca/Modelo:</strong> {{ maq.marca or 'N/A' }} {{ maq.modelo or '' }} 
+                                    | <strong>Fecha Límite:</strong> {{ maq.proximo_mantenimiento.strftime('%d/%m/%Y') }}
+                                    | <strong>Último Servicio:</strong> {{ maq.ultimo_mantenimiento.strftime('%d/%m/%Y') if maq.ultimo_mantenimiento else 'No registrado' }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="/reporte_maquinaria" class="text-primary small fw-semibold text-decoration-none">
+                                        <span style="font-size: 1rem; margin-right: 0.2rem;">📋</span> Historial Técnico
+                                    </a>
+                                    <button class="btn btn-sm btn-warning text-dark rounded-pill px-3 action-btn fw-bold shadow-xs" 
+                                            onclick="abrirMantenimientoModal({{ maq.id }}, '{{ maq.nombre }}')">
+                                        <span style="font-size: 1rem; margin-right: 0.2rem;">🔧</span> Registrar Mantenimiento
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- 5. Alertas Personalizadas Pendientes -->
+                {% for alerta in alertas_personalizadas %}
+                    {% set dias_personal = (alerta.fecha_programada.date() - today).days %}
+                    {% set es_critico = (dias_personal < 0) %}
+                    
+                    <div class="alert-card border-{% if es_critico %}urgente{% else %}info{% endif %} cat-personal">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="icon-box-alert bg-{% if es_critico %}urgente-soft{% else %}info-soft{% endif %} mt-1">
+                                {% if alerta.tipo_alerta == 'vacuna' or alerta.tipo_alerta == 'Vacunación' %}
+                                    <span style="font-size: 1.2rem;">💉</span>
+                                {% elif alerta.tipo_alerta == 'animal' or alerta.tipo_alerta == 'Reproducción' %}
+                                    <span style="font-size: 1.2rem;">🐄</span>
+                                {% elif alerta.tipo_alerta == 'produccion' or alerta.tipo_alerta == 'Alimentación' %}
+                                    <span style="font-size: 1.2rem;">🌱</span>
+                                {% elif alerta.tipo_alerta == 'Tratamiento' %}
+                                    <span style="font-size: 1.2rem;">💊</span>
+                                {% elif alerta.tipo_alerta == 'Revisión' %}
+                                    <span style="font-size: 1.2rem;">🔍</span>
+                                {% elif alerta.tipo_alerta == 'empleado' %}
+                                    <span style="font-size: 1.2rem;">👤</span>
+                                {% else %}
+                                    <span style="font-size: 1.2rem;">🔔</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold text-dark mb-0 fs-6">🔔 Recordatorio: {{ alerta.titulo }}</h5>
+                                    
+                                    <span class="badge bg-{% if es_critico %}danger{% else %}info{% endif %} rounded-pill py-1 px-2.5 small fw-bold">
+                                        {% if es_critico %}
+                                            ⚠️ RETRASADO POR {{ dias_personal | abs }} DÍAS
+                                        {% elif dias_personal == 0 %}
+                                            📅 HOY
+                                        {% else %}
+                                            ⏳ EN {{ dias_personal }} DÍAS
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                
+                                <p class="text-muted small mb-2">
+                                    <strong>Fecha Agendada:</strong> {{ alerta.fecha_programada.strftime('%d/%m/%Y %H:%M') }}
+                                    {% if alerta.animal %}
+                                        | <strong>Animal:</strong> {{ alerta.animal.identificacion }}
+                                    {% endif %}
+                                </p>
+                                
+                                {% if alerta.descripcion %}
+                                <p class="text-dark small mb-3 bg-light p-2.5 rounded border-start border-3 border-info" style="font-size: 0.8rem; line-height: 1.4;">
+                                    {{ alerta.descripcion }}
+                                </p>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small">
+                                        {% if alerta.repetir %}
+                                            <span style="font-size: 1rem; margin-right: 0.2rem;">🔄</span> Frecuencia: {{ alerta.frecuencia.title() }}
+                                        {% else %}
+                                            <span style="font-size: 1rem; margin-right: 0.2rem;">🗓️</span> Recordatorio único
+                                        {% endif %}
+                                    </span>
+                                    <div class="d-flex gap-2">
+                                        <a href="/editar_alerta/{{ alerta.id }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5" title="Editar">
+                                            <span style="font-size: 1rem;">✏️</span>
+                                        </a>
+                                        <button class="btn btn-sm btn-success text-white rounded-pill px-3 action-btn fw-bold shadow-xs" 
+                                                onclick="resolverAlertaPersonalizada({{ alerta.id }}, this)">
+                                            <span style="font-size: 1rem; margin-right: 0.2rem;">✅</span> Completar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <!-- Contenedor dinámico de categoría vacía -->
+                <div id="categoryEmptyState" class="text-center py-5 glass-effect border-0 shadow-sm d-none" style="border-radius: 20px;">
+                    <span style="font-size: 3rem; margin-bottom: 1rem; display: block;">✅</span>
+                    <h4 class="fw-bold text-gray-800">¡Bandeja Completada!</h4>
+                    <p class="text-muted small mx-auto" style="max-width: 400px;">No tienes alertas de esta categoría en tu bandeja en este momento. ¡Todo se encuentra operando al día!</p>
+                </div>
+
             </div>
-            {% else %}
-            <div class="text-center py-4">
-                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No hay alertas programadas</h5>
-                <p class="text-muted">Crea tu primera alerta para recibir notificaciones importantes.</p>
-                <a href="{{ url_for('nueva_alerta') }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i>Crear Primera Alerta
-                </a>
+        </div>
+    </div>
+
+</div>
+
+{# ============================================================================ #}
+{# MODALS COLOCADOS DE FORMA PLANA AL FINAL (PREVIENE BLOQUEO DE Z-INDEX)        #}
+{# ============================================================================ #}
+
+<!-- Modal 1: Marcar Vacuna Aplicada -->
+<div class="modal fade" id="aplicarVacunaModal" tabindex="-1" aria-labelledby="aplicarVacunaModalLabel" aria-hidden="true" data-bs-backdrop="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+            <div class="modal-header text-white bg-success py-3 px-4" style="border: none;">
+                <h5 class="modal-title fw-bold" id="aplicarVacunaModalLabel">💉 Registrar Aplicación de Vacuna</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            {% endif %}
+            <div class="modal-body p-4" style="background-color: #f8fafc;">
+                <p class="text-muted small">Vas a certificar la dosis de la vacuna <strong class="text-dark" id="modalVacunaNombre"></strong> en el animal <strong class="text-dark" id="modalVacunaAnimal"></strong>.</p>
+                <form id="formAplicarVacuna">
+                    <input type="hidden" id="vacuna_id_input" name="vacuna_id">
+                    <div class="mb-3">
+                        <label for="comentario_vacuna" class="form-label fw-bold text-dark small">Comentarios y Observaciones</label>
+                        <textarea class="form-control" id="comentario_vacuna" name="comentario" rows="3" placeholder="Ej: Se inyectó dosis normal por vía intramuscular. Todo conforme..."></textarea>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold">Registrar como Aplicada</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal para confirmar eliminación -->
-<div class="modal fade" id="eliminarModal" tabindex="-1" aria-hidden="true">
+<!-- Modal 2: Registrar Mantenimiento de Maquinaria -->
+<div class="modal fade" id="mantenimientoModal" tabindex="-1" aria-labelledby="mantenimientoModalLabel" aria-hidden="true" data-bs-backdrop="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Confirmar Eliminación</h5>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+            <div class="modal-header text-white bg-primary py-3 px-4" style="border: none;">
+                <h5 class="modal-title fw-bold" id="mantenimientoModalLabel">🚜 Registrar Mantenimiento de Maquinaria</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p>¿Estás seguro que deseas eliminar permanentemente esta alerta?</p>
-                <div id="eliminarModalContent"></div>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
+            <div class="modal-body p-4" style="background-color: #f8fafc;">
+                <p class="text-muted small">Registra el mantenimiento técnico, costos y próxima fecha programada para <strong class="text-dark" id="modalMaquinariaNombre"></strong>.</p>
+                
+                <form id="formMantenimiento">
+                    <input type="hidden" id="maquinaria_id_input" name="maquinaria_id">
+                    
+                    <div class="mb-3">
+                        <label for="tipo_mantenimiento" class="form-label fw-bold text-dark small">Tipo de Servicio *</label>
+                        <select class="form-select" id="tipo_mantenimiento" name="tipo_mantenimiento" required>
+                            <option value="preventivo" selected>🔧 Preventivo (Rutina / Cambio de Aceite)</option>
+                            <option value="correctivo">🛠️ Correctivo (Reparación de Averías)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="descripcion_mantenimiento" class="form-label fw-bold text-dark small">Descripción de los Trabajos *</label>
+                        <textarea class="form-control" id="descripcion_mantenimiento" name="descripcion" rows="3" required placeholder="Ej: Cambio de aceite 15W40, filtros de aire y aceite. Engrase general del sistema hidráulico."></textarea>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="costo_mantenimiento" class="form-label fw-bold text-dark small">Costo Total ($)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="costo_mantenimiento" name="costo" placeholder="0.00">
+                        </div>
+                        <div class="col-6">
+                            <label for="tecnico_mantenimiento" class="form-label fw-bold text-dark small">Técnico / Taller</label>
+                            <input type="text" class="form-control" id="tecnico_mantenimiento" name="tecnico" placeholder="Ej: Servicio Oficial JD">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="proximo_mantenimiento" class="form-label fw-bold text-dark small">Fecha Próximo Mantenimiento</label>
+                        <input type="date" class="form-control" id="proximo_mantenimiento" name="proximo_mantenimiento">
+                        <small class="text-muted block mt-1" style="font-size: 10px;">Indica cuándo se deberá programar la siguiente alerta.</small>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">Guardar Mantenimiento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 3: Programar Alerta Personalizada (Mejorado) -->
+<div class="modal fade" id="nuevaAlertaModal" tabindex="-1" aria-labelledby="nuevaAlertaModalLabel" aria-hidden="true" data-bs-backdrop="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+        <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 25px 60px rgba(0,0,0,0.18);">
+
+            <!-- Header con gradiente premium -->
+            <div class="modal-header-custom">
+                <div class="d-flex justify-content-between align-items-start" style="position: relative; z-index: 1;">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <div style="width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                🔔
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-white mb-0" id="nuevaAlertaModalLabel" style="font-size: 1rem; line-height: 1.2;">Programar Alerta</h5>
+                                <p class="text-white mb-0" style="font-size: 0.73rem; opacity: 0.8;">Personalizada para la finca</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="position: relative; z-index: 1;"></button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmarEliminarBtn">Eliminar</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Modal para ver detalles -->
-<div class="modal fade" id="detallesModal" tabindex="-1" aria-labelledby="detallesModalLabel" aria-hidden="true" data-bs-backdrop="false">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white py-2">
-                <h6 class="modal-title" id="detallesModalLabel">
-                    <span style="font-size: 0.9rem; margin-right: 6px;">📋</span>Detalles de la Alerta
-                </h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <!-- Cuerpo con scroll suave -->
+            <div class="modal-body-scroll" id="alertaModalScroll">
+                <form action="/api/alertas/crear_personalizada" method="POST" id="formNuevaAlerta">
+
+                    <!-- Campo: Título -->
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span style="font-size: 0.8rem; margin-right: 0.2rem;">🏷️</span> Título del Recordatorio <span class="text-danger">*</span>
+                        </div>
+                        <input type="text" class="form-control" id="titulo_alerta" name="titulo" required
+                            placeholder="Ej: Llamar al veterinario, Comprar alimento para vacas...">
+                    </div>
+
+                    <!-- Campo: Tipo de Tarea -->
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span style="font-size: 0.8rem; margin-right: 0.2rem;">📊</span> Tipo de Tarea
+                        </div>
+                        <select class="form-select" id="tipo_alerta" name="tipo_alerta">
+                            <option value="general" selected>📋 General / Recordatorio</option>
+                            <option value="animal">🐄 Animal Específico</option>
+                            <option value="vacuna">💉 Vacunación</option>
+                            <option value="produccion">📈 Producción</option>
+                            <option value="empleado">👤 Empleado</option>
+                        </select>
+                    </div>
+
+                    <!-- Campo: Tipo de Alerta (Nuevo) -->
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span style="font-size: 0.8rem; margin-right: 0.2rem;">🔔</span> Tipo de Alerta
+                        </div>
+                        <select class="form-select" id="subtipo_alerta" name="subtipo_alerta">
+                            <option value="Vacunación">💉 Vacunación</option>
+                            <option value="Tratamiento">💊 Tratamiento</option>
+                            <option value="Revisión">🔍 Revisión</option>
+                            <option value="Alimentación">🌾 Alimentación</option>
+                            <option value="Reproducción">🐄 Reproducción</option>
+                            <option value="General" selected>📋 General</option>
+                        </select>
+                    </div>
+
+                    <!-- Campo Oculto: Selección de Animal (Se muestra por JS) -->
+                    <div class="field-group d-none" id="animal_selector_group">
+                        <div class="field-label">
+                            <span style="font-size: 0.8rem; margin-right: 0.2rem;">🐄</span> Seleccionar Animal
+                        </div>
+                        <select class="form-select" id="animal_id" name="animal_id">
+                            <option value="" selected disabled>Selecciona un animal...</option>
+                            {% for animal in animales_finca %}
+                                <option value="{{ animal.id }}">{{ animal.identificacion }} - {{ animal.nombre or animal.tipo.title() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Campo: Descripción -->
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span style="font-size: 0.8rem; margin-right: 0.2rem;">📝</span> Descripción / Notas Adicionales
+                        </div>
+                        <textarea class="form-control" id="descripcion_alerta" name="descripcion" rows="3"
+                            placeholder="Agrega detalles sobre qué tareas operativas o precauciones se deben tomar..."></textarea>
+                    </div>
+
+                    <!-- Campo: Fecha -->
+                    <div class="field-group">
+                        <div class="field-label">
+                            <span style="font-size: 0.8rem; margin-right: 0.2rem;">📅</span> Fecha de la Alerta <span class="text-danger">*</span>
+                        </div>
+                        <input type="date" class="form-control" id="fecha_programada" name="fecha_programada" required>
+                    </div>
+
+                    <!-- Espacio inferior para el footer -->
+                    <div style="height: 0.5rem;"></div>
+
+                </form>
             </div>
-            <div class="modal-body p-2" id="detallesContent">
-                <!-- Contenido dinámico -->
-            </div>
-            <div class="modal-footer py-2">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
-                    <span style="font-size: 0.9rem; margin-right: 4px;">✖️</span>Cerrar
+
+            <!-- Footer fijo con botones siempre visibles -->
+            <div class="modal-footer-custom">
+                <button type="button" class="btn-cancel-custom" data-bs-dismiss="modal">
+                    <span style="font-size: 1rem; margin-right: 0.2rem;">❌</span> Cancelar
+                </button>
+                <button type="submit" form="formNuevaAlerta" class="btn-submit-custom">
+                    <span style="font-size: 1rem; margin-right: 0.2rem;">🔔</span> Agendar Alerta
                 </button>
             </div>
+
         </div>
     </div>
 </div>
@@ -248,304 +967,248 @@ body.dark-theme .table-hover tbody tr:hover {
 
 {% block scripts %}{{ super() }}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Filtros
-    const filtroEstado = document.getElementById('filtroEstado');
-    const filtroTipo = document.getElementById('filtroTipo');
-    const fechaDesde = document.getElementById('fechaDesde');
-    const fechaHasta = document.getElementById('fechaHasta');
-    
-    function aplicarFiltros() {
-        const rows = document.querySelectorAll('#alertasTable tbody tr');
+    // Variables de Modals
+    let modalAplicarVacuna;
+    let modalMantenimiento;
+    let modalNuevaAlerta;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializar Instancias de Bootstrap Modals
+        modalAplicarVacuna = new bootstrap.Modal(document.getElementById('aplicarVacunaModal'));
+        modalMantenimiento = new bootstrap.Modal(document.getElementById('mantenimientoModal'));
+        modalNuevaAlerta = new bootstrap.Modal(document.getElementById('nuevaAlertaModal'));
+
+        // Cargar fecha mínima (hoy) para la creación de alertas
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('fecha_programada').setAttribute('min', todayStr);
+        document.getElementById('fecha_programada').value = todayStr;
         
-        rows.forEach(row => {
-            let mostrar = true;
-            
-            // Filtro por estado
-            if (filtroEstado.value) {
-                const estadoBadge = row.querySelector('td:nth-child(5) .badge');
-                if (estadoBadge && !estadoBadge.textContent.toLowerCase().includes(filtroEstado.value)) {
-                    mostrar = false;
-                }
+        // Lógica interactiva para mostrar/ocultar selector de animales
+        const tipoAlertaSelect = document.getElementById('tipo_alerta');
+        const animalGroup = document.getElementById('animal_selector_group');
+        const animalSelect = document.getElementById('animal_id');
+        
+        tipoAlertaSelect.addEventListener('change', function() {
+            if (this.value === 'animal') {
+                animalGroup.classList.remove('d-none');
+                animalSelect.setAttribute('required', 'required');
+            } else {
+                animalGroup.classList.add('d-none');
+                animalSelect.removeAttribute('required');
+                animalSelect.value = ''; // Limpiar selección
             }
-            
-            // Filtro por tipo
-            if (filtroTipo.value) {
-                const tipoBadge = row.querySelector('td:nth-child(2) .badge');
-                if (tipoBadge && !tipoBadge.textContent.toLowerCase().includes(filtroTipo.value)) {
-                    mostrar = false;
-                }
-            }
-            
-            row.style.display = mostrar ? '' : 'none';
         });
-    }
-    
-    filtroEstado.addEventListener('change', aplicarFiltros);
-    filtroTipo.addEventListener('change', aplicarFiltros);
-    fechaDesde.addEventListener('change', aplicarFiltros);
-    fechaHasta.addEventListener('change', aplicarFiltros);
-});
+        
+        // Listener Formulario Vacunas
+        document.getElementById('formAplicarVacuna').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const vacunaId = document.getElementById('vacuna_id_input').value;
+            const comentario = document.getElementById('comentario_vacuna').value;
+            
+            const formData = new FormData();
+            formData.append('comentario', comentario);
 
-function verDetalles(alertaId) {
-    const modalElement = document.getElementById('detallesModal');
-    
-    // Limpiar cualquier modal existente
-    const existingModal = bootstrap.Modal.getInstance(modalElement);
-    if (existingModal) {
-        existingModal.hide();
-        existingModal.dispose();
-    }
-    
-    // Crear nuevo modal SIN backdrop
-    const modal = new bootstrap.Modal(modalElement, {
-        backdrop: false,
-        keyboard: true
+            showLoadingState('formAplicarVacuna', true);
+            
+            fetch(`/api/alertas/aplicar_vacuna/${vacunaId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                showLoadingState('formAplicarVacuna', false);
+                modalAplicarVacuna.hide();
+                
+                if (data.success) {
+                    showFeedback('¡Excelente! La vacuna ha sido registrada como aplicada.', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showFeedback('Error al aplicar vacuna: ' + data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                showLoadingState('formAplicarVacuna', false);
+                modalAplicarVacuna.hide();
+                console.error(err);
+                showFeedback('Error de comunicación con el servidor', 'danger');
+            });
+        });
+
+        // Listener Formulario Mantenimiento Maquinaria
+        document.getElementById('formMantenimiento').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            showLoadingState('formMantenimiento', true);
+
+            fetch('/api/alertas/registrar_mantenimiento', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                showLoadingState('formMantenimiento', false);
+                modalMantenimiento.hide();
+                
+                if (data.success) {
+                    showFeedback('¡Correcto! El mantenimiento de la maquinaria ha sido catalogado.', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showFeedback('Error al registrar mantenimiento: ' + data.message, 'danger');
+                }
+            })
+            .catch(err => {
+                showLoadingState('formMantenimiento', false);
+                modalMantenimiento.hide();
+                console.error(err);
+                showFeedback('Error de comunicación con el servidor', 'danger');
+            });
+        });
     });
-    
-    // Limpiar contenido
-    const contentDiv = document.getElementById('detallesContent');
-    contentDiv.innerHTML = `
-        <div class="text-center">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-        </div>
-    `;
-    
-    // Mostrar modal
-    modal.show();
-    
-    // Cargar datos reales desde la API
-    fetch(`/api/alerta_detalle/${alertaId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                document.getElementById('detallesContent').innerHTML = `
-                    <div class="alert alert-danger">
-                        <span style="font-size: 1rem; margin-right: 8px;">❌</span>Error: ${data.error}
-                    </div>
-                `;
-                return;
-            }
-            
-            // Obtener emoji según tipo de alerta
-            const tipoEmojis = {
-                'vacunacion': '💉',
-                'tratamiento': '💊',
-                'revision': '🔍',
-                'alimentacion': '🌾',
-                'reproduccion': '🐄',
-                'general': '📋'
-            };
-            
-            const estadoColors = {
-                'pendiente': 'warning',
-                'completada': 'success',
-                'cancelada': 'secondary'
-            };
-            
-            let animalInfo = '';
-            if (data.animal) {
-                animalInfo = `
-                    <div class="mb-2">
-                        <small class="text-info fw-bold">🐄 Animal:</small>
-                        <div class="d-flex align-items-center flex-wrap">
-                            <span class="badge bg-info badge-sm me-1">${data.animal.identificacion}</span>
-                            <small class="text-dark me-1">${data.animal.nombre}</small>
-                            <small class="text-muted">(${data.animal.tipo})</small>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            let repeticionInfo = '';
-            if (data.repetir) {
-                repeticionInfo = `
-                    <div class="mb-2">
-                        <small class="text-warning fw-bold">🔄 Repetición:</small>
-                        <span class="badge bg-warning text-dark badge-sm ms-1">${data.frecuencia.toUpperCase()}</span>
-                    </div>
-                `;
-            }
-            
-            const contenido = `
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <h6 class="mb-0 text-truncate" style="max-width: 300px;">
-                            <span style="font-size: 1rem; margin-right: 4px;">${tipoEmojis[data.tipo_alerta] || '📋'}</span>
-                            ${data.titulo}
-                        </h6>
-                        <span class="badge bg-${estadoColors[data.estado] || 'secondary'} badge-sm">${data.estado.toUpperCase()}</span>
-                    </div>
-                    
-                    <div class="mb-2">
-                        <small class="text-primary fw-bold">📝 Descripción:</small>
-                        <div class="text-muted small">${data.descripcion}</div>
-                    </div>
-                    
-                    <div class="row g-2 mb-2">
-                        <div class="col-6">
-                            <div class="p-1 bg-light rounded text-center">
-                                <small class="text-primary d-block">📅 Programada</small>
-                                <small class="text-dark fw-bold">${data.fecha_programada}</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-1 bg-light rounded text-center">
-                                <small class="text-secondary d-block">📝 Creada</small>
-                                <small class="text-muted">${data.fecha_creacion}</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    ${animalInfo}
-                    ${repeticionInfo}
-                </div>
-            `;
-            
-            document.getElementById('detallesContent').innerHTML = contenido;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            const contentDiv = document.getElementById('detallesContent');
-            if (contentDiv) {
-                contentDiv.innerHTML = `
-                    <div class="alert alert-danger">
-                        <span style="font-size: 1rem; margin-right: 8px;">❌</span>Error al cargar los detalles
-                    </div>
-                `;
+
+    // Acción para Categorías Activas y Filtrado en Vivo
+    function setActiveCategory(category, element) {
+        // Remover clase active de todos los links
+        document.querySelectorAll('.inbox-menu-item').forEach(item => {
+            item.classList.remove('active');
+            // Asegurar restaurar el color del badge secundario
+            const badge = item.querySelector('.badge');
+            if (badge) {
+                badge.classList.remove('bg-light', 'text-dark');
+                badge.classList.add('bg-secondary', 'text-white');
             }
         });
-}
 
-// Función para cerrar modal manualmente si es necesario
-function cerrarModalDetalles() {
-    const modalElement = document.getElementById('detallesModal');
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    if (modal) {
-        modal.hide();
-    }
-}
-
-function editarAlerta(alertaId) {
-    if (confirm('¿Deseas editar esta alerta?')) {
-        window.location.href = `/editar_alerta/${alertaId}`;
-    }
-}
-
-function cancelarAlerta(alertaId) {
-    if (confirm('¿Estás seguro de que deseas cancelar esta alerta?')) {
-        fetch(`/cancelar_alerta/${alertaId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al cancelar la alerta: ' + (data.error || 'Error desconocido'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al cancelar la alerta');
-        });
-    }
-}
-
-function completarAlerta(alertaId) {
-    if (confirm('¿Marcar esta alerta como completada?')) {
-        fetch(`/completar_alerta/${alertaId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Error al completar la alerta: ' + (data.error || 'Error desconocido'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al completar la alerta');
-        });
-    }
-}
-
-let alertaIdAEliminar = null;
-
-function eliminarAlerta(alertaId) {
-    alertaIdAEliminar = alertaId;
-    // Obtener información de la alerta para mostrar
-    const fila = document.getElementById(`alerta-${alertaId}`);
-    const tipo = fila.querySelector('td:nth-child(3)').textContent.trim();
-    const titulo = fila.querySelector('td:nth-child(4)').textContent.trim();
-    
-    document.getElementById('eliminarModalContent').innerHTML = `
-        <p><strong>Tipo:</strong> ${tipo}</p>
-        <p><strong>Título:</strong> ${titulo}</p>
-    `;
-    
-    const modal = new bootstrap.Modal(document.getElementById('eliminarModal'));
-    modal.show();
-}
-
-// Configurar botón de confirmar eliminación
-document.addEventListener('DOMContentLoaded', function() {
-    const confirmarBtn = document.getElementById('confirmarEliminarBtn');
-    if (confirmarBtn) {
-        confirmarBtn.addEventListener('click', function() {
-            if (alertaIdAEliminar) {
-                ejecutarEliminarAlerta(alertaIdAEliminar);
-            }
-        });
-    }
-});
-
-function ejecutarEliminarAlerta(alertaId) {
-    // Cerrar modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('eliminarModal'));
-    if (modal) modal.hide();
-    
-    fetch(`/eliminar_alerta/${alertaId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
+        // Añadir clase active al seleccionado
+        element.classList.add('active');
+        const badge = element.querySelector('.badge');
+        if (badge) {
+            badge.classList.remove('bg-secondary', 'text-white');
+            badge.classList.add('bg-light', 'text-dark');
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Remover la fila de la tabla inmediatamente
-            const fila = document.getElementById(`alerta-${alertaId}`);
-            if (fila) {
-                fila.style.transition = 'opacity 0.3s';
-                fila.style.opacity = '0';
-                setTimeout(() => {
-                    fila.remove();
-                    // Verificar si quedan alertas
-                    const tbody = document.querySelector('#alertasTable tbody');
-                    if (tbody && tbody.children.length === 0) {
-                        location.reload(); // Recargar para mostrar mensaje "sin alertas"
-                    }
-                }, 300);
+
+        // Filtrado en vivo de tarjetas
+        const cards = document.querySelectorAll('.alert-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            if (category === 'todas') {
+                card.style.display = 'block';
+                visibleCount++;
+            } else if (category === 'vacunas' && card.classList.contains('cat-vacunas')) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else if (category === 'inventario' && card.classList.contains('cat-inventario')) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else if (category === 'maquinaria' && card.classList.contains('cat-maquinaria')) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else if (category === 'personal' && card.classList.contains('cat-personal')) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
             }
+        });
+
+        // Mostrar u ocultar estado de categoría vacía
+        const emptyState = document.getElementById('categoryEmptyState');
+        if (visibleCount === 0) {
+            emptyState.classList.remove('d-none');
         } else {
-            alert('Error al eliminar la alerta: ' + (data.error || 'Error desconocido'));
+            emptyState.classList.add('d-none');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al eliminar la alerta');
-    });
-}
+    }
+
+    // Abrir Modal de Vacunas de forma segura
+    function abrirAplicarVacunaModal(id, vacunaNombre, animalId) {
+        document.getElementById('vacuna_id_input').value = id;
+        document.getElementById('modalVacunaNombre').textContent = vacunaNombre;
+        document.getElementById('modalVacunaAnimal').textContent = animalId;
+        document.getElementById('comentario_vacuna').value = '';
+        modalAplicarVacuna.show();
+    }
+
+    // Abrir Modal de Maquinaria de forma segura
+    function abrirMantenimientoModal(id, maquinariaNombre) {
+        document.getElementById('maquinaria_id_input').value = id;
+        document.getElementById('modalMaquinariaNombre').textContent = maquinariaNombre;
+        
+        // Reset form
+        document.getElementById('descripcion_mantenimiento').value = '';
+        document.getElementById('costo_mantenimiento').value = '';
+        document.getElementById('tecnico_mantenimiento').value = '';
+        
+        // Colocar fecha de hoy + 6 meses por defecto para próximo mantenimiento
+        const nextDate = new Date();
+        nextDate.setMonth(nextDate.getMonth() + 6);
+        document.getElementById('proximo_mantenimiento').value = nextDate.toISOString().split('T')[0];
+
+        modalMantenimiento.show();
+    }
+
+    // Resolver Alerta Personalizada Rápido
+    function resolverAlertaPersonalizada(alertaId, buttonElement) {
+        // Desactivar el botón
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '⏳';
+
+        fetch(`/api/alertas/resolver_personalizada/${alertaId}`, {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showFeedback('¡Alerta resuelta con éxito!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '✅ Completar';
+                showFeedback('Error al resolver alerta: ' + data.message, 'danger');
+            }
+        })
+        .catch(err => {
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = '✅ Completar';
+            console.error(err);
+            showFeedback('Error al comunicarse con el servidor.', 'danger');
+        });
+    }
+
+    // Feedback visual en la parte superior
+    function showFeedback(message, type) {
+        const feedbackDiv = document.getElementById('alertFeedback');
+        feedbackDiv.className = `alert alert-${type} d-flex align-items-center shadow-xs animate-pulse`;
+        feedbackDiv.innerHTML = `
+            <div class="me-2">
+                ${type === 'success' ? '✅' : '❌'}
+            </div>
+            <div>
+                <strong>${message}</strong>
+            </div>
+        `;
+        feedbackDiv.classList.remove('d-none');
+        
+        // Scroll a la parte superior de la bandeja
+        feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Helper para estados de carga
+    function showLoadingState(formId, isLoading) {
+        const form = document.getElementById(formId);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (isLoading) {
+            submitBtn.disabled = true;
+            submitBtn.setAttribute('data-original-html', submitBtn.innerHTML);
+            submitBtn.innerHTML = '⏳ Procesando...';
+        } else {
+            submitBtn.disabled = false;
+            if (submitBtn.hasAttribute('data-original-html')) {
+                submitBtn.innerHTML = submitBtn.getAttribute('data-original-html');
+            }
+        }
+    }
 </script>
 {% endblock %}

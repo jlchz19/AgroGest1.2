@@ -1,365 +1,230 @@
 {% extends "base.html" %}
-
 {% block title %}Nuevo Empleado - AgroGest{% endblock %}
 {% block page_title %}Registrar Nuevo Empleado{% endblock %}
 
-{% block page_actions %}
-<a href="{{ url_for('empleados') }}" class="btn btn-secondary">
-    <i class="fas fa-arrow-left me-2"></i>Volver
-</a>
-{% endblock %}
-
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-user-plus me-3 fa-2x"></i>
-                    <div>
-                        <h4 class="mb-1">Registro de Empleado</h4>
-                        <p class="mb-0 opacity-75">Completa toda la información del nuevo empleado</p>
-                    </div>
+<div class="container-fluid py-5" style="background-color: #f8f9fa; min-height: 100vh;">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-5 gap-3">
+        <div>
+            <h2 class="mb-0 fw-bolder" style="letter-spacing: -0.5px;">
+                <i class="fas fa-user-plus text-primary me-3" style="background: rgba(13, 110, 253, 0.1); padding: 12px; border-radius: 12px;"></i>
+                <span style="background: linear-gradient(135deg, #0d6efd 0%, #0043a8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Registrar Empleado</span>
+            </h2>
+            <p class="text-secondary mb-0 mt-2 fs-6">Añade un nuevo miembro a tu equipo de trabajo</p>
+        </div>
+        <a href="{{ url_for('empleados') }}" class="btn btn-white shadow-sm px-4 py-2 d-flex justify-content-center align-items-center w-100 w-md-auto" style="border-radius: 10px; font-weight: 500; border: 1px solid #e9ecef; color: #495057; transition: all 0.3s ease;">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden; background: #ffffff;">
+                <div style="height: 6px; width: 100%; background: linear-gradient(90deg, #0d6efd 0%, #4facfe 100%);"></div>
+                
+                <div class="card-body p-5">
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        
+                        <!-- Sección 1: Foto -->
+                        <div class="text-center mb-5 pb-4 border-bottom">
+                            <div class="position-relative d-inline-block mb-3">
+                                <img id="avatar_preview" src="/static/images/avatar-placeholder.png" 
+                                     class="rounded-circle shadow-sm" 
+                                     style="width: 130px; height: 130px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 0 20px rgba(0,0,0,0.05);" alt="Foto del empleado">
+                                <label for="foto_empleado_input" class="btn btn-primary rounded-circle shadow d-flex align-items-center justify-content-center" 
+                                       style="position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; cursor: pointer; border: 2px solid #fff;">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                                <input type="file" id="foto_empleado_input" name="foto_empleado" accept="image/*" class="d-none" onchange="previewAvatar(event)">
+                            </div>
+                            <h5 class="fw-bold mb-1">Foto de Perfil</h5>
+                            <p class="text-muted small mb-0">Formatos recomendados: JPG, PNG. Máx 2MB.</p>
+                        </div>
+
+                        <!-- Sección 2: Información Personal -->
+                        <div class="mb-5">
+                            <h5 class="fw-bolder text-dark mb-4 d-flex align-items-center" style="color: #2b3452;">
+                                <i class="fas fa-user-circle text-primary me-2"></i>Datos Personales
+                            </h5>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Nombre *</label>
+                                    <input type="text" class="form-control premium-input" id="nombre" name="nombre" required placeholder="Ej. Juan">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Apellido *</label>
+                                    <input type="text" class="form-control premium-input" id="apellido" name="apellido" required placeholder="Ej. Pérez">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Cédula *</label>
+                                    <input type="text" class="form-control premium-input" id="cedula" name="cedula" required placeholder="Ej. 12345678" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Teléfono *</label>
+                                    <input type="tel" class="form-control premium-input" id="telefono" name="telefono" required placeholder="Ej. +58 412 0000000" oninput="this.value = this.value.replace(/[^0-9+ ]/g, '')">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Correo Electrónico</label>
+                                    <input type="email" class="form-control premium-input" id="email" name="email" placeholder="Ej. empleado@correo.com">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Fecha de Nacimiento *</label>
+                                    <input type="date" class="form-control premium-input" id="fecha_nacimiento" name="fecha_nacimiento" required onchange="calcularEdad()">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Edad</label>
+                                    <input type="number" class="form-control premium-input bg-light" id="edad" name="edad" readonly placeholder="Calculada automáticamente">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Dirección *</label>
+                                    <input type="text" class="form-control premium-input" id="direccion" name="direccion" required placeholder="Ej. Av. Principal, Casa #1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección 3: Información Laboral -->
+                        <div class="mb-5">
+                            <h5 class="fw-bolder text-dark mb-4 d-flex align-items-center" style="color: #2b3452;">
+                                <i class="fas fa-briefcase text-primary me-2"></i>Información Laboral
+                            </h5>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Cargo *</label>
+                                    <input list="cargos_list" class="form-control premium-input" id="cargo" name="cargo" required placeholder="Selecciona o escribe el cargo">
+                                    <datalist id="cargos_list">
+                                        <option value="Veterinario"><option value="Vaquero"><option value="Porquero"><option value="Administrador"><option value="Supervisor"><option value="Operario"><option value="Contador"><option value="Secretario"><option value="Técnico Agrícola"><option value="Mecánico"><option value="Conductor"><option value="Auxiliar">
+                                    </datalist>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Salario Mensual *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white" style="border-radius: 10px 0 0 10px; border: 2px solid #e2e8f0; border-right: none;">$</span>
+                                        <input type="number" step="0.01" class="form-control premium-input" style="border-left: none; border-radius: 0 10px 10px 0;" id="salario" name="salario" required placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Fecha de Contrato *</label>
+                                    <input type="date" class="form-control premium-input" id="fecha_contrato" name="fecha_contrato" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Fecha de Ingreso *</label>
+                                    <input type="date" class="form-control premium-input" id="fecha_ingreso" name="fecha_ingreso" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Descripción de Funciones *</label>
+                                    <textarea class="form-control premium-input" id="descripcion" name="descripcion" rows="3" required placeholder="Describe las responsabilidades del cargo..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección 4: Salud -->
+                        <div class="mb-5">
+                            <h5 class="fw-bolder text-dark mb-4 d-flex align-items-center" style="color: #2b3452;">
+                                <i class="fas fa-heartbeat text-danger me-2"></i>Datos de Salud
+                            </h5>
+                            <div class="p-4 mb-4" style="background: #fff5f5; border-radius: 12px; border: 1px solid #fee2e2;">
+                                <label class="form-label fw-bold text-danger mb-2">Condiciones Médicas o Enfermedades</label>
+                                <textarea class="form-control premium-input" id="condiciones_enfermedades" name="condiciones_enfermedades" rows="2" placeholder="Hipertensión, diabetes, asma, etc. (Opcional)" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,()\-]/g, '')"></textarea>
+                            </div>
+                            
+                            <div class="p-4" style="background: #fff5f5; border-radius: 12px; border: 1px solid #fee2e2;">
+                                <div class="form-check form-switch mb-3 d-flex align-items-center">
+                                    <input class="form-check-input me-3" type="checkbox" id="alergico_medicamento" name="alergico_medicamento" value="1" onchange="toggleAlergias()" style="width: 3rem; height: 1.5rem; cursor: pointer;">
+                                    <label class="form-check-label fw-bold text-danger" for="alergico_medicamento" style="cursor: pointer;">
+                                        ¿Es alérgico a algún medicamento?
+                                    </label>
+                                </div>
+                                <div id="alergias_section" class="d-none mt-3">
+                                    <textarea class="form-control premium-input" id="alergias_medicamento" name="alergias_medicamento" rows="2" placeholder="Especifique los medicamentos..." oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,()\-]/g, '')"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección 5: Documentos -->
+                        <div class="mb-5">
+                            <h5 class="fw-bolder text-dark mb-4 d-flex align-items-center" style="color: #2b3452;">
+                                <i class="fas fa-folder-open text-primary me-2"></i>Referencias y Documentos
+                            </h5>
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase">Referencia Personal</label>
+                                    <input type="text" class="form-control premium-input" id="referencia_personal" name="referencia_personal" placeholder="Nombre y teléfono de la referencia">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase mb-2">Documento de Referencia</label>
+                                    <div class="border border-2 border-dashed rounded text-center p-4 hover-bg-light" style="border-color: #cbd5e1!important; transition: all 0.2s;">
+                                        <i class="fas fa-file-upload text-primary fa-2x mb-2"></i>
+                                        <p class="small text-muted mb-2">Subir carta o documento</p>
+                                        <label class="btn btn-sm btn-outline-primary px-3 rounded-pill cursor-pointer">
+                                            Seleccionar Archivo
+                                            <input type="file" id="referencia_file_input" name="referencia_file" class="d-none" onchange="showFileName('referencia')">
+                                        </label>
+                                        <div id="referencia_filename" class="mt-2 text-primary small fw-bold"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary small text-uppercase mb-2">Currículum Vitae</label>
+                                    <div class="border border-2 border-dashed rounded text-center p-4 hover-bg-light" style="border-color: #cbd5e1!important; transition: all 0.2s;">
+                                        <i class="fas fa-file-pdf text-danger fa-2x mb-2"></i>
+                                        <p class="small text-muted mb-2">Subir currículum (PDF)</p>
+                                        <label class="btn btn-sm btn-outline-danger px-3 rounded-pill cursor-pointer">
+                                            Seleccionar Archivo
+                                            <input type="file" id="curriculum_input" name="curriculum_file" accept=".pdf,.doc,.docx" class="d-none" onchange="showFileName('curriculum')">
+                                        </label>
+                                        <div id="curriculum_filename" class="mt-2 text-danger small fw-bold"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-5" style="border-color: #e2e8f0; opacity: 1;">
+
+                        <!-- Actions -->
+                        <div class="d-flex flex-column-reverse flex-sm-row justify-content-sm-end gap-3 mt-4">
+                            <a href="{{ url_for('empleados') }}" class="btn px-4 py-2 d-flex justify-content-center align-items-center" style="border-radius: 12px; font-weight: 500; color: #64748b; background: #f1f5f9; transition: all 0.2s;">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn px-5 py-2 text-white shadow-sm d-flex justify-content-center align-items-center" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 12px; font-weight: 600; font-size: 1.05rem; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 20px rgba(16, 185, 129, 0.3)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 .125rem .25rem rgba(0,0,0,.075)'">
+                                <i class="fas fa-save me-2"></i>Registrar Empleado
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
-            </div>
-            <div class="card-body p-4">
-                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-                    
-                    <!-- Sección 1: Foto del Empleado -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="badge bg-primary rounded-circle p-3 me-3">
-                                    <i class="fas fa-camera fa-lg text-white"></i>
-                                </div>
-                                <div>
-                                    <h5 class="mb-1">Foto del Empleado</h5>
-                                    <small class="text-muted">Sube una foto reciente del empleado</small>
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <div class="mb-3">
-                                    <img id="avatar_preview" src="/static/images/avatar-placeholder.png" 
-                                         class="rounded-circle border border-3 border-light shadow" 
-                                         style="width: 150px; height: 150px; object-fit: cover;" alt="Foto del empleado">
-                                </div>
-                                <div>
-                                    <label class="btn btn-outline-primary">
-                                        <i class="fas fa-upload me-2"></i>Subir Foto
-                                        <input type="file" id="foto_empleado_input" name="foto_empleado" 
-                                               accept="image/*" hidden onchange="previewAvatar(event)">
-                                    </label>
-                                    <small class="text-muted d-block mt-2">Formatos: JPG, PNG. Máximo 2MB</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <!-- Sección 2: Información Personal -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="section-header mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="section-icon bg-gradient-info rounded-circle p-3 me-3">
-                                        <i class="fas fa-user fa-lg text-white"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-1 text-primary">Información Personal</h5>
-                                        <p class="mb-0 text-muted">Datos básicos de identificación del empleado</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="text" class="form-control" id="nombre" name="nombre" 
-                                       placeholder="Nombre" required>
-                                <label for="nombre">Nombre *</label>
-                                <div class="invalid-feedback">Por favor ingresa el nombre</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="text" class="form-control" id="apellido" name="apellido" 
-                                       placeholder="Apellido" required>
-                                <label for="apellido">Apellido *</label>
-                                <div class="invalid-feedback">Por favor ingresa el apellido</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="text" class="form-control" id="cedula" name="cedula" 
-                                       placeholder="Número de cédula" required>
-                                <label for="cedula">Cédula *</label>
-                                <div class="invalid-feedback">Por favor ingresa la cédula</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="date" class="form-control" id="fecha_nacimiento" 
-                                       name="fecha_nacimiento" required onchange="calcularEdad()">
-                                <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
-                                <div class="invalid-feedback">Por favor selecciona la fecha de nacimiento</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="number" class="form-control" id="edad" name="edad" 
-                                       placeholder="Edad" readonly>
-                                <label for="edad">Edad (calculada automáticamente)</label>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="tel" class="form-control" id="telefono" name="telefono" 
-                                       placeholder="Teléfono" required>
-                                <label for="telefono">Teléfono *</label>
-                                <div class="invalid-feedback">Por favor ingresa el teléfono</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-12 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="text" class="form-control" id="direccion" name="direccion" 
-                                       placeholder="Dirección completa" required>
-                                <label for="direccion">Dirección *</label>
-                                <div class="invalid-feedback">Por favor ingresa la dirección</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="my-5 gradient-hr">
-
-                    <!-- Sección 3: Información Laboral -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="section-header mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="section-icon bg-gradient-success rounded-circle p-3 me-3">
-                                        <i class="fas fa-briefcase fa-lg text-white"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-1 text-success">Información Laboral</h5>
-                                        <p class="mb-0 text-muted">Datos del puesto y condiciones contractuales</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input list="cargos_list" class="form-control" id="cargo" name="cargo" 
-                                       placeholder="Cargo" required>
-                                <label for="cargo">Cargo *</label>
-                                <div class="invalid-feedback">Por favor ingresa el cargo</div>
-                            </div>
-                            <datalist id="cargos_list">
-                                <option value="Veterinario">
-                                <option value="Vaquero">
-                                <option value="Porquero">
-                                <option value="Administrador">
-                                <option value="Supervisor">
-                                <option value="Operario">
-                                <option value="Contador">
-                                <option value="Secretario">
-                                <option value="Técnico Agrícola">
-                                <option value="Mecánico">
-                                <option value="Conductor">
-                                <option value="Auxiliar">
-                            </datalist>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="date" class="form-control" id="fecha_contrato" name="fecha_contrato" required>
-                                <label for="fecha_contrato">Fecha de Contrato *</label>
-                                <div class="invalid-feedback">Por favor selecciona la fecha de contrato</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="date" class="form-control" id="fecha_ingreso" name="fecha_ingreso" required>
-                                <label for="fecha_ingreso">Fecha de Ingreso *</label>
-                                <div class="invalid-feedback">Por favor selecciona la fecha de ingreso</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-12 mb-3">
-                            <div class="form-floating modern-input">
-                                <textarea class="form-control" id="descripcion" name="descripcion" 
-                                          placeholder="Descripción de funciones" style="height: 120px" required></textarea>
-                                <label for="descripcion">Descripción de Funciones *</label>
-                                <div class="invalid-feedback">Por favor ingresa la descripción de funciones</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="my-5 gradient-hr">
-
-                    <!-- Sección 4: Salud -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="section-header mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="section-icon bg-gradient-warning rounded-circle p-3 me-3">
-                                        <i class="fas fa-heartbeat fa-lg text-white"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-1 text-warning">Información de Salud</h5>
-                                        <p class="mb-0 text-muted">Datos médicos importantes del empleado</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-12 mb-4">
-                            <div class="health-card">
-                                <label for="condiciones_enfermedades" class="form-label fw-bold text-primary">
-                                    <i class="fas fa-notes-medical me-2"></i>¿Sufre de alguna enfermedad o condición médica?
-                                </label>
-                                <textarea class="form-control health-textarea" id="condiciones_enfermedades" name="condiciones_enfermedades" 
-                                          rows="3" placeholder="Describe cualquier condición médica relevante..."></textarea>
-                                <small class="text-muted">Ej: Hipertensión, diabetes, asma, problemas cardíacos, etc.</small>
-                            </div>
-                        </div>
-                        
-                        <div class="col-12 mb-4">
-                            <div class="health-card">
-                                <div class="form-check form-switch modern-switch">
-                                    <input class="form-check-input" type="checkbox" id="alergico_medicamento" 
-                                           name="alergico_medicamento" value="1" onchange="toggleAlergias()">
-                                    <label class="form-check-label fw-bold text-danger" for="alergico_medicamento">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>¿Es alérgico a algún medicamento o sustancia?
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-12 mb-3 d-none" id="alergias_section">
-                            <div class="allergy-card">
-                                <label for="alergias_medicamento" class="form-label fw-bold text-danger">
-                                    <i class="fas fa-allergies me-2"></i>Medicamentos o sustancias alérgicas:
-                                </label>
-                                <textarea class="form-control allergy-textarea" id="alergias_medicamento" name="alergias_medicamento" 
-                                          rows="3" placeholder="Especifica los medicamentos o sustancias y tipo de reacción..."></textarea>
-                                <small class="text-muted">Ej: Penicilina - anafilaxia, aspirina - urticaria, etc.</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="my-5 gradient-hr">
-
-                    <!-- Sección 5: Referencias y Documentos -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <div class="section-header mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="section-icon bg-gradient-secondary rounded-circle p-3 me-3">
-                                        <i class="fas fa-file-alt fa-lg text-white"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="mb-1 text-secondary">Referencias y Documentos</h5>
-                                        <p class="mb-0 text-muted">Contactos de referencia y documentos del empleado</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="form-floating modern-input">
-                                <input type="text" class="form-control" id="referencia_personal" 
-                                       name="referencia_personal" placeholder="Nombre y teléfono">
-                                <label for="referencia_personal">Referencia Personal</label>
-                                <small class="form-text text-muted">Nombre y teléfono de la referencia</small>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <div class="upload-card">
-                                <label class="form-label fw-bold text-info">
-                                    <i class="fas fa-file-upload me-2"></i>Documento de Referencia
-                                </label>
-                                <div>
-                                    <label class="btn btn-outline-info btn-lg w-100">
-                                        <i class="fas fa-cloud-upload-alt me-2"></i>Subir Documento
-                                        <input type="file" id="referencia_file_input" name="referencia_file" 
-                                               accept=".pdf,.doc,.docx,image/*" hidden onchange="showFileName('referencia')">
-                                    </label>
-                                    <div id="referencia_filename" class="mt-2 text-muted small"></div>
-                                </div>
-                                <small class="text-muted">Carta de referencia, documento de identificación, etc.</small>
-                            </div>
-                        </div>
-                        
-                        <div class="col-12 mb-3">
-                            <div class="upload-card">
-                                <label class="form-label fw-bold text-primary">
-                                    <i class="fas fa-file-pdf me-2"></i>Currículum Vitae
-                                </label>
-                                <div>
-                                    <label class="btn btn-outline-primary btn-lg w-100">
-                                        <i class="fas fa-file-upload me-2"></i>Subir Currículum
-                                        <input type="file" id="curriculum_input" name="curriculum_file" 
-                                               accept=".pdf,.doc,.docx" hidden onchange="showFileName('curriculum')">
-                                    </label>
-                                    <div id="curriculum_filename" class="mt-2 text-muted small"></div>
-                                </div>
-                                <small class="text-muted">Formato PDF preferido. Máximo 5MB</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Botones de acción -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between">
-                                <a href="{{ url_for('empleados') }}" class="btn btn-secondary btn-lg">
-                                    <i class="fas fa-times me-2"></i>Cancelar
-                                </a>
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-save me-2"></i>Registrar Empleado
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
 
-        <!-- Información adicional -->
-        <div class="card mt-4">
-            <div class="card-header bg-light">
-                <h6 class="mb-0">
-                    <i class="fas fa-info-circle me-2"></i>Información Importante
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-primary">Documentos Requeridos:</h6>
-                        <ul class="list-unstyled small">
-                            <li><i class="fas fa-check text-success me-2"></i>Foto reciente del empleado</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Cédula de identidad</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Referencia personal</li>
-                            <li><i class="fas fa-check text-success me-2"></i>Currículum vitae (opcional)</li>
+        <!-- Right Panel (Guide) -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; background: #ffffff;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark d-flex align-items-center mb-4">
+                        <i class="fas fa-info-circle text-primary me-2"></i>Guía de Registro
+                    </h5>
+                    
+                    <div class="alert alert-primary bg-primary bg-opacity-10 border-0" style="border-radius: 12px;">
+                        <h6 class="fw-bold text-primary mb-2"><i class="fas fa-file-alt me-2"></i>Documentos Clave</h6>
+                        <ul class="mb-0 small ps-3 text-dark text-opacity-75" style="line-height: 1.6;">
+                            <li>Foto reciente para el perfil.</li>
+                            <li>Número de cédula válido.</li>
+                            <li>Currículum actualizado (opcional).</li>
                         </ul>
                     </div>
-                    <div class="col-md-6">
-                        <h6 class="text-info">Protección de Datos:</h6>
-                        <ul class="list-unstyled small">
-                            <li><i class="fas fa-shield-alt text-info me-2"></i>Información médica confidencial</li>
-                            <li><i class="fas fa-lock text-info me-2"></i>Uso exclusivo para fines laborales</li>
-                            <li><i class="fas fa-user-shield text-info me-2"></i>Consentimiento del empleado requerido</li>
-                        </ul>
+
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border-0 mt-4" style="border-radius: 12px;">
+                        <h6 class="fw-bold text-danger mb-2"><i class="fas fa-heartbeat me-2"></i>Privacidad Médica</h6>
+                        <p class="small mb-0 text-dark text-opacity-75">
+                            Los datos de salud (condiciones y alergias) se manejan con estricta confidencialidad. Llénalos solo si el empleado da su consentimiento para prevención de emergencias.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-success bg-success bg-opacity-10 border-0 mt-4" style="border-radius: 12px;">
+                        <h6 class="fw-bold text-success mb-2"><i class="fas fa-check-circle me-2"></i>Tips</h6>
+                        <p class="small mb-0 text-dark text-opacity-75">
+                            Asegúrate de que las fechas de ingreso y contrato sean exactas, esto es importante para el cálculo de salarios y beneficios futuros.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -368,382 +233,30 @@
 </div>
 
 <style>
-/* Estilos Modernos y Atractivos */
-body {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
-    min-height: 100vh;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.card {
-    border: none;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.95);
-    overflow: hidden;
-}
-
-.card-header {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    border: none;
-    padding: 2rem;
-}
-
-.card-header h4 {
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-}
-
-.card-header p {
-    opacity: 0.9;
-    font-size: 1.1rem;
-}
-
-/* Headers de Sección */
-.section-header {
-    position: relative;
-}
-
-.section-icon {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-}
-
-.section-icon:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-
-.bg-gradient-info {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-}
-
-.bg-gradient-success {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-}
-
-.bg-gradient-warning {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-}
-
-.bg-gradient-secondary {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-/* Separadores Gradientes */
-.gradient-hr {
-    border: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent);
-    margin: 3rem 0;
-}
-
-/* Formularios Modernos */
-.modern-input {
-    position: relative;
-}
-
-.modern-input .form-control {
-    border: 2px solid #e3e8f0;
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background: #f8fafc;
-}
-
-.modern-input .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-    background: white;
-    transform: translateY(-2px);
-}
-
-.modern-input label {
-    color: #64748b;
-    font-weight: 600;
-}
-
-.modern-input .form-control:focus ~ label,
-.modern-input .form-control:not(:placeholder-shown) ~ label {
-    color: #667eea;
-    font-weight: 700;
-}
-
-/* Tarjetas Especiales */
-.health-card, .allergy-card, .upload-card {
-    background: linear-gradient(135deg, #f8fafc 0%, #e3e8f0 100%);
-    border-radius: 15px;
-    padding: 1.5rem;
-    border: 1px solid #e3e8f0;
-    transition: all 0.3s ease;
-}
-
-.health-card:hover, .allergy-card:hover, .upload-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.health-textarea, .allergy-textarea {
-    border: 2px solid #e3e8f0;
-    border-radius: 10px;
-    padding: 1rem;
-    transition: all 0.3s ease;
-    background: white;
-}
-
-.health-textarea:focus, .allergy-textarea:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-}
-
-/* Switch Moderno */
-.modern-switch .form-check-input {
-    width: 60px;
-    height: 30px;
-    background-color: #e3e8f0;
-    border: none;
-    position: relative;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.modern-switch .form-check-input:checked {
-    background-color: #3b82f6;
-}
-
-.modern-switch .form-check-input::before {
-    content: '';
-    position: absolute;
-    width: 26px;
-    height: 26px;
-    background: white;
-    border-radius: 50%;
-    top: 2px;
-    left: 2px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.modern-switch .form-check-input:checked::before {
-    transform: translateX(30px);
-}
-
-/* Botones Modernos */
-.btn {
-    border-radius: 12px;
-    padding: 12px 24px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    box-shadow: 0 10px 25px rgba(0, 123, 255, 0.3);
-}
-
-.btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0, 123, 255, 0.4);
-}
-
-.btn-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-    box-shadow: 0 10px 25px rgba(108, 117, 125, 0.3);
-}
-
-.btn-secondary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(108, 117, 125, 0.4);
-}
-
-.btn-outline-primary {
-    border: 2px solid #007bff;
-    color: #007bff;
-    background: transparent;
-}
-
-.btn-outline-primary:hover {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 123, 255, 0.3);
-}
-
-.btn-outline-info {
-    border: 2px solid #4facfe;
-    color: #4facfe;
-    background: transparent;
-}
-
-.btn-outline-info:hover {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
-}
-
-/* Avatar Preview */
-#avatar_preview {
-    transition: all 0.3s ease;
-    border: 4px solid white;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-#avatar_preview:hover {
-    transform: scale(1.05);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-
-/* Foto Upload Section */
-.avatar-section {
-    background: linear-gradient(135deg, #f8fafc 0%, #e3e8f0 100%);
-    border-radius: 20px;
-    padding: 2rem;
-    border: 2px dashed #667eea;
-    transition: all 0.3s ease;
-}
-
-.avatar-section:hover {
-    border-color: #764ba2;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-}
-
-/* Información Adicional */
-.info-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-radius: 15px;
-    border: 1px solid #e3e8f0;
-}
-
-.info-card .card-header {
-    background: linear-gradient(135deg, #f8fafc 0%, #e3e8f0 100%);
-    border-bottom: 1px solid #e3e8f0;
-    color: #334155;
-}
-
-/* Animaciones */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
+    .premium-input {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        background-color: #fafbfc;
+        transition: all 0.2s ease;
+        color: #1e293b;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .premium-input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+        background-color: #ffffff;
+        outline: none;
     }
-}
-
-.section-header, .modern-input, .health-card, .upload-card {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .card {
-        border-radius: 15px;
-        margin: 1rem;
+    .hover-bg-light:hover {
+        background-color: #f8fafc;
     }
-    
-    .section-icon {
-        width: 50px;
-        height: 50px;
+    .cursor-pointer {
+        cursor: pointer;
     }
-    
-    .btn {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
-    
-    #avatar_preview {
-        width: 120px !important;
-        height: 120px !important;
-    }
-}
-
-/* Efectos de Focus */
-.form-control:focus, .form-select:focus, .form-check-input:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-}
-
-/* Validación */
-.invalid-feedback {
-    color: #3b82f6;
-    font-weight: 600;
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-}
-
-.form-control.is-invalid {
-    border-color: #3b82f6;
-    background-image: none;
-}
-
-.form-control.is-valid {
-    border-color: #38ef7d;
-    background-image: none;
-}
-
-/* Tooltips */
-.form-text {
-    color: #64748b;
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-    font-style: italic;
-}
-
-/* File Upload Styles */
-.upload-card .btn-lg {
-    padding: 1rem 2rem;
-    font-size: 1rem;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-}
-
-.upload-card .btn-lg:hover {
-    transform: translateY(-3px);
-}
-
-/* Efectos de Hover en Cards */
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
-}
-
-/* Gradientes de Texto */
-.text-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-/* Loading States */
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-/* Transiciones Suaves */
-* {
-    transition: all 0.3s ease;
-}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Establecer fecha actual por defecto
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('fecha_contrato').value = today;
     document.getElementById('fecha_ingreso').value = today;
@@ -752,23 +265,19 @@ document.addEventListener('DOMContentLoaded', function() {
 function calcularEdad() {
     const fechaNacimiento = document.getElementById('fecha_nacimiento').value;
     if (!fechaNacimiento) return;
-    
     const hoy = new Date();
     const nacimiento = new Date(fechaNacimiento);
     let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    
     const mes = hoy.getMonth() - nacimiento.getMonth();
     if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
         edad--;
     }
-    
     document.getElementById('edad').value = edad;
 }
 
 function toggleAlergias() {
     const checkbox = document.getElementById('alergico_medicamento');
     const alergiasSection = document.getElementById('alergias_section');
-    
     if (checkbox.checked) {
         alergiasSection.classList.remove('d-none');
         document.getElementById('alergias_medicamento').required = true;
@@ -782,21 +291,16 @@ function toggleAlergias() {
 function previewAvatar(event) {
     const file = event.target.files[0];
     if (!file) return;
-    
-    // Validar tamaño
     if (file.size > 2 * 1024 * 1024) {
         alert('La imagen es demasiado grande. Máximo 2MB.');
         event.target.value = '';
         return;
     }
-    
-    // Validar tipo
     if (!file.type.match('image.*')) {
         alert('Por favor selecciona una imagen válida.');
         event.target.value = '';
         return;
     }
-    
     const reader = new FileReader();
     reader.onload = function(e) {
         document.getElementById('avatar_preview').src = e.target.result;
@@ -806,7 +310,6 @@ function previewAvatar(event) {
 
 function showFileName(type) {
     let input, filenameDiv;
-    
     if (type === 'referencia') {
         input = document.getElementById('referencia_file_input');
         filenameDiv = document.getElementById('referencia_filename');
@@ -814,50 +317,11 @@ function showFileName(type) {
         input = document.getElementById('curriculum_input');
         filenameDiv = document.getElementById('curriculum_filename');
     }
-    
-    const file = input.files[0];
-    if (file) {
-        // Validar tamaño
-        if (file.size > 5 * 1024 * 1024) {
-            alert('El archivo es demasiado grande. Máximo 5MB.');
-            input.value = '';
-            filenameDiv.textContent = '';
-            return;
-        }
-        
-        const fileSize = (file.size / 1024 / 1024).toFixed(2);
-        filenameDiv.innerHTML = `<i class="fas fa-file me-2"></i>${file.name} (${fileSize} MB)`;
+    if (input && input.files.length > 0) {
+        filenameDiv.textContent = 'Seleccionado: ' + input.files[0].name;
     } else {
         filenameDiv.textContent = '';
     }
 }
-
-// Validación del formulario
-document.querySelector('.needs-validation').addEventListener('submit', function(event) {
-    if (!this.checkValidity()) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-    
-    // Validar edad mínima (18 años)
-    const edad = parseInt(document.getElementById('edad').value);
-    if (edad < 18) {
-        alert('El empleado debe ser mayor de 18 años.');
-        event.preventDefault();
-        return;
-    }
-    
-    // Validar que la fecha de ingreso no sea anterior a la de contrato
-    const fechaContrato = new Date(document.getElementById('fecha_contrato').value);
-    const fechaIngreso = new Date(document.getElementById('fecha_ingreso').value);
-    
-    if (fechaIngreso < fechaContrato) {
-        alert('La fecha de ingreso no puede ser anterior a la fecha de contrato.');
-        event.preventDefault();
-        return;
-    }
-    
-    this.classList.add('was-validated');
-}, false);
 </script>
-{% endblock %} 
+{% endblock %}

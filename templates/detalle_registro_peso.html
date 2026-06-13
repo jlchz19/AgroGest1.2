@@ -50,7 +50,8 @@
                                 <i class="fas fa-chart-line text-info me-2"></i>
                                 {{ registro.condicion_corporal or 0 }}/9
                                 <div class="progress mt-2" style="height: 10px;">
-                                    <div class="progress-bar bg-info" style="width: {{ (registro.condicion_corporal or 0) / 9 * 100 }}%"></div>
+                                    <div class="progress-bar bg-info"
+                                        style="width: {(registro.condicion_corporal or 0) / 9 * 100}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -60,17 +61,17 @@
                                 <i class="fas fa-chart-bar text-warning me-2"></i>
                                 <span id="variacion-peso">
                                     {% if registro.peso_anterior %}
-                                        {% set variacion = registro.peso - registro.peso_anterior %}
-                                        {% if variacion > 0 %}
-                                            <span class="text-success">+{{ "%.1f"|format(variacion) }} kg</span>
-                                        {% elif variacion < 0 %}
-                                            <span class="text-danger">{{ "%.1f"|format(variacion) }} kg</span>
-                                        {% else %}
-                                            <span class="text-muted">0.0 kg</span>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class="text-muted">Sin datos anteriores</span>
-                                    {% endif %}
+                                    {% set variacion = registro.peso - registro.peso_anterior %}
+                                    {% if variacion > 0 %}
+                                    <span class="text-success">+{{ "%.1f"|format(variacion) }} kg</span>
+                                    {% elif variacion < 0 %} <span class="text-danger">{{ "%.1f"|format(variacion) }}
+                                        kg</span>
+                                {% else %}
+                                <span class="text-muted">0.0 kg</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-muted">Sin datos anteriores</span>
+                                {% endif %}
                                 </span>
                             </div>
                         </div>
@@ -98,17 +99,17 @@
                 <div class="card-body">
                     <div class="text-center mb-3">
                         {% if animal.imagen %}
-                            <img src="{{ url_for('static', filename='animales/' + animal.imagen) }}" 
-                                 class="rounded-circle mb-3" 
-                                 style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #28a745;">
+                        <img src="{{ url_for('static', filename='animales/' + animal.imagen) }}"
+                            class="rounded-circle mb-3"
+                            style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #28a745;">
                         {% else %}
-                            <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center bg-primary bg-opacity-10" 
-                                 style="width: 120px; height: 120px; border: 3px solid #28a745;">
-                                <i class="fas fa-cow fa-3x text-primary"></i>
-                            </div>
+                        <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center bg-primary bg-opacity-10"
+                            style="width: 120px; height: 120px; border: 3px solid #28a745;">
+                            <i class="fas fa-cow fa-3x text-primary"></i>
+                        </div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="animal-info">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Identificación</label>
@@ -117,7 +118,7 @@
                                 {{ animal.identificacion }}
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Nombre</label>
                             <div class="form-control bg-light">
@@ -125,7 +126,7 @@
                                 {{ animal.nombre or 'Sin nombre asignado' }}
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Tipo</label>
                             <div class="form-control bg-light">
@@ -133,7 +134,7 @@
                                 {{ animal.tipo.title() }}
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Raza</label>
                             <div class="form-control bg-light">
@@ -141,26 +142,48 @@
                                 {{ animal.raza }}
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Edad</label>
                             <div class="form-control bg-light">
                                 <i class="fas fa-birthday text-info me-2"></i>
                                 {% set edad = ((dt.now().date() - animal.fecha_nacimiento).days / 365) %}
-                                {% if edad < 1 %}
-                                    {{ (dt.now().date() - animal.fecha_nacimiento).days }} días
-                                {% else %}
-                                    {{ "%.1f"|format(edad) }} años
-                                {% endif %}
+                                {% if edad < 1 %} {{ (dt.now().date() - animal.fecha_nacimiento).days }} días {% else %}
+                                    {{ "%.1f" |format(edad) }} años {% endif %} </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Ubicación Actual</label>
+                                <div class="form-control bg-light">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                    {{ animal.ubicacion_actual or 'No especificada' }}
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Ubicación Actual</label>
-                            <div class="form-control bg-light">
-                                <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                                {{ animal.ubicacion_actual or 'No especificada' }}
-                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{{ url_for('seguimiento_peso') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Volver a Seguimiento
+                            </a>
+                            <a href="{{ url_for('editar_registro_peso', registro_id=registro.id) }}"
+                                class="btn btn-warning">
+                                <i class="fas fa-edit me-2"></i>
+                                Editar Registro
+                            </a>
+                            <a href="{{ url_for('historial_animal', animal_id=animal.id) }}" class="btn btn-info">
+                                <i class="fas fa-history me-2"></i>
+                                Ver Historial Completo
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -168,98 +191,73 @@
         </div>
     </div>
 
-    <!-- Botones de Acción -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-0 shadow">
-                <div class="card-body">
-                    <div class="d-flex gap-2 justify-content-center">
-                        <a href="{{ url_for('seguimiento_peso') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-arrow-left me-2"></i>
-                            Volver a Seguimiento
-                        </a>
-                        <a href="{{ url_for('editar_registro_peso', registro_id=registro.id) }}" class="btn btn-warning">
-                            <i class="fas fa-edit me-2"></i>
-                            Editar Registro
-                        </a>
-                        <a href="{{ url_for('historial_animal', animal_id=animal.id) }}" class="btn btn-info">
-                            <i class="fas fa-history me-2"></i>
-                            Ver Historial Completo
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    <!-- Estilos adicionales -->
+    <style>
+        .card {
+            transition: all 0.3s ease;
+        }
 
-<!-- Estilos adicionales -->
-<style>
-.card {
-    transition: all 0.3s ease;
-}
+        .card:hover {
+            transform: translateY(-2px);
+        }
 
-.card:hover {
-    transform: translateY(-2px);
-}
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            font-size: 14px;
+        }
 
-.form-control {
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    font-size: 14px;
-}
+        .form-label {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
 
-.form-label {
-    color: #495057;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
+        .progress {
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
 
-.progress {
-    border-radius: 10px;
-    background-color: #e9ecef;
-}
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
 
-.progress-bar {
-    border-radius: 10px;
-    transition: width 0.6s ease;
-}
+        .animal-info .form-control {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            border-left: 4px solid #28a745;
+        }
 
-.animal-info .form-control {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-    border-left: 4px solid #28a745;
-}
+        .rounded-circle {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-.rounded-circle {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+        .breadcrumb {
+            background: transparent;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
 
-.breadcrumb {
-    background: transparent;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 20px;
-}
+        .breadcrumb-item+.breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+            font-weight: bold;
+        }
 
-.breadcrumb-item + .breadcrumb-item::before {
-    content: ">";
-    color: #6c757d;
-    font-weight: bold;
-}
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 10px;
+            }
 
-@media (max-width: 768px) {
-    .container-fluid {
-        padding: 10px;
-    }
-    
-    .card {
-        margin-bottom: 20px;
-    }
-    
-    .btn {
-        margin-bottom: 10px;
-        width: 100%;
-    }
-}
-</style>
-{% endblock %}
+            .card {
+                margin-bottom: 20px;
+            }
+
+            .btn {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+        }
+    </style>
+    {% endblock %}

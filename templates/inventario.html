@@ -11,7 +11,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="card-title text-muted">Total Productos</h5>
-                    <i class="fas fa-boxes fa-2x text-primary"></i>
+                    <span style="font-size: 2rem; margin-bottom: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📦</span>
                 </div>
                 <h2 class="display-6 fw-bold">{{ inventarios|length }}</h2>
             </div>
@@ -22,7 +22,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="card-title text-muted">Valor Total</h5>
-                    <i class="fas fa-dollar-sign fa-2x text-success"></i>
+                    <span style="font-size: 2rem; margin-bottom: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">💵</span>
                 </div>
                 <h2 class="display-6 fw-bold">${{ "{:,.0f}".format(total_valor_inventario) }}</h2>
             </div>
@@ -33,7 +33,7 @@
             <div class="card-body">
                  <div class="d-flex justify-content-between align-items-center">
                     <h5 class="card-title text-muted">Por Vencer</h5>
-                    <i class="fas fa-clock fa-2x text-warning"></i>
+                    <span style="font-size: 2rem; margin-bottom: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">⏳</span>
                 </div>
                 <h2 class="display-6 fw-bold">{{ productos_por_vencer_count }}</h2>
             </div>
@@ -44,7 +44,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="card-title text-muted">Vencidos</h5>
-                    <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                    <span style="font-size: 2rem; margin-bottom: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">⚠️</span>
                 </div>
                 <h2 class="display-6 fw-bold">{{ productos_vencidos_count }}</h2>
             </div>
@@ -56,12 +56,12 @@
     <div class="card-header">
         <div class="d-flex flex-wrap justify-content-between align-items-center">
             <h5 class="card-title mb-2 mb-md-0">
-                <i class="fas fa-boxes me-2"></i>Listado de Inventario
+                <span style="font-size: 1.2rem; margin-right: 0.5rem;">📦</span>Listado de Inventario
             </h5>
             <div class="d-flex flex-wrap align-items-center">
                 <!-- Filtros y Búsqueda -->
                 <div class="input-group input-group-sm me-2" style="width: 200px;">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <span class="input-group-text"><span style="font-size: 1rem;">🔍</span></span>
                     <input type="text" class="form-control" id="searchInput" placeholder="Buscar producto...">
                 </div>
                 <div class="input-group input-group-sm me-2" style="width: 150px;">
@@ -74,10 +74,10 @@
                     </select>
                 </div>
                 <a href="{{ url_for('nuevo_inventario') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus me-2"></i>Nuevo Producto
+                    <span style="font-size: 1rem; margin-right: 0.2rem;">➕</span>Nuevo Producto
                 </a>
                 <a href="{{ url_for('reporte_inventario_pdf') }}" class="btn btn-danger btn-sm ms-2" target="_blank">
-                    <i class="fas fa-file-pdf me-2"></i>Descargar Reporte PDF
+                    <span style="font-size: 1rem; margin-right: 0.2rem;">📄</span>Descargar Reporte PDF
                 </a>
             </div>
         </div>
@@ -87,14 +87,14 @@
             <table class="table table-hover align-middle" id="inventarioTable">
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unit.</th>
-                        <th>Valor Total</th>
-                        <th>Vencimiento</th>
-                        <th>Estado</th>
-                        <th class="text-end">Acciones</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Producto</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Categoría</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Cantidad</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Precio Unit.</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Valor Total</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Vencimiento</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Estado</th>
+                        <th class="text-end text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,10 +102,10 @@
                     <tr>
                         <td><strong>{{ item.producto }}</strong></td>
                         <td>
-                            {% set icons = {'alimento': 'fa-wheat-awn', 'medicina': 'fa-pills', 'equipos': 'fa-tools', 'semillas': 'fa-seedling'} %}
+                            {% set icons = {'alimento': '🌾', 'medicina': '💊', 'equipos': '🔧', 'semillas': '🌱'} %}
                             {% set colors = {'alimento': 'success', 'medicina': 'danger', 'equipos': 'primary', 'semillas': 'info'} %}
                             <span class="badge bg-{{ colors.get(item.categoria, 'secondary') }}">
-                                <i class="fas {{ icons.get(item.categoria, 'fa-box') }} me-1"></i>
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">{{ icons.get(item.categoria, '📦') }}</span>
                                 {{ item.categoria|title }}
                             </span>
                         </td>
@@ -135,45 +135,20 @@
                         </td>
                         <td class="text-end">
                             <a href="{{ url_for('editar_inventario', id=item.id) }}" class="btn btn-sm btn-outline-primary" title="Editar">
-                                <i class="fas fa-edit"></i>
+                                <span style="font-size: 1rem;">✏️</span>
                             </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ item.id }}" title="Eliminar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                            
-                            <!-- Modal de confirmación de eliminación -->
-                            <div class="modal fade" id="eliminarModal{{ item.id }}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-danger text-white">
-                                            <h5 class="modal-title">Confirmar Eliminación</h5>
-                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p>¿Estás seguro que deseas eliminar este producto?</p>
-                                            <p><strong>Producto:</strong> {{ item.nombre }}</p>
-                                            <p><strong>Categoría:</strong> {{ item.categoria }}</p>
-                                            <p><strong>Cantidad:</strong> {{ item.cantidad }} {{ item.unidad }}</p>
-                                            <div class="alert alert-warning">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                            <form action="{{ url_for('eliminar_inventario', id=item.id) }}" method="POST" style="display: inline;">
-                                                <button type="submit" class="btn btn-danger">Eliminar</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <form action="{{ url_for('eliminar_inventario', id=item.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                    <span style="font-size: 1rem;">🗑️</span>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
              <div id="noResults" class="text-center py-5" style="display: none;">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <span style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🔍</span>
                 <h5 class="text-muted">No se encontraron productos</h5>
                 <p class="text-muted">Intenta con otros filtros o términos de búsqueda.</p>
             </div>

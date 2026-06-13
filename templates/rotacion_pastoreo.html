@@ -1,0 +1,572 @@
+{% extends "base.html" %}
+
+{% block title %}Rotación de Pastoreo - AgroGest{% endblock %}
+{% block page_title %}Planificador de Pastoreo Rotativo{% endblock %}
+
+{% block content %}
+<!-- CONTENEDOR PRINCIPAL DEL MÓDULO -->
+<div class="container-fluid px-0">
+
+    <!-- Tarjetas de Estadísticas Globales -->
+    <div class="row g-3 mb-4">
+        <!-- Área Total -->
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white" style="border-radius: 16px;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-success-soft text-success me-3">
+                        <span style="font-size: 1.3rem;">🗺️</span>
+                    </div>
+                    <div>
+                        <small class="text-muted fw-semibold uppercase tracking-wider" style="font-size: 10px; display:block;">Superficie Total</small>
+                        <h4 class="fw-bold text-dark mb-0 mt-1">{{ "%.1f"|format(total_area) }} <span class="small text-muted" style="font-size: 0.8rem;">ha</span></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carga Global -->
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white" style="border-radius: 16px;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-primary-soft text-primary me-3">
+                        <span style="font-size: 1.3rem;">📊</span>
+                    </div>
+                    <div>
+                        <small class="text-muted fw-semibold uppercase tracking-wider" style="font-size: 10px; display:block;">Carga Animal Global</small>
+                        <h4 class="fw-bold text-dark mb-0 mt-1">
+                            {% if total_area > 0 %}
+                                {{ "%.2f"|format(total_animales / total_area) }}
+                            {% else %}
+                                0.00
+                            {% endif %}
+                            <span class="small text-muted" style="font-size: 0.75rem;">cab/ha</span>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cabezas Totales -->
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white" style="border-radius: 16px;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-warning-soft text-warning me-3">
+                        <span style="font-size: 1.3rem;">🐄</span>
+                    </div>
+                    <div>
+                        <small class="text-muted fw-semibold uppercase tracking-wider" style="font-size: 10px; display:block;">Cabezas Activas</small>
+                        <h4 class="fw-bold text-dark mb-0 mt-1">{{ total_animales }} <span class="small text-muted" style="font-size: 0.75rem;">bovinos</span></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Potreros -->
+        <div class="col-6 col-sm-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white" style="border-radius: 16px;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-info-soft text-info me-3">
+                        <span style="font-size: 1.3rem;">🌿</span>
+                    </div>
+                    <div>
+                        <small class="text-muted fw-semibold uppercase tracking-wider" style="font-size: 10px; display:block;">Total Potreros</small>
+                        <h4 class="fw-bold text-dark mb-0 mt-1">{{ potreros|length }} <span class="small text-muted" style="font-size: 0.75rem;">lotes</span></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout Principal en Dos Columnas -->
+    <div class="row g-4">
+        <!-- Columna Izquierda: Análisis de Potreros -->
+        <div class="col-12 col-xl-7">
+            <div class="card border-0 shadow-sm h-100 bg-white" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-dark d-flex align-items-center" style="font-size: 1.1rem; letter-spacing: -0.02em;">
+                        <span class="icon-circle bg-success-soft text-success me-2" style="width:32px; height:32px; font-size: 0.95rem;">🌿</span>
+                        Estado y Capacidad de Carga por Potrero
+                    </h5>
+                </div>
+                <div class="card-body px-4 py-0 table-responsive" style="max-height: 520px; overflow-y: auto;">
+                    <table class="table align-middle table-hover border-0">
+                        <thead class="sticky-top bg-white" style="z-index: 1;">
+                            <tr class="text-muted small border-bottom" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">
+                                <th class="py-3 border-0">Potrero / Pasto</th>
+                                <th class="py-3 border-0 text-center">Superficie</th>
+                                <th class="py-3 border-0 text-center">Ocupantes</th>
+                                <th class="py-3 border-0 text-center">Carga Actual</th>
+                                <th class="py-3 border-0 text-end">Estado Pastura</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for potrero in potreros %}
+                            {% set count = animales_por_potrero.get(potrero.id, 0) %}
+                            {% set carga = 0.0 %}
+                            {% if potrero.area > 0 %}
+                                {% set carga = count / potrero.area %}
+                            {% endif %}
+                            
+                            <tr class="border-bottom" style="font-size: 0.85rem;">
+                                <td class="py-3 border-0">
+                                    <div class="fw-bold text-dark">{{ potrero.nombre }}</div>
+                                    <div class="text-muted small" style="font-size: 0.72rem;">{{ potrero.tipo_pasto or 'Mestizo' }} · <span class="text-primary">{{ potrero.funcion }}</span></div>
+                                </td>
+                                <td class="py-3 border-0 text-center fw-semibold text-secondary">{{ potrero.area }} ha</td>
+                                <td class="py-3 border-0 text-center">
+                                    <span class="badge rounded-pill {% if count > 0 %}bg-primary-soft text-primary{% else %}bg-light text-muted{% endif %} px-2.5 py-1.5 fw-bold" style="font-size:0.75rem;">
+                                        {{ count }} 🐄
+                                    </span>
+                                </td>
+                                <td class="py-3 border-0 text-center fw-bold {% if carga > 2.5 %}text-danger{% elif carga >= 1.0 %}text-success{% else %}text-warning{% endif %}">
+                                    {{ "%.2f"|format(carga) }} <span class="small text-muted fw-normal" style="font-size: 0.68rem;">cab/ha</span>
+                                </td>
+                                <td class="py-3 border-0 text-end">
+                                    {% if count == 0 %}
+                                        <span class="badge bg-success-soft text-success rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.7rem;">🌿 Lush (Descanso)</span>
+                                    {% elif carga > 2.5 %}
+                                        <span class="badge bg-danger-soft text-danger rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.7rem;">⚠️ Crítico (Sobre)</span>
+                                    {% elif carga >= 1.0 %}
+                                        <span class="badge bg-primary-soft text-primary rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.7rem;">🔄 Óptimo (Rotativo)</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-soft text-warning-dark rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.7rem;">🍂 Bajo (Subutilizado)</span>
+                                    {% endif %}
+                                    <!-- Mini progress bar de utilización de capacidad -->
+                                    <div class="progress mt-1.5 ms-auto" style="height: 4px; width: 80px; border-radius: 2px; background-color: #f1f5f9;">
+                                        {% set percent = (count / potrero.capacidad * 100) if potrero.capacidad > 0 else 0 %}
+                                        <div class="progress-bar {% if percent > 100 %}bg-danger{% elif percent >= 50 %}bg-warning{% else %}bg-success{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ [percent, 100]|min }}%;" 
+                                             aria-valuenow="{{ percent }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                            {% if not potreros %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <span style="font-size: 2.5rem;">🌾</span>
+                                    <p class="mb-0 mt-2">No hay potreros registrados en esta finca.</p>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Formulario de Rotación y Simulador -->
+        <div class="col-12 col-xl-5">
+            <div class="card border-0 shadow-sm h-100 bg-white" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header con pestañas premium -->
+                <div class="card-header bg-light border-0 p-0">
+                    <ul class="nav nav-tabs border-0 w-100 text-center" id="plannerTabs" role="tablist">
+                        <li class="nav-item w-50" role="presentation">
+                            <button class="nav-link active border-0 py-3.5 fw-bold w-100 text-secondary" id="rotation-tab" data-bs-toggle="tab" data-bs-target="#rotation-panel" type="button" role="tab" aria-controls="rotation-panel" aria-selected="true" style="border-radius: 20px 0 0 0; font-size: 0.88rem;">
+                                🔄 Rotador de Lotes
+                            </button>
+                        </li>
+                        <li class="nav-item w-50" role="presentation">
+                            <button class="nav-link border-0 py-3.5 fw-bold w-100 text-secondary" id="sim-tab" data-bs-toggle="tab" data-bs-target="#sim-panel" type="button" role="tab" aria-controls="sim-panel" aria-selected="false" style="border-radius: 0 20px 0 0; font-size: 0.88rem;">
+                                🧮 Simulador de Capacidad
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="tab-content" id="plannerTabsContent">
+                        
+                        <!-- PANEL 1: ROTADOR DE LOTES -->
+                        <div class="tab-pane fade show active" id="rotation-panel" role="tabpanel" aria-labelledby="rotation-tab">
+                            <form action="{{ url_for('api_rotar_lote') }}" method="POST" id="rotationForm">
+                                
+                                <!-- Potrero Origen -->
+                                <div class="mb-3">
+                                    <label for="origen_id" class="form-label text-dark fw-bold small"><i class="fas fa-sign-out-alt me-1 text-danger"></i> Potrero de Origen (Pasto actual)</label>
+                                    <select class="form-select rounded-3 shadow-xs" id="origen_id" name="origen_id" style="font-size: 0.85rem;" onchange="loadAnimalsFromPaddock(this.value)">
+                                        <option value="" selected disabled>Seleccionar potrero...</option>
+                                        {% for potrero in potreros %}
+                                            {% if animales_por_potrero.get(potrero.id, 0) > 0 %}
+                                                <option value="{{ potrero.id }}">{{ potrero.nombre }} ({{ animales_por_potrero.get(potrero.id, 0) }} animales)</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Checklist de Animales -->
+                                <div class="mb-3 d-none" id="animalsChecklistWrapper">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-dark fw-bold small"><i class="fas fa-check-square me-1 text-primary"></i> Seleccionar Animales</span>
+                                        <button type="button" class="btn btn-link p-0 text-decoration-none small fw-bold" id="btnSelectAll" onclick="toggleSelectAllAnimals()" style="font-size:0.75rem;">Marcar todos</button>
+                                    </div>
+                                    <div class="card border-0 bg-light p-3 overflow-auto" id="animalsChecklist" style="max-height: 180px; border-radius: 12px; font-size: 0.8rem;">
+                                        <!-- Cargado mediante JS dinámico -->
+                                    </div>
+                                </div>
+
+                                <!-- Potrero Destino -->
+                                <div class="mb-3">
+                                    <label for="destino_id" class="form-label text-dark fw-bold small"><i class="fas fa-sign-in-alt me-1 text-success"></i> Potrero de Destino (Pasto nuevo)</label>
+                                    <select class="form-select rounded-3 shadow-xs" id="destino_id" name="destino_id" style="font-size: 0.85rem;">
+                                        <option value="" selected disabled>Seleccionar potrero...</option>
+                                        {% for potrero in potreros %}
+                                            <option value="{{ potrero.id }}">{{ potrero.nombre }} (Área: {{ potrero.area }} ha, Cap: {{ potrero.capacidad }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Comentario / Motivo -->
+                                <div class="mb-4">
+                                    <label for="motivo" class="form-label text-dark fw-bold small"><i class="fas fa-comment-alt me-1 text-muted"></i> Motivo de la Rotación (Comentario)</label>
+                                    <input type="text" class="form-control rounded-3 shadow-xs" id="motivo" name="motivo" placeholder="Ej. Cambio a pasto fresco, inicio de descanso..." style="font-size: 0.85rem;">
+                                </div>
+
+                                <!-- Botón de Envío -->
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary rounded-pill py-2.5 fw-bold shadow-sm" id="btnSubmitRotation" disabled>
+                                        <i class="fas fa-exchange-alt me-2"></i> Ejecutar Rotación de Lote
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- PANEL 2: SIMULADOR DE CAPACIDAD -->
+                        <div class="tab-pane fade" id="sim-panel" role="tabpanel" aria-labelledby="sim-tab">
+                            
+                            <!-- Paddock Selector -->
+                            <div class="mb-3">
+                                <label for="sim_paddock" class="form-label text-dark fw-bold small">🌿 Seleccionar Potrero</label>
+                                <select class="form-select rounded-3 shadow-xs" id="sim_paddock" style="font-size: 0.85rem;" onchange="updateSimulation()">
+                                    {% for potrero in potreros %}
+                                        <option value="{{ potrero.id }}" data-area="{{ potrero.area }}" data-capacidad="{{ potrero.capacidad }}" {% if loop.first %}selected{% endif %}>{{ potrero.nombre }} ({{ potrero.area }} ha)</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Temporada Selector -->
+                            <div class="mb-3">
+                                <label for="sim_season" class="form-label text-dark fw-bold small">📅 Temporada Climática</label>
+                                <select class="form-select rounded-3 shadow-xs" id="sim_season" style="font-size: 0.85rem;" onchange="updateSimulation()">
+                                    <option value="rainy" selected>Lluvias / Invierno (Crecimiento Rápido de Pasto)</option>
+                                    <option value="dry">Sequía / Verano (Crecimiento Lento de Pasto)</option>
+                                </select>
+                            </div>
+
+                            <!-- Herd Size Slider -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label for="sim_herd" class="form-label text-dark fw-bold small mb-0">🐄 Tamaño del Lote (Animales)</label>
+                                    <span class="badge bg-primary rounded-pill fw-bold" id="sim_herd_val">25 animales</span>
+                                </div>
+                                <input type="range" class="form-range" id="sim_herd" min="1" max="100" value="25" oninput="document.getElementById('sim_herd_val').innerText = this.value + ' animales'; updateSimulation();">
+                            </div>
+
+                            <!-- Tarjeta de Resultados Científicos del Simulador -->
+                            <div class="card border-0 p-3 bg-light shadow-xs" style="border-radius: 16px;">
+                                <h6 class="text-dark fw-bold mb-3" style="font-size: 0.82rem;"><i class="fas fa-flask text-primary me-1"></i> Resultados de Proyección</h6>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom">
+                                    <span class="text-muted small">Carga Proyectada:</span>
+                                    <span class="fw-bold text-dark" id="sim_res_carga">0.00 cab/ha</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom">
+                                    <span class="text-muted small">Tiempo de Pastoreo Óptimo:</span>
+                                    <span class="fw-bold text-success fs-5" id="sim_res_days">0 Días</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-2.5 pb-2.5 border-bottom">
+                                    <span class="text-muted small">Descanso Recomendado:</span>
+                                    <span class="fw-bold text-info" id="sim_res_rest">0 Días</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small">Alerta de Pasturas:</span>
+                                    <span class="badge rounded-pill px-2.5 py-1.5" id="sim_res_badge">Carga Óptima</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial de Rotaciones Recientes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-white" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-header bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-dark d-flex align-items-center" style="font-size: 1.1rem; letter-spacing: -0.02em;">
+                        <span class="icon-circle bg-primary-soft text-primary me-2" style="width:32px; height:32px; font-size: 0.95rem;">📋</span>
+                        Historial de Rotaciones Recientes (Últimos 30 traslados)
+                    </h5>
+                </div>
+                <div class="card-body px-4 py-0 table-responsive" style="max-height: 350px; overflow-y: auto;">
+                    <table class="table align-middle border-0 mb-4">
+                        <thead>
+                            <tr class="text-muted small border-bottom" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">
+                                <th class="py-3 border-0">Animal</th>
+                                <th class="py-3 border-0">Paddock de Destino</th>
+                                <th class="py-3 border-0 text-center">Fecha y Hora</th>
+                                <th class="py-3 border-0 text-end">Comentario / Motivo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hist in historial %}
+                            <tr class="border-bottom" style="font-size: 0.83rem;">
+                                <td class="py-3 border-0">
+                                    <span class="fw-bold text-dark">{{ hist.animal.identificacion }}</span>
+                                    <span class="text-muted small" style="font-size: 0.72rem;">({{ hist.animal.nombre or 'Sin nombre' }})</span>
+                                </td>
+                                <td class="py-3 border-0">
+                                    <span class="badge bg-primary-soft text-primary rounded-pill px-2.5 py-1.5 fw-semibold" style="font-size: 0.72rem;">
+                                        🌿 {{ hist.potrero.nombre }}
+                                    </span>
+                                </td>
+                                <td class="py-3 border-0 text-center text-secondary small">
+                                    {{ hist.fecha.strftime('%d/%m/%Y %H:%M') }}
+                                </td>
+                                <td class="py-3 border-0 text-end text-muted italic" style="font-size:0.78rem;">
+                                    {{ hist.motivo or 'Rotación rutinaria' }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                            {% if not historial %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    <i class="fas fa-history fa-2x mb-2 opacity-50"></i>
+                                    <p class="mb-0 small">No hay historial de movimientos de potrero registrados.</p>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ESTILOS LOCALES PREMIUM -->
+<style>
+.icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+}
+.bg-success-soft {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+}
+.bg-primary-soft {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    color: #3b82f6 !important;
+}
+.bg-warning-soft {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
+}
+.bg-info-soft {
+    background-color: rgba(6, 182, 212, 0.12) !important;
+    color: #06b6d4 !important;
+}
+.bg-danger-soft {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #ef4444 !important;
+}
+.text-warning-dark {
+    color: #b45309 !important;
+}
+.shadow-xs {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+.nav-tabs .nav-link {
+    color: #64748b;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent !important;
+}
+.nav-tabs .nav-link.active {
+    color: #3b82f6 !important;
+    background-color: #ffffff !important;
+    border-bottom: 2px solid #3b82f6 !important;
+}
+.nav-tabs .nav-link:hover:not(.active) {
+    background-color: #f1f5f9;
+}
+.form-range::-webkit-slider-thumb {
+    background: #3b82f6;
+}
+.form-range::-moz-range-thumb {
+    background: #3b82f6;
+}
+</style>
+
+<!-- SCRIPT DE INTERACCIÓN AJAX Y SIMULADOR -->
+<script>
+// Toggle select all checkbox in animals list
+let allSelected = false;
+
+function toggleSelectAllAnimals() {
+    const list = document.getElementById('animalsChecklist');
+    const checkboxes = list.querySelectorAll('input[type="checkbox"]');
+    const btn = document.getElementById('btnSelectAll');
+    
+    allSelected = !allSelected;
+    
+    checkboxes.forEach(chk => {
+        chk.checked = allSelected;
+    });
+    
+    btn.innerText = allSelected ? "Desmarcar todos" : "Marcar todos";
+    validateForm();
+}
+
+function loadAnimalsFromPaddock(potreroId) {
+    const checklistWrapper = document.getElementById('animalsChecklistWrapper');
+    const list = document.getElementById('animalsChecklist');
+    const btn = document.getElementById('btnSelectAll');
+    const submitBtn = document.getElementById('btnSubmitRotation');
+    
+    if (!potreroId) {
+        checklistWrapper.classList.add('d-none');
+        return;
+    }
+    
+    list.innerHTML = '<div class="text-center w-100 py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando animales del potrero...</div>';
+    checklistWrapper.classList.remove('d-none');
+    
+    fetch(`/api/animales_en_ubicacion?tipo=potrero&id=${potreroId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.animales && data.animales.length > 0) {
+                let html = '';
+                data.animales.forEach(animal => {
+                    let animalEmoji = '🐄';
+                    if (animal.tipo === 'Cerdo') animalEmoji = '🐷';
+                    else if (animal.tipo === 'Cabra') animalEmoji = '🐐';
+                    else if (animal.tipo === 'Oveja') animalEmoji = '🐑';
+                    
+                    html += `
+                        <div class="form-check d-flex align-items-center gap-2 mb-2 pb-1 border-bottom">
+                            <input class="form-check-input" type="checkbox" name="animales_ids" value="${animal.id}" id="animal_chk_${animal.id}" onchange="validateForm()">
+                            <label class="form-check-label d-flex justify-content-between align-items-center w-100 cursor-pointer" for="animal_chk_${animal.id}">
+                                <span>${animalEmoji} <strong>${animal.identificacion}</strong> - <span class="text-muted" style="font-size:0.75rem;">${animal.nombre || 'Sin nombre'} (${animal.raza})</span></span>
+                                <span class="badge bg-secondary-subtle text-secondary">${animal.peso} kg</span>
+                            </label>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+                allSelected = false;
+                btn.innerText = "Marcar todos";
+            } else {
+                list.innerHTML = '<div class="text-center py-3 text-muted"><p class="mb-0">No hay animales activos en este potrero.</p></div>';
+                submitBtn.disabled = true;
+            }
+            validateForm();
+        })
+        .catch(err => {
+            console.error(err);
+            list.innerHTML = '<div class="text-center py-3 text-danger"><p class="mb-0">Error al cargar animales.</p></div>';
+            submitBtn.disabled = true;
+        });
+}
+
+function validateForm() {
+    const list = document.getElementById('animalsChecklist');
+    const checked = list.querySelectorAll('input[type="checkbox"]:checked');
+    const destination = document.getElementById('destino_id').value;
+    const submitBtn = document.getElementById('btnSubmitRotation');
+    
+    // Habilitar botón de envío si hay al menos un animal seleccionado y destino seleccionado
+    if (checked.length > 0 && destination) {
+        submitBtn.disabled = false;
+    } else {
+        submitBtn.disabled = true;
+    }
+}
+
+// Escuchador de cambios en el potrero de destino
+document.getElementById('destino_id').addEventListener('change', validateForm);
+
+// ==========================================
+// CÓDIGO DEL SIMULADOR GANADERO CIENTÍFICO
+// ==========================================
+function updateSimulation() {
+    const select = document.getElementById('sim_paddock');
+    const selectedOpt = select.options[select.selectedIndex];
+    if (!selectedOpt) return;
+    
+    const area = parseFloat(selectedOpt.getAttribute('data-area')) || 0.0;
+    const capacidad = parseInt(selectedOpt.getAttribute('data-capacidad')) || 0;
+    
+    const season = document.getElementById('sim_season').value; // 'rainy' o 'dry'
+    const herdSize = parseInt(document.getElementById('sim_herd').value) || 1;
+    
+    // Constantes científicas:
+    // Un bovino estándar consume alrededor de 13 kg de Materia Seca (MS) al día
+    const dailyConsumptionPerAnimal = 13.0; 
+    
+    // Producción de biomasa de pasto promedio aprovechable:
+    // Lluvias (rainy): ~1,500 kg MS/ha disponible en rotación de entrada
+    // Sequía (dry): ~600 kg MS/ha disponible
+    const forageAvailablePerHa = (season === 'rainy') ? 1500.0 : 600.0;
+    
+    // Período recomendado de descanso del suelo:
+    const restPeriod = (season === 'rainy') ? 32 : 55;
+    
+    // Cálculos:
+    const totalForageAvailable = area * forageAvailablePerHa;
+    const dailyHerdConsumption = herdSize * dailyConsumptionPerAnimal;
+    
+    // Días de pastoreo óptimo estimados
+    let grazingDays = 0;
+    if (dailyHerdConsumption > 0) {
+        grazingDays = Math.round(totalForageAvailable / dailyHerdConsumption);
+    }
+    
+    // Carga Proyectada
+    const cargaProyectada = herdSize / area;
+    
+    // Actualizar campos
+    document.getElementById('sim_res_carga').innerText = cargaProyectada.toFixed(2) + " cab/ha";
+    document.getElementById('sim_res_days').innerText = grazingDays + " Días";
+    document.getElementById('sim_res_rest').innerText = restPeriod + " Días";
+    
+    // Insignias y colores de alerta según la carga simulada
+    const badge = document.getElementById('sim_res_badge');
+    badge.className = "badge rounded-pill px-2.5 py-1.5";
+    
+    if (cargaProyectada > 2.5) {
+        badge.innerText = "Sobrepastoreo (Crítico)";
+        badge.classList.add("bg-danger-soft", "text-danger");
+    } else if (cargaProyectada >= 1.0) {
+        badge.innerText = "Carga Óptima";
+        badge.classList.add("bg-success-soft", "text-success");
+    } else {
+        badge.innerText = "Baja Carga (Subutilizado)";
+        badge.classList.add("bg-warning-soft", "text-warning-dark");
+    }
+}
+
+// Inicializar simulador al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    updateSimulation();
+});
+</script>
+{% endblock %}

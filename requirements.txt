@@ -6,6 +6,7 @@ gunicorn==21.2.0
 
 # Framework web principal
 Flask>=2.3.0
+Flask-Cors>=4.0.0
 Flask-SQLAlchemy>=3.0.0
 Flask-Migrate>=4.0.0
 Flask-Login>=0.6.0
@@ -22,6 +23,7 @@ reportlab>=4.0.0        # Generación de PDFs profesionales
 Pillow>=10.0.0          # Manipulación de imágenes
 
 # Utilidades y herramientas profesionales
+opencv-python>=4.8.0    # Procesamiento de video RTSP
 python-dateutil>=2.8.0  # Manejo avanzado de fechas
 openpyxl>=3.1.0         # Exportar a Excel
 requests>=2.31.0        # Peticiones HTTP

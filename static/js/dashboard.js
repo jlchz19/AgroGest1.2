@@ -1,5 +1,21 @@
 // Dashboard functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Relocate dashboard summary modals to document.body to avoid stacking context / backdrop blocking issues
+    const summaryModals = [
+        'animalesModal',
+        'potrerosModal',
+        'empleadosModal',
+        'inventarioModal',
+        'partoModal',
+        'ubicacionModal'
+    ];
+    summaryModals.forEach(id => {
+        const modalEl = document.getElementById(id);
+        if (modalEl && modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+    });
+
     // Initialize progress bars
     const progressBars = document.querySelectorAll('.progress-bar[data-width]');
     progressBars.forEach(bar => {
@@ -98,11 +114,13 @@ function initializeCharts() {
             console.error('Error al cargar gráfico de fincas:', error);
         }
     }
+
+    
 }
 
 // Funciones de resumen
 async function showAnimalesResumen() {
-    const modal = new bootstrap.Modal(document.getElementById('animalesModal'));
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('animalesModal'));
     const content = document.getElementById('animalesContent');
     
     if (!content) return;
@@ -133,27 +151,21 @@ async function showAnimalesResumen() {
         const totalRazas = data.razas_unicas || 0;
         const porRaza = data.por_raza || [];
 
-        // Icon mapping for animal types
         const getAnimalIcon = (tipo) => {
             const tipoLower = (tipo || '').toLowerCase();
-            if (tipoLower.includes('vaca') || tipoLower.includes('bovino')) return 'fa-cow';
-            if (tipoLower.includes('toro')) return 'fa-horse';
-            if (tipoLower.includes('cerdo') || tipoLower.includes('porcino')) return 'fa-piggy-bank';
-            if (tipoLower.includes('pollo') || tipoLower.includes('gallina') || tipoLower.includes('ave')) return 'fa-dove';
-            if (tipoLower.includes('caballo') || tipoLower.includes('yegua')) return 'fa-horse';
-            if (tipoLower.includes('oveja') || tipoLower.includes('cordero')) return 'fa-sheep';
-            if (tipoLower.includes('cabra')) return 'fa-goat';
-            if (tipoLower.includes('perro')) return 'fa-dog';
-            if (tipoLower.includes('gato')) return 'fa-cat';
-            return 'fa-paw';
+            if (tipoLower.includes('vaca') || tipoLower.includes('bovino')) return '🐄';
+            if (tipoLower.includes('toro')) return '🐃';
+            if (tipoLower.includes('cerdo') || tipoLower.includes('porcino')) return '🐷';
+            if (tipoLower.includes('pollo') || tipoLower.includes('gallina') || tipoLower.includes('ave')) return '🐔';
+            if (tipoLower.includes('caballo') || tipoLower.includes('yegua')) return '🐴';
+            if (tipoLower.includes('oveja') || tipoLower.includes('cordero')) return '🐑';
+            if (tipoLower.includes('cabra')) return '🐐';
+            if (tipoLower.includes('perro')) return '🐶';
+            if (tipoLower.includes('gato')) return '🐱';
+            return '🐾';
         };
 
         content.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Resumen de Animales</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            
             <!-- Stats Cards -->
             <div class="row g-3 mb-4">
                 <div class="col-6 col-md-3">
@@ -194,7 +206,7 @@ async function showAnimalesResumen() {
             <div class="row g-3">
                 <!-- Animal Types -->
                 <div class="col-md-6">
-                    <h6 class="mb-3 fw-bold"><i class="fas fa-paw me-2 text-primary"></i>Tipos de Animales</h6>
+                    <h6 class="mb-3 fw-bold"><span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">🐾</span>Tipos de Animales</h6>
                     <div class="list-group">
                         ${(data.por_tipo && data.por_tipo.length > 0) ? 
                             data.por_tipo.map((item, index) => {
@@ -205,8 +217,8 @@ async function showAnimalesResumen() {
                                 return `
                                 <div class="list-group-item d-flex justify-content-between align-items-center py-2">
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-${color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                            <i class="fas ${icon} text-${color}"></i>
+                                        <div class="bg-${color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-size: 1.3rem;">
+                                            ${icon}
                                         </div>
                                         <div>
                                             <span class="fw-bold d-block">${item.tipo || 'Sin especificar'}</span>
@@ -224,7 +236,7 @@ async function showAnimalesResumen() {
                 
                 <!-- Breeds -->
                 <div class="col-md-6">
-                    <h6 class="mb-3 fw-bold"><i class="fas fa-dna me-2 text-purple"></i>Razas Registradas</h6>
+                    <h6 class="mb-3 fw-bold"><span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">🧬</span>Razas Registradas</h6>
                     <div class="list-group">
                         ${(porRaza && porRaza.length > 0) ? 
                             porRaza.map((item, index) => {
@@ -234,8 +246,8 @@ async function showAnimalesResumen() {
                                 return `
                                 <div class="list-group-item d-flex justify-content-between align-items-center py-2">
                                     <div class="d-flex align-items-center">
-                                        <div class="bg-${color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                            <i class="fas fa-tag text-${color}"></i>
+                                        <div class="bg-${color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                            🏷️
                                         </div>
                                         <div>
                                             <span class="fw-bold d-block">${item.raza || 'Sin especificar'}</span>
@@ -267,7 +279,7 @@ async function showAnimalesResumen() {
 }
 
 async function showPotrerosResumen() {
-    const modal = new bootstrap.Modal(document.getElementById('potrerosModal'));
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('potrerosModal'));
     const content = document.getElementById('potrerosContent');
     
     if (!content) return;
@@ -292,10 +304,6 @@ async function showPotrerosResumen() {
         }
         
         content.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Resumen de Potreros</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
             <div class="row g-3 mb-4">
                 <div class="col-6">
                     <div class="card border-0 shadow-sm">
@@ -374,7 +382,7 @@ async function showPotrerosResumen() {
 }
 
 async function showEmpleadosResumen() {
-    const modal = new bootstrap.Modal(document.getElementById('empleadosModal'));
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('empleadosModal'));
     const content = document.getElementById('empleadosContent');
     
     if (!content) return;
@@ -399,10 +407,6 @@ async function showEmpleadosResumen() {
         }
         
         content.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Resumen de Empleados</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
             <div class="row">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm mb-4">
@@ -469,7 +473,7 @@ async function showEmpleadosResumen() {
 }
 
 async function showInventarioResumen() {
-    const modal = new bootstrap.Modal(document.getElementById('inventarioModal'));
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('inventarioModal'));
     const content = document.getElementById('inventarioContent');
     
     if (!content) return;
@@ -494,10 +498,6 @@ async function showInventarioResumen() {
         }
         
         content.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Resumen de Inventario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100">

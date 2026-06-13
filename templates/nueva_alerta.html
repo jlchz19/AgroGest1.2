@@ -162,11 +162,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Establecer fecha y hora por defecto
     const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
     
-    fechaInput.value = tomorrow.toISOString().split('T')[0];
-    horaInput.value = '08:00';
+    // Obtener la fecha local en formato YYYY-MM-DD
+    const localDate = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    fechaInput.value = localDate;
+    
+    // Establecer la hora a 1 hora en el futuro para que pase la validación
+    now.setHours(now.getHours() + 1);
+    const hora = String(now.getHours()).padStart(2, '0');
+    const minutos = String(now.getMinutes()).padStart(2, '0');
+    horaInput.value = `${hora}:${minutos}`;
 
     // Mostrar/ocultar campo animal según el tipo
     tipoAlerta.addEventListener('change', function() {

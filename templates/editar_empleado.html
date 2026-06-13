@@ -64,7 +64,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-floating modern-input">
                                 <input type="text" class="form-control" id="nombre" name="nombre" 
-                                       placeholder="Nombre" value="{{ empleado.nombre }}" required>
+                                       placeholder="Nombre" value="{{ empleado.nombre }}" required oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
                                 <label for="nombre">Nombre *</label>
                                 <div class="invalid-feedback">Por favor ingresa el nombre</div>
                             </div>
@@ -73,7 +73,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-floating modern-input">
                                 <input type="text" class="form-control" id="apellido" name="apellido" 
-                                       placeholder="Apellido" value="{{ empleado.apellido }}" required>
+                                       placeholder="Apellido" value="{{ empleado.apellido }}" required oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
                                 <label for="apellido">Apellido *</label>
                                 <div class="invalid-feedback">Por favor ingresa el apellido</div>
                             </div>
@@ -82,7 +82,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-floating modern-input">
                                 <input type="text" class="form-control" id="cedula" name="cedula" 
-                                       placeholder="Número de cédula" value="{{ empleado.cedula }}" required>
+                                       placeholder="Número de cédula" value="{{ empleado.cedula }}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                 <label for="cedula">Cédula *</label>
                                 <div class="invalid-feedback">Por favor ingresa la cédula</div>
                             </div>
@@ -91,16 +91,24 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-floating modern-input">
                                 <input type="tel" class="form-control" id="telefono" name="telefono" 
-                                       placeholder="Teléfono" value="{{ empleado.telefono }}" required>
+                                       placeholder="Teléfono" value="{{ empleado.telefono }}" required oninput="this.value = this.value.replace(/[^0-9+ ]/g, '')">
                                 <label for="telefono">Teléfono *</label>
                                 <div class="invalid-feedback">Por favor ingresa el teléfono</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating modern-input">
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Correo Electrónico" value="{{ empleado.email or '' }}">
+                                <label for="email">Correo Electrónico</label>
                             </div>
                         </div>
                         
                         <div class="col-12 mb-3">
                             <div class="form-floating modern-input">
                                 <input type="text" class="form-control" id="direccion" name="direccion" 
-                                       placeholder="Dirección completa" value="{{ empleado.direccion }}" required>
+                                       placeholder="Dirección completa" value="{{ empleado.direccion }}" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s#.,-]/g, '')">
                                 <label for="direccion">Dirección *</label>
                                 <div class="invalid-feedback">Por favor ingresa la dirección</div>
                             </div>
@@ -121,7 +129,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-floating modern-input">
                                 <input list="cargos_list" class="form-control" id="cargo" name="cargo" 
-                                       placeholder="Cargo" value="{{ empleado.cargo }}" required>
+                                       placeholder="Cargo" value="{{ empleado.cargo }}" required oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')">
                                 <label for="cargo">Cargo *</label>
                                 <div class="invalid-feedback">Por favor ingresa el cargo</div>
                             </div>
@@ -171,7 +179,7 @@
                         <div class="col-12 mb-3">
                             <div class="form-floating modern-input">
                                 <textarea class="form-control" id="descripcion" name="descripcion" 
-                                          placeholder="Descripción de funciones" style="height: 120px" required>{{ empleado.descripcion }}</textarea>
+                                          placeholder="Descripción de funciones" style="height: 120px" required oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s.,()\-]/g, '')">{{ empleado.descripcion }}</textarea>
                                 <label for="descripcion">Descripción de Funciones *</label>
                                 <div class="invalid-feedback">Por favor ingresa la descripción de funciones</div>
                             </div>
@@ -195,7 +203,7 @@
                                     <i class="fas fa-notes-medical me-2"></i>¿Sufre de alguna enfermedad o condición médica?
                                 </label>
                                 <textarea class="form-control health-textarea" id="condiciones_enfermedades" name="condiciones_enfermedades" 
-                                          rows="3" placeholder="Describe cualquier condición médica relevante...">{{ empleado.condiciones_enfermedades }}</textarea>
+                                          rows="3" placeholder="Describe cualquier condición médica relevante..." oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,()\-]/g, '')">{{ empleado.condiciones_enfermedades }}</textarea>
                                 <small class="text-muted">Ej: Hipertensión, diabetes, asma, problemas cardíacos, etc.</small>
                             </div>
                         </div>
@@ -218,7 +226,7 @@
                                     <i class="fas fa-allergies me-2"></i>Medicamentos o sustancias alérgicas:
                                 </label>
                                 <textarea class="form-control allergy-textarea" id="alergias_medicamento" name="alergias_medicamento" 
-                                          rows="3" placeholder="Especifica los medicamentos o sustancias y tipo de reacción...">{{ empleado.alergias_medicamento }}</textarea>
+                                          rows="3" placeholder="Especifica los medicamentos o sustancias y tipo de reacción..." oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s.,()\-]/g, '')">{{ empleado.alergias_medicamento }}</textarea>
                                 <small class="text-muted">Ej: Penicilina - anafilaxia, aspirina - urticaria, etc.</small>
                             </div>
                         </div>
@@ -238,7 +246,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-floating modern-input">
                                 <input type="text" class="form-control" id="referencia_personal" 
-                                       name="referencia_personal" placeholder="Nombre y teléfono" value="{{ empleado.referencia_personal }}">
+                                       name="referencia_personal" placeholder="Nombre y teléfono" value="{{ empleado.referencia_personal }}" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s+()-]/g, '')">
                                 <label for="referencia_personal">Referencia Personal</label>
                                 <small class="form-text text-muted">Nombre y teléfono de la referencia</small>
                             </div>
@@ -297,6 +305,8 @@
 </div>
 
 <script>
+// Removida validación restrictiva de healthFields
+
 // Avatar preview
 function previewAvatar(event) {
     const file = event.target.files[0];

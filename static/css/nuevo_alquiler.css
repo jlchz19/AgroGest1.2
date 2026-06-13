@@ -1,0 +1,215 @@
+/* nuevo_alquiler.css - Clean SaaS Aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f0f4ff, #e8f5ff);
+    background-size: 200% 200%;
+    animation: subtleBG 20s ease infinite;
+    color: #334155;
+    padding-bottom: 3rem;
+}
+
+@keyframes subtleBG {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+.saas-card {
+    background: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.saas-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -2px rgba(0,0,0,0.1);
+}
+
+.saas-card-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-icon-wrapper {
+    background-color: #eff6ff;
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.saas-card-body {
+    padding: 2rem;
+}
+
+.saas-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.saas-input-group {
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.saas-input-group .input-group-text {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-right: none;
+    color: #64748b;
+}
+
+.saas-input {
+    border: 1px solid #cbd5e1;
+    border-left: none;
+    padding: 0.625rem 1rem;
+    font-size: 0.95rem;
+    color: #1e293b;
+    transition: all 0.2s;
+}
+
+.saas-input:focus {
+    box-shadow: none;
+    border-color: #cbd5e1;
+}
+
+.saas-input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    border-radius: 0.5rem;
+}
+
+.saas-input-group:focus-within .input-group-text,
+.saas-input-group:focus-within .saas-input {
+    border-color: #3b82f6;
+}
+
+.price-highlight-box {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+
+.saas-btn-primary {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 600;
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.saas-btn-primary:hover {
+    background-color: #1d4ed8;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+}
+
+.saas-btn-outline {
+    background-color: white;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #cbd5e1;
+    transition: all 0.2s;
+}
+
+.saas-btn-outline:hover {
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+.bg-light-blue {
+    background-color: #f8fafc;
+}
+
+.guide-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0.95;
+}
+
+.guide-item:hover {
+    transform: translateX(6px);
+    opacity: 1;
+}
+
+.guide-number {
+    background-color: #eff6ff;
+    color: #2563eb;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    border: 2px solid #bfdbfe;
+}
+
+.guide-text h6 {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.guide-text p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+.saas-alert {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    color: #1e3a8a;
+}
+
+.saas-alert i {
+    color: #3b82f6;
+    margin-top: 0.125rem;
+}
+
+.saas-alert strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.saas-alert span {
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .saas-card-body, .saas-card-header { padding: 1.5rem; }
+    .price-highlight-box { padding: 1rem; }
+    .d-flex.justify-content-end.gap-3 { flex-direction: column-reverse; }
+    .saas-btn-primary, .saas-btn-outline { width: 100%; text-align: center; }
+}

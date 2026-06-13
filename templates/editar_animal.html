@@ -5,7 +5,7 @@
 
 {% block page_actions %}
 <a href="{{ url_for('animales') }}" class="btn btn-secondary">
-    <i class="fas fa-arrow-left me-2"></i>Volver
+    <span style="font-size:1rem;margin-right:0.3rem;">🔙</span>Volver
 </a>
 {% endblock %}
 
@@ -14,7 +14,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header">
-                <i class="fas fa-paw me-2"></i>Editar Datos del Animal
+                <span style="font-size:1.5rem;margin-right:0.3rem;filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐾</span>Editar Datos del Animal
             </div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
@@ -31,7 +31,7 @@
                         </div>
                     </div>
                     <!-- Sección 1: Identificación y Datos Generales -->
-                    <h5 class="mb-3 text-primary"><i class="fas fa-info-circle me-2"></i>Identificación y Datos Generales</h5>
+                    <h5 class="mb-3 text-primary"><span style="font-size:1rem;margin-right:0.3rem;">ℹ️</span>Identificación y Datos Generales</h5>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <div class="form-floating">
@@ -148,10 +148,10 @@
                     <!-- Aquí puedes agregar el resto de secciones igual que en nuevo_animal.html -->
                     <div class="d-flex justify-content-end">
                         <a href="{{ url_for('animales') }}" class="btn btn-secondary me-2">
-                            <i class="fas fa-times me-2"></i>Cancelar
+                            <span style="font-size:1rem;margin-right:0.3rem;">❌</span>Cancelar
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                            <span style="font-size:1rem;margin-right:0.3rem;">💾</span>Guardar Cambios
                         </button>
                     </div>
                 </form>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprobante #{{ alquiler.id }} - AgroGest</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            body { padding: 0 !important; background: #fff !important; }
+            .invoice-box { box-shadow: none !important; border: none !important; }
+            .d-print-none { display: none !important; }
+            @page { margin: 1.5cm; }
+        }
+
+        body { background: #f0f4f8; padding: 40px; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+
+        .invoice-box {
+            max-width: 820px;
+            margin: auto;
+            padding: 0;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 24px rgba(0,0,0,.08);
+            background: #fff;
+            border-radius: 14px;
+            overflow: hidden;
+            color: #334155;
+        }
+
+        /* ── Header ── */
+        .inv-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+            color: #fff;
+            padding: 28px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .inv-header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: 1px; margin: 0; }
+        .inv-header .subtitle { opacity: .85; font-size: .88rem; margin: 4px 0 0; }
+        .inv-folio { text-align: right; }
+        .inv-folio .folio-num { font-size: 1.4rem; font-weight: 700; letter-spacing: .5px; }
+        .inv-folio .folio-date { opacity: .8; font-size: .8rem; margin-top: 2px; }
+
+        /* ── Body ── */
+        .inv-body { padding: 28px 32px; }
+
+        /* ── Badges ── */
+        .badge-tipo {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: .78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        .badge-alquiler { background: #dbeafe; color: #1e40af; }
+        .badge-venta { background: #fef3c7; color: #92400e; }
+
+        /* ── Info boxes ── */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px 18px;
+        }
+        .info-box .box-title {
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: #94a3b8;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-box .box-title i { font-size: .8rem; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: .88rem; }
+        .info-row .label { color: #64748b; }
+        .info-row .value { font-weight: 600; color: #1e293b; }
+
+        /* ── Table ── */
+        .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .inv-table thead th {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            font-weight: 700;
+            padding: 10px 14px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .inv-table tbody td {
+            padding: 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: .9rem;
+            vertical-align: middle;
+        }
+        .inv-table .text-end { text-align: right; }
+        .inv-table .text-center { text-align: center; }
+
+        /* ── Pago section ── */
+        .pago-box {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #86efac;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 24px;
+        }
+        .pago-box .pago-title {
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: #15803d;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .pago-detail { font-size: .9rem; color: #166534; }
+        .pago-detail strong { font-weight: 700; }
+
+        /* ── Totals ── */
+        .totals-box {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 24px;
+        }
+        .totals-table { width: 300px; }
+        .totals-table td { padding: 6px 0; font-size: .9rem; }
+        .totals-table .total-final td {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #1e293b;
+            border-top: 2px solid #1e293b;
+            padding-top: 12px;
+        }
+
+        /* ── Footer ── */
+        .inv-footer {
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 32px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: .8rem;
+            background: #fafbfc;
+        }
+        .inv-footer p { margin: 0 0 4px; }
+
+        /* ── Signatures ── */
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0 10px;
+            padding-top: 10px;
+        }
+        .sig-line {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid #cbd5e1;
+            font-size: .82rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-box">
+
+        <!-- ═══ HEADER ═══ -->
+        <div class="inv-header">
+            <div>
+                <h1><i class="fas fa-seedling me-2"></i>AGROGEST</h1>
+                <p class="subtitle">
+                    Comprobante de {{ 'Venta' if alquiler.tipo == 'venta' else 'Alquiler' }} de Potrero
+                </p>
+            </div>
+            <div class="inv-folio">
+                <div class="folio-num">#{{ '%05d' % alquiler.id }}</div>
+                <div class="folio-date">
+                    Emisión: {{ alquiler.fecha_inicio.strftime('%d/%m/%Y') if alquiler.fecha_inicio else 'N/A' }}
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ BODY ═══ -->
+        <div class="inv-body">
+
+            <!-- Tipo badge -->
+            <div class="mb-3">
+                {% if alquiler.tipo == 'venta' %}
+                <span class="badge-tipo badge-venta"><i class="fas fa-tag me-1"></i>Venta</span>
+                {% else %}
+                <span class="badge-tipo badge-alquiler"><i class="fas fa-handshake me-1"></i>Alquiler</span>
+                {% endif %}
+            </div>
+
+            <!-- Info boxes -->
+            <div class="info-grid">
+                <div class="info-box">
+                    <div class="box-title"><i class="fas fa-user-shield"></i> Propietario / Arrendador</div>
+                    <div class="info-row">
+                        <span class="label">Nombre</span>
+                        <span class="value">{{ alquiler.propietario.nombre if alquiler.propietario else 'N/A' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">ID Usuario</span>
+                        <span class="value">{{ alquiler.propietario_id }}</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <div class="box-title"><i class="fas fa-user-tie"></i> Cliente / Arrendatario</div>
+                    <div class="info-row">
+                        <span class="label">Nombre</span>
+                        <span class="value">{{ alquiler.nombre_cliente or (alquiler.arrendatario.nombre if alquiler.arrendatario else 'N/A') }}</span>
+                    </div>
+                    {% if alquiler.telefono_cliente %}
+                    <div class="info-row">
+                        <span class="label">Teléfono</span>
+                        <span class="value">{{ alquiler.telefono_cliente }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Detalle tabla -->
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th>Descripción</th>
+                        <th class="text-center">Período</th>
+                        <th class="text-end">Forma de Pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <strong>{{ 'Venta' if alquiler.tipo == 'venta' else 'Alquiler' }} de Potrero: {{ alquiler.potrero.nombre if alquiler.potrero else 'Desconocido' }}</strong><br>
+                            <small style="color:#64748b;">
+                                {% if alquiler.potrero and alquiler.potrero.area %}
+                                Área: {{ alquiler.potrero.area }} ha &nbsp;|&nbsp;
+                                {% endif %}
+                                Capacidad: {{ alquiler.potrero.capacidad if alquiler.potrero else 'N/A' }} animales
+                            </small>
+                        </td>
+                        <td class="text-center">
+                            {{ alquiler.fecha_inicio.strftime('%d/%m/%Y') if alquiler.fecha_inicio else 'N/A' }}
+                            {% if alquiler.tipo != 'venta' %}
+                            <br><small style="color:#94a3b8;">a</small><br>
+                            {{ alquiler.fecha_fin.strftime('%d/%m/%Y') if alquiler.fecha_fin else 'Indefinido' }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% set pago_labels = {
+                                'dinero': '💵 Dinero en efectivo',
+                                'transferencia': '🏦 Transferencia bancaria',
+                                'leche': '🥛 Leche',
+                                'queso': '🧀 Queso',
+                                'carne': '🥩 Carne',
+                                'animales': '🐄 Animales',
+                                'trabajo': '👷 Trabajo',
+                                'mixto': '🔄 Mixto',
+                                'otro': '📦 Otro'
+                            } %}
+                            {{ pago_labels.get(alquiler.forma_pago, '💵 Dinero') if alquiler.forma_pago else '💵 Dinero' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pago en especie / detalle -->
+            {% if alquiler.forma_pago and alquiler.forma_pago not in ['dinero', 'transferencia'] %}
+            <div class="pago-box">
+                <div class="pago-title"><i class="fas fa-box-open me-1"></i> Detalle del Pago en Especie</div>
+                <div class="pago-detail">
+                    {% if alquiler.descripcion_pago %}
+                    <strong>Acuerdo:</strong> {{ alquiler.descripcion_pago }}
+                    {% else %}
+                    <span style="color:#6b7280;">No se especificó detalle del acuerdo.</span>
+                    {% endif %}
+                    {% if alquiler.forma_pago == 'mixto' and alquiler.precio and alquiler.precio > 0 %}
+                    <br><strong>Componente en dinero:</strong> ${{ '%.2f' % alquiler.precio }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Totales -->
+            <div class="totals-box">
+                <table class="totals-table">
+                    {% if alquiler.forma_pago in [None, 'dinero', 'transferencia', 'mixto'] %}
+                    <tr>
+                        <td style="color:#64748b;">Subtotal:</td>
+                        <td class="text-end">${{ '%.2f' % (alquiler.precio or 0) }}</td>
+                    </tr>
+                    <tr class="total-final">
+                        <td>Total:</td>
+                        <td class="text-end">${{ '%.2f' % (alquiler.precio or 0) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr class="total-final">
+                        <td>Pago acordado:</td>
+                        <td class="text-end" style="font-size:1rem;">En especie</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+
+            <!-- Firmas -->
+            <div class="signatures">
+                <div class="sig-line">
+                    <strong>{{ alquiler.propietario.nombre if alquiler.propietario else '________________' }}</strong><br>
+                    Propietario / Arrendador
+                </div>
+                <div class="sig-line">
+                    <strong>{{ alquiler.nombre_cliente or (alquiler.arrendatario.nombre if alquiler.arrendatario else '________________') }}</strong><br>
+                    Cliente / Arrendatario
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ FOOTER ═══ -->
+        <div class="inv-footer">
+            <p>Este documento es un comprobante de mutuo acuerdo generado por la plataforma <strong>AgroGest</strong>.</p>
+            <p>El pago debe realizarse según los términos acordados entre las partes.</p>
+            <div class="mt-3 d-print-none">
+                <button onclick="window.print()" class="btn btn-primary px-4 rounded-pill">
+                    <i class="fas fa-print me-2"></i>Imprimir / Guardar PDF
+                </button>
+                <a href="{{ url_for('alquileres') }}" class="btn btn-outline-secondary px-4 rounded-pill ms-2">
+                    <i class="fas fa-arrow-left me-2"></i>Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -9,10 +9,10 @@
         <span>Listado de Producción</span>
         <div>
             <a href="{{ url_for('nueva_produccion') }}" class="btn btn-primary btn-sm me-2">
-                <i class="fas fa-plus me-2"></i>Nueva Producción
+                <span style="font-size: 1.2rem; margin-right: 0.5rem;">➕</span>Nueva Producción
             </a>
             <a href="{{ url_for('reporte_produccion_pdf') }}" class="btn btn-success btn-sm">
-                <i class="fas fa-file-pdf me-2"></i>Descargar Reporte PDF
+                <span style="font-size: 1.2rem; margin-right: 0.5rem;">📄</span>Descargar Reporte PDF
             </a>
         </div>
     </div>
@@ -21,12 +21,12 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th>Animal</th>
-                        <th>Tipo</th>
-                        <th>Cantidad</th>
-                        <th>Fecha</th>
-                        <th>Calidad</th>
-                        <th class="text-end">Acciones</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Animal</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Tipo</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Cantidad</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Fecha</th>
+                        <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Calidad</th>
+                        <th class="text-end text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,16 +41,16 @@
                                              style="width: 100%; height: 100%; object-fit: cover;">
                                     {% else %}
                                         <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                            {% if produccion.animal.tipo == 'vaca' %}
-                                                <i class="fas fa-cow"></i>
+                                             {% if produccion.animal.tipo == 'vaca' %}
+                                                <span style="font-size: 1.2rem;">🐄</span>
                                             {% elif produccion.animal.tipo == 'cerdo' %}
-                                                <i class="fas fa-piggy-bank"></i>
+                                                <span style="font-size: 1.2rem;">🐷</span>
                                             {% elif produccion.animal.tipo == 'pollo' %}
-                                                <i class="fas fa-egg"></i>
+                                                <span style="font-size: 1.2rem;">🐔</span>
                                             {% elif produccion.animal.tipo == 'caballo' %}
-                                                <i class="fas fa-horse"></i>
+                                                <span style="font-size: 1.2rem;">🐴</span>
                                             {% else %}
-                                                <i class="fas fa-paw"></i>
+                                                <span style="font-size: 1.2rem;">🐾</span>
                                             {% endif %}
                                         </div>
                                     {% endif %}
@@ -62,10 +62,10 @@
                             </div>
                         </td>
                         <td>
-                            {% set icons = {'leche': 'fa-fill-drip', 'carne': 'fa-drumstick-bite', 'huevos': 'fa-egg'} %}
+                            {% set icons = {'leche': '🥛', 'carne': '🥩', 'huevos': '🥚'} %}
                             {% set colors = {'leche': 'info', 'carne': 'warning', 'huevos': 'success'} %}
                             <span class="badge bg-{{ colors.get(produccion.tipo_produccion, 'secondary') }}">
-                                <i class="fas {{ icons.get(produccion.tipo_produccion, 'fa-box') }} me-1"></i>
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">{{ icons.get(produccion.tipo_produccion, '📦') }}</span>
                                 {{ produccion.tipo_produccion|title }}
                             </span>
                         </td>
@@ -77,13 +77,13 @@
                         </td>
                         <td class="text-end">
                             <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#produccionModal{{ produccion.id }}" title="Ver detalles">
-                                <i class="fas fa-eye"></i>
+                                <span style="font-size: 1rem;">👁️</span>
                             </button>
                             <a href="{{ url_for('editar_produccion', produccion_id=produccion.id) }}" class="btn btn-sm btn-outline-primary ms-1" title="Editar">
-                                <i class="fas fa-edit"></i>
+                                <span style="font-size: 1rem;">✏️</span>
                             </a>
                             <button type="button" class="btn btn-sm btn-outline-danger ms-1" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ produccion.id }}" title="Eliminar">
-                                <i class="fas fa-trash"></i>
+                                <span style="font-size: 1rem;">🗑️</span>
                             </button>
                             
                             <!-- Modal de confirmación de eliminación -->
@@ -101,7 +101,7 @@
                                             <p><strong>Cantidad:</strong> {{ produccion.cantidad }} {{ produccion.unidad }}</p>
                                             <p><strong>Fecha:</strong> {{ produccion.fecha.strftime('%d/%m/%Y') }}</p>
                                             <div class="alert alert-warning">
-                                                <i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
+                                                <span style="font-size: 1rem; margin-right: 0.2rem;">⚠️</span>Esta acción no se puede deshacer.
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -116,52 +116,124 @@
                         </td>
                     </tr>
                     
-                    <!-- Modal Detalles de Producción -->
-                    <div class="modal fade" id="produccionModal{{ produccion.id }}" tabindex="-1">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Detalles de Producción</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6 class="text-primary mb-3">Información del Animal</h6>
-                                            <p><strong>Animal:</strong> {{ produccion.animal.identificacion }}</p>
-                                            <p><strong>Tipo de Producción:</strong> 
-                                                {% set icons = {'leche': 'fa-fill-drip', 'carne': 'fa-drumstick-bite', 'huevos': 'fa-egg'} %}
-                                                {% set colors = {'leche': 'info', 'carne': 'warning', 'huevos': 'success'} %}
-                                                <span class="badge bg-{{ colors.get(produccion.tipo_produccion, 'secondary') }}">
-                                                    <i class="fas {{ icons.get(produccion.tipo_produccion, 'fa-box') }} me-1"></i>
-                                                    {{ produccion.tipo_produccion|title }}
-                                                </span>
-                                            </p>
-                                            <p><strong>Fecha:</strong> {{ produccion.fecha.strftime('%d/%m/%Y') }}</p>
+                    <!-- Modal Detalles de Producción Premium -->
+                    <div class="modal fade" id="produccionModal{{ produccion.id }}" tabindex="-1" aria-labelledby="produccionModalLabel{{ produccion.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                                <!-- Header del Modal con Degradado Azul Premium -->
+                                <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%;">
+                                            <span style="font-size: 1.5rem;">📊</span>
                                         </div>
-                                        <div class="col-md-6">
-                                            <h6 class="text-info mb-3">Detalles de Producción</h6>
-                                            <p><strong>Cantidad:</strong> {{ produccion.cantidad }} {{ produccion.unidad }}</p>
-                                            <p><strong>Calidad:</strong> 
-                                                {% set quality_colors = {'excelente': 'success', 'buena': 'warning', 'regular': 'info', 'mala': 'danger'} %}
-                                                <span class="badge rounded-pill bg-{{ quality_colors.get(produccion.calidad, 'secondary') }}">{{ produccion.calidad|title }}</span>
-                                            </p>
+                                        <div>
+                                            <h5 class="modal-title fw-bold mb-0 text-white" id="produccionModalLabel{{ produccion.id }}">Detalles de Producción</h5>
+                                            <small class="text-white text-opacity-80 fw-semibold">{{ produccion.animal.identificacion }} - {{ produccion.animal.tipo|title }}</small>
                                         </div>
                                     </div>
-                                    
-                                    {% if produccion.observaciones %}
-                                    <div class="row mt-3">
-                                        <div class="col-12">
-                                            <h6 class="text-warning mb-3">Observaciones</h6>
-                                            <p>{{ produccion.observaciones }}</p>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                
+                                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                                    <!-- Métrica de Tarjetas Rápidas de Alta Tecnología -->
+                                    <div class="row g-3 mb-2">
+                                        <!-- Tipo de Producción -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;">
+                                                    <span style="font-size: 1rem; margin-right: 0.2rem;">🏷️</span> TIPO
+                                                </div>
+                                                {% set icons = {'leche': '🥛', 'carne': '🥩', 'huevos': '🥚'} %}
+                                                {% set colors = {'leche': 'info', 'carne': 'warning', 'huevos': 'success'} %}
+                                                <span class="badge rounded-pill d-inline-block py-2 bg-{{ colors.get(produccion.tipo_produccion, 'secondary') }}-soft text-{{ colors.get(produccion.tipo_produccion, 'secondary') }}" style="font-size: 0.8rem; font-weight: 700; width: fit-content;">
+                                                    <span style="font-size: 1rem; margin-right: 0.2rem;">{{ icons.get(produccion.tipo_produccion, '📦') }}</span>
+                                                    {{ produccion.tipo_produccion|upper }}
+                                                </span>
+                                            </div>
                                         </div>
+                                        
+                                        <!-- Cantidad -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;">
+                                                    <span style="font-size: 1rem; margin-right: 0.2rem;">⚖️</span> CANTIDAD
+                                                </div>
+                                                <div class="fw-bold fs-5 text-dark">
+                                                    {{ produccion.cantidad }} <span class="small text-muted" style="font-size: 0.8rem;">{{ produccion.unidad }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Calidad -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;">
+                                                    <span style="font-size: 1rem; margin-right: 0.2rem;">⭐</span> CALIDAD
+                                                </div>
+                                                {% set quality_colors = {'excelente': 'success', 'buena': 'warning', 'regular': 'info', 'mala': 'danger'} %}
+                                                <span class="badge rounded-pill d-inline-block py-2 bg-{{ quality_colors.get(produccion.calidad, 'secondary') }}-soft text-{{ quality_colors.get(produccion.calidad, 'secondary') }}" style="font-size: 0.8rem; font-weight: 700; width: fit-content;">
+                                                    {{ produccion.calidad|upper }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Fecha -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;">
+                                                    <span style="font-size: 1rem; margin-right: 0.2rem;">📅</span> FECHA
+                                                </div>
+                                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+                                                    {{ produccion.fecha.strftime('%d/%m/%Y') }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Animal -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;">
+                                                    <span style="font-size: 1rem; margin-right: 0.2rem;">🐄</span> ANIMAL
+                                                </div>
+                                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+                                                    {{ produccion.animal.identificacion }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Raza / Tipo -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;">
+                                                    <span style="font-size: 1rem; margin-right: 0.2rem;">🧬</span> RAZA / TIPO
+                                                </div>
+                                                <div class="fw-bold text-dark small" style="font-size: 0.85rem;">
+                                                    {{ produccion.animal.raza or 'No definida' }} ({{ produccion.animal.tipo|title }})
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Observaciones -->
+                                    {% if produccion.observaciones %}
+                                    <div class="card border-0 shadow-xs p-3 mt-3" style="border-radius: 16px; background-color: #ffffff;">
+                                        <h6 class="text-dark fw-bold mb-2 d-flex align-items-center">
+                                            <span class="icon-circle bg-primary-soft text-primary me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%;">
+                                                📝
+                                            </span>
+                                            Observaciones
+                                        </h6>
+                                        <p class="text-muted mb-0 small" style="line-height: 1.5;">{{ produccion.observaciones }}</p>
                                     </div>
                                     {% endif %}
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                    <a href="{{ url_for('editar_produccion', produccion_id=produccion.id) }}" class="btn btn-primary">
-                                        <i class="fas fa-edit me-2"></i>Editar
+                                
+                                <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-between" style="border-radius: 0 0 20px 20px;">
+                                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">❌</span>Cerrar
+                                    </button>
+                                    <a href="{{ url_for('editar_produccion', produccion_id=produccion.id) }}" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm">
+                                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">✏️</span>Editar Registro
                                     </a>
                                 </div>
                             </div>
@@ -174,14 +246,70 @@
         
         {% if not producciones %}
         <div class="text-center py-5">
-            <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+            <span style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📊</span>
             <h5 class="text-muted mb-3">No hay registros de producción</h5>
             <p>Comienza a medir el rendimiento de tu finca.</p>
             <a href="{{ url_for('nueva_produccion') }}" class="btn btn-primary mt-2">
-                <i class="fas fa-plus me-2"></i>Registrar Producción
+                <span style="font-size: 1.2rem; margin-right: 0.5rem;">➕</span>Registrar Producción
             </a>
         </div>
         {% endif %}
     </div>
 </div>
+
+<style>
+/* Degradado Premium Azul para el Header del Modal */
+.modal-header.bg-gradient-blue {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+}
+
+/* Colores Soft para Badges y Contenedores */
+.bg-success-soft {
+    background-color: rgba(25, 135, 84, 0.12) !important;
+    color: #198754 !important;
+}
+.bg-warning-soft {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+    color: #ffc107 !important;
+}
+.bg-danger-soft {
+    background-color: rgba(220, 53, 69, 0.12) !important;
+    color: #dc3545 !important;
+}
+.bg-primary-soft {
+    background-color: rgba(13, 110, 253, 0.12) !important;
+    color: #0d6efd !important;
+}
+.bg-info-soft {
+    background-color: rgba(13, 202, 240, 0.12) !important;
+    color: #0dcaf0 !important;
+}
+.bg-secondary-soft {
+    background-color: rgba(108, 117, 125, 0.12) !important;
+    color: #6c757d !important;
+}
+
+.shadow-xs {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+/* Custom Scrollbar for Modal Body */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+</style>
 {% endblock %}

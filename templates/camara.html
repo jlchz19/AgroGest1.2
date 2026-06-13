@@ -2,64 +2,129 @@
 {% block title %}Gestión de Cámaras{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
+<div class="camera-dashboard container-fluid px-4 py-4" style="background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%); min-height: calc(100vh - 60px); border-radius: 24px; box-shadow: inset 0 0 50px rgba(2, 132, 199, 0.03);">
+  
   <!-- Header -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-5 gap-4">
     <div>
-      <h2 class="mb-0 fw-bold">
-        <i class="fas fa-video text-primary me-3"></i>
-        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Cámaras en Vivo</span>
-      </h2>
-      <p class="text-muted mb-0 mt-1">Monitorea tus cámaras de seguridad en tiempo real</p>
+      <div class="d-flex align-items-center gap-3">
+        <div class="camera-icon-wrapper">
+          <i class="fas fa-video fa-lg"></i>
+        </div>
+        <div>
+          <h2 class="mb-0 fw-bold header-title">
+            Centro de Monitoreo
+          </h2>
+          <p class="text-muted-cyan mb-0 mt-1">Vigilancia de seguridad y grabación digital en vivo</p>
+        </div>
+      </div>
     </div>
-    <button type="button" class="btn btn-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; padding: 12px 24px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);" data-bs-toggle="modal" data-bs-target="#addCameraModal">
-      <i class="fas fa-plus me-2"></i>Agregar Cámara
-    </button>
+
+    <!-- Stats & Quick Actions -->
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3 w-100 w-md-auto">
+      <!-- Info Badge Panel -->
+      <div class="d-flex align-items-center gap-3 px-4 py-2.5 rounded-pill bg-glass border-glass shadow-sm">
+        <span class="d-flex align-items-center gap-2 text-dark small" style="font-weight: 600;">
+          <i class="fas fa-desktop text-info"></i>
+          Dispositivos: <strong class="text-info">{{ cameras|length }}</strong>
+        </span>
+        <div class="divider-vertical"></div>
+        <span class="d-flex align-items-center gap-2 text-dark small" style="font-weight: 600;">
+          <span class="heartbeat-dot bg-success"></span>
+          Monitoreo Activo
+        </span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2 w-100 w-sm-auto flex-fill">
+        <a href="{{ url_for('grabaciones') }}" class="btn btn-action-glass d-flex justify-content-center align-items-center flex-fill">
+          <i class="fas fa-folder-open me-2 text-info"></i>Historial de Grabación
+        </a>
+        <a href="{{ url_for('agregar_camara') }}" class="btn btn-action-glow d-flex justify-content-center align-items-center flex-fill">
+          <i class="fas fa-plus-circle me-2"></i>Agregar Cámara
+        </a>
+      </div>
+    </div>
   </div>
 
   <!-- Camera Grid -->
-  <div class="row g-3" id="camerasGrid">
+  <div class="row g-4" id="camerasGrid">
     {% for camera in cameras %}
     <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
-      <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px;">
+      <div class="card h-100 border-0 camera-card overflow-hidden">
+        
         <!-- Camera Preview -->
-        <div class="position-relative" style="height: 180px; background: #000; cursor: pointer;" 
-             onclick="openCameraModal('{{ camera.nombre|e }}', '{{ camera.url|e }}')">
-          <img src="{{ camera.url }}" class="w-100 h-100" alt="{{ camera.nombre }}" 
-               style="object-fit: cover;"
-               data-url="{{ camera.url }}">
+        {% set stream_url = url_for('stream_camara', id=camera.id) if camera.url.startswith('rtsp://') else camera.url %}
+        
+        <div class="position-relative overflow-hidden preview-container" 
+             onclick="openCameraModal('{{ camera.id }}', '{{ camera.nombre|e }}', '{{ stream_url|e }}')">
           
-          <!-- Live Badge -->
-          <div class="position-absolute top-2 end-2">
-            <span class="badge bg-success">EN VIVO</span>
+          <!-- Tech overlay crosshairs/corners -->
+          <div class="tech-corners">
+            <div class="corner top-left"></div>
+            <div class="corner top-right"></div>
+            <div class="corner bottom-left"></div>
+            <div class="corner bottom-right"></div>
+          </div>
+          
+          <img src="{{ stream_url }}" class="w-100 h-100 preview-img camera-preview" alt="{{ camera.nombre }}" 
+               style="object-fit: cover; opacity: 0.85; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;"
+               data-url="{{ stream_url }}">
+          
+          <!-- Play Overlay -->
+          <div class="position-absolute top-50 start-50 translate-middle play-overlay text-white">
+            <div class="play-btn-circle">
+              <i class="fas fa-play" style="margin-left: 3px;"></i>
+            </div>
+          </div>
+
+          <!-- Status Badges -->
+          <!-- Top Left: ID -->
+          <div class="position-absolute top-0 start-0 m-3" style="z-index: 4;">
+            <span class="badge bg-glass-dark text-dark border-glass small" style="backdrop-filter: blur(8px);">
+              <i class="fas fa-network-wired me-1 text-info"></i>CAM-{{ camera.id }}
+            </span>
+          </div>
+
+          <!-- Top Right: LIVE -->
+          <div class="position-absolute top-0 end-0 m-3" style="z-index: 4;">
+            <span class="badge-live-neon">
+              <span class="pulse-wave"></span>
+              <span class="pulse-core"></span>
+              <span class="text-live">EN VIVO</span>
+            </span>
           </div>
         </div>
 
-        <!-- Camera Info -->
-        <div class="card-body p-3">
-          <h6 class="card-title mb-2">{{ camera.nombre }}</h6>
-          <p class="card-text small text-muted mb-3 text-truncate" title="{{ camera.url }}">{{ camera.url }}</p>
+        <!-- Camera Info Body -->
+        <div class="card-body p-4 d-flex flex-column justify-content-between">
+          <div class="mb-3">
+            <h5 class="camera-title fw-bold text-dark mb-1 text-truncate" title="{{ camera.nombre }}">{{ camera.nombre }}</h5>
+            <p class="camera-url text-truncate small mb-0" title="{{ camera.url }}">
+              <i class="fas fa-link me-2 text-info"></i>{{ camera.url }}
+            </p>
+          </div>
           
           <!-- Action Buttons -->
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-primary flex-fill" onclick="openCameraModal('{{ camera.nombre|e }}', '{{ camera.url|e }}')">
-              <i class="fas fa-eye me-1"></i>Ver
+          <div class="d-flex align-items-center gap-2 mt-auto">
+            <button class="btn btn-action-view flex-fill text-white" onclick="openCameraModal('{{ camera.id }}', '{{ camera.nombre|e }}', '{{ stream_url|e }}')">
+              <i class="fas fa-eye me-2"></i>Monitorear
             </button>
             <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" 
-                      aria-expanded="false" style="min-width: 38px;">
-                <i class="fas fa-ellipsis-v"></i>
+              <button class="btn btn-action-settings" type="button" data-bs-toggle="dropdown" 
+                      aria-expanded="false">
+                <i class="fas fa-sliders-h text-muted-cyan"></i>
               </button>
-              <ul class="dropdown-menu dropdown-menu-end" style="min-width: 150px; z-index: 1050;">
-                <li><a class="dropdown-item edit-camera d-flex align-items-center" href="#" 
+              <ul class="dropdown-menu dropdown-menu-end glass-dropdown">
+                <li><a class="dropdown-item edit-camera d-flex align-items-center text-dark" href="#" 
                       data-bs-toggle="modal" data-bs-target="#editCameraModal" 
                       data-id="{{ camera.id }}" data-name="{{ camera.nombre }}" data-url="{{ camera.url }}">
-                  <i class="fas fa-edit me-2 text-primary"></i>
-                  <span>Editar</span>
+                  <i class="fas fa-edit me-2 text-info"></i>
+                  <span>Editar Ajustes</span>
                 </a></li>
-                <li><hr class="dropdown-divider my-1"></li>
-                <li><a class="dropdown-item text-danger d-flex align-items-center delete-camera" href="#"
-                      data-id="{{ camera.id }}" data-name="{{ camera.nombre }}">
+                <li><hr class="dropdown-divider border-glass"></li>
+                <li><a class="dropdown-item text-danger d-flex align-items-center" href="#"
+                      onclick="prepararEliminarCamara('{{ camera.id }}', '{{ camera.nombre|e }}')">
                   <i class="fas fa-trash me-2"></i>
                   <span>Eliminar</span>
                 </a></li>
@@ -71,13 +136,13 @@
     </div>
     {% else %}
     <div class="col-12">
-      <div class="text-center py-5">
-        <i class="fas fa-video-slash fa-3x text-muted mb-3"></i>
-        <h5>No hay cámaras configuradas</h5>
-        <p class="text-muted">Agrega tu primera cámara para comenzar</p>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCameraModal">
-          <i class="fas fa-plus me-2"></i>Agregar Cámara
-        </button>
+      <div class="text-center py-5 rounded-4 bg-glass border-glass shadow">
+        <i class="fas fa-video-slash fa-3x text-muted-cyan mb-3"></i>
+        <h5 class="text-dark fw-bold">No hay cámaras configuradas</h5>
+        <p class="text-muted-cyan">Agrega tu primera cámara para comenzar el monitoreo</p>
+        <a href="{{ url_for('agregar_camara') }}" class="btn btn-action-glow mt-3">
+          <i class="fas fa-plus-circle me-2"></i>Agregar Cámara
+        </a>
       </div>
     </div>
     {% endfor %}
@@ -87,65 +152,30 @@
 <!-- Modal de confirmación para eliminar cámara -->
 <div class="modal fade" id="eliminarCamaraModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">
-          <i class="fas fa-trash me-2"></i>Confirmar Eliminación
+    <div class="modal-content glass-modal-content">
+      <div class="modal-header border-0 p-4" style="border-bottom: 1px solid rgba(0,0,0,0.06) !important;">
+        <h5 class="modal-title text-danger fw-bold">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
         </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <p>¿Estás seguro que deseas eliminar esta cámara?</p>
-        <p><strong>Cámara:</strong> <span id="camaraNombreEliminar"></span></p>
-        <div class="alert alert-warning">
-          <i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
+      <div class="modal-body p-4">
+        <p class="text-dark">¿Estás completamente seguro de que deseas eliminar este dispositivo de monitoreo?</p>
+        <div class="bg-light p-3 rounded border border-secondary border-opacity-10 mb-3">
+          <strong class="text-muted-cyan">Dispositivo:</strong> 
+          <span id="camaraNombreEliminar" class="text-dark fw-bold"></span>
+        </div>
+        <div class="alert alert-danger border-0 bg-danger bg-opacity-10 text-danger d-flex align-items-center gap-2 mb-0" style="border-radius: 10px;">
+          <i class="fas fa-info-circle"></i>
+          <span>Esta acción removerá el feed del dashboard de forma permanente.</span>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="confirmarEliminarCamara">
-          <i class="fas fa-trash me-2"></i>Eliminar
+      <div class="modal-footer border-0 p-4" style="border-top: 1px solid rgba(0,0,0,0.06) !important;">
+        <button type="button" class="btn btn-action-glass" data-bs-dismiss="modal" style="padding: 8px 20px;">Cancelar</button>
+        <button type="button" class="btn btn-danger px-4" id="confirmarEliminarCamara" style="border-radius: 12px; font-weight: 600;">
+          <i class="fas fa-trash me-2"></i>Eliminar Dispositivo
         </button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Add Camera Modal -->
-<div class="modal fade" id="addCameraModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border: none; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
-      <div class="modal-header border-0 p-4">
-        <h5 class="modal-title fw-bold">
-          <i class="fas fa-plus-circle text-primary me-2"></i>Agregar Nueva Cámara
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <form method="POST" action="{{ url_for('agregar_camara') }}">
-        <div class="modal-body p-4">
-          <div class="mb-4">
-            <label class="form-label fw-semibold">Nombre de la Cámara</label>
-            <input type="text" name="nombre" class="form-control form-control-lg" required 
-                   placeholder="Ej: Entrada Principal" style="border-radius: 10px; border: 2px solid #e9ecef;">
-          </div>
-          <div class="mb-4">
-            <label class="form-label fw-semibold">URL del Stream</label>
-            <input type="url" name="url" class="form-control form-control-lg" required 
-                   placeholder="Ej: http://192.168.1.100:8080/video" 
-                   style="border-radius: 10px; border: 2px solid #e9ecef;">
-            <div class="form-text mt-2">
-              <i class="fas fa-info-circle me-1"></i>
-              Para IP Webcam (Android), usa la ruta /video (MJPEG)
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer border-0 p-4">
-          <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal" style="border-radius: 10px;">Cancelar</button>
-          <button type="submit" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 10px;">
-            <i class="fas fa-save me-2"></i>Guardar Cámara
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 </div>
@@ -153,10 +183,10 @@
 <!-- Edit Camera Modal -->
 <div class="modal fade" id="editCameraModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border: none; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
-      <div class="modal-header border-0 p-4">
-        <h5 class="modal-title fw-bold">
-          <i class="fas fa-edit text-primary me-2"></i>Editar Cámara
+    <div class="modal-content glass-modal-content">
+      <div class="modal-header border-0 p-4" style="border-bottom: 1px solid rgba(0,0,0,0.06) !important;">
+        <h5 class="modal-title fw-bold text-dark">
+          <i class="fas fa-edit text-info me-2"></i>Editar Cámara
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -164,24 +194,23 @@
         <div class="modal-body p-4">
           <input type="hidden" name="id" id="editCameraId">
           <div class="mb-4">
-            <label class="form-label fw-semibold">Nombre de la Cámara</label>
+            <label class="form-label fw-semibold text-muted-cyan">Nombre de la Cámara</label>
             <input type="text" name="nombre" id="editCameraNombre" class="form-control form-control-lg" required 
-                   placeholder="Ej: Entrada Principal" style="border-radius: 10px; border: 2px solid #e9ecef;">
+                   placeholder="Ej: Entrada Principal">
           </div>
           <div class="mb-4">
-            <label class="form-label fw-semibold">URL del Stream</label>
+            <label class="form-label fw-semibold text-muted-cyan">URL de Transmisión (Stream)</label>
             <input type="url" name="url" id="editCameraUrl" class="form-control form-control-lg" required 
-                   placeholder="Ej: http://192.168.1.100:8080/video" 
-                   style="border-radius: 10px; border: 2px solid #e9ecef;">
-            <div class="form-text mt-2">
-              <i class="fas fa-info-circle me-1"></i>
-              Para IP Webcam (Android), usa la ruta /video (MJPEG)
+                   placeholder="Ej: http://192.168.1.100:8080/video">
+            <div class="form-text mt-2 text-muted" style="font-size: 0.8rem;">
+              <i class="fas fa-info-circle me-1 text-info"></i>
+              Para IP Webcam (Android) usa /video. Para V380 Pro usa RTSP (ej. rtsp://192.168.1.100:554/live/ch00_1).
             </div>
           </div>
         </div>
-        <div class="modal-footer border-0 p-4">
-          <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal" style="border-radius: 10px;">Cancelar</button>
-          <button type="submit" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 10px;">
+        <div class="modal-footer border-0 p-4" style="border-top: 1px solid rgba(0,0,0,0.06) !important;">
+          <button type="button" class="btn btn-action-glass" data-bs-dismiss="modal" style="padding: 8px 20px;">Cancelar</button>
+          <button type="submit" class="btn btn-action-glow" style="padding: 8px 24px;">
             <i class="fas fa-save me-2"></i>Actualizar Cámara
           </button>
         </div>
@@ -192,71 +221,573 @@
 
 <!-- View Camera Modal -->
 <div class="modal fade" id="viewCameraModal" tabindex="-1">
-  <div class="modal-dialog modal-fullscreen-lg">
-    <div class="modal-content" style="border: none; border-radius: 16px; overflow: hidden;">
-      <div class="modal-header border-0 p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <h5 class="modal-title text-white fw-bold" id="viewCameraModalLabel">
-          <i class="fas fa-video me-2"></i>Vista de Cámara
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+  <div class="modal-dialog modal-fullscreen-lg modal-dialog-centered">
+    <div class="modal-content glass-modal-content" style="border-radius: 24px; overflow: hidden;">
+      <div class="modal-header border-0 p-4" style="border-bottom: 1px solid rgba(0,0,0,0.06) !important;">
+        <div class="d-flex align-items-center gap-2">
+          <span class="heartbeat-dot bg-success" style="width: 8px; height: 8px; box-shadow: 0 0 8px #10b981;"></span>
+          <h5 class="modal-title text-dark fw-bold" id="viewCameraModalLabel">
+            <i class="fas fa-video me-2 text-info"></i>Vista de Cámara
+          </h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body p-0" style="background: #000; height: 70vh; position: relative;">
-        <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+      <div class="modal-body p-0 view-camera-body" style="background: #000; height: 68vh; position: relative; overflow: hidden;">
+        
+        <!-- Shutter Flash Overlay -->
+        <div id="shutterFlash" class="shutter-flash"></div>
+        
+        <!-- Tech HUD Overlay -->
+        <div class="hud-layer">
+          <!-- Top-left overlay: info -->
+          <div class="hud-item top-left-hud">
+            <div class="d-flex flex-column gap-1 text-monospace small text-success" style="font-family: monospace; line-height: 1.3;">
+              <div>FEED: ACTIVE</div>
+              <div>RES: 1080P</div>
+              <div class="text-truncate text-dark" style="max-width: 250px;">URL: <span id="hudUrl" class="opacity-75"></span></div>
+            </div>
+          </div>
+          
+          <!-- Top-right overlay: Clock and recording status -->
+          <div class="hud-item top-right-hud text-end text-monospace small" style="font-family: monospace;">
+            <div id="hudClock" class="text-dark opacity-95 fw-bold mb-1" style="font-size: 0.95rem; letter-spacing: 0.5px;">00:00:00</div>
+            <div id="recordingIndicatorModal" class="badge bg-danger bg-opacity-75 text-white border-0 px-3 py-1.5 align-items-center gap-1.5 animate-pulse" style="display: none; border-radius: 4px;">
+              <i class="fas fa-circle text-white fa-xs" style="animation: pulse-simple 1s infinite;"></i>
+              REC <span id="recordingTimeModal" class="fw-bold">00:00</span>
+            </div>
+          </div>
+          
+          <!-- Crosshair overlays for realistic NVR look -->
+          <div class="hud-crosshair border-top-left"></div>
+          <div class="hud-crosshair border-top-right"></div>
+          <div class="hud-crosshair border-bottom-left"></div>
+          <div class="hud-crosshair border-bottom-right"></div>
+        </div>
+        
+        <!-- Video Frame -->
+        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-black">
           <img id="cameraStream" src="" style="object-fit: contain; width: 100%; height: 100%;">
         </div>
         
-        <!-- Controls -->
-        <div class="position-absolute top-0 end-0 m-3">
-          <div class="d-flex gap-2">
-            <button class="btn btn-light btn-lg" onclick="toggleFullscreen()" title="Pantalla completa" style="border-radius: 50%; width: 48px; height: 48px;">
+        <!-- Stream Status (Floating Bottom Left) -->
+        <div class="position-absolute bottom-0 start-0 m-3 mb-4" style="z-index: 10;">
+          <div class="bg-white bg-opacity-85 text-dark px-3 py-2 rounded-pill border border-secondary border-opacity-10 shadow" style="backdrop-filter: blur(10px);">
+            <small id="streamStatus" style="font-size: 0.8rem; font-weight: 600;">
+              <i class="fas fa-circle text-success me-1.5"></i>Conectado
+            </small>
+          </div>
+        </div>
+        
+        <!-- Floating Glass Control Toolbar (Bottom Center) -->
+        <div class="position-absolute bottom-0 start-50 translate-middle-x mb-4" style="z-index: 10;">
+          <div class="floating-toolbar d-flex gap-3 align-items-center px-4 py-2.5 rounded-pill shadow-lg">
+            <button class="btn btn-toolbar-item" onclick="tomarCapturaModal()" title="Captura de pantalla">
+              <i class="fas fa-camera"></i>
+            </button>
+            <button class="btn btn-toolbar-item" onclick="refreshStream()" title="Refrescar feed">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+            <button class="btn btn-toolbar-item" onclick="toggleFullscreen()" title="Pantalla completa">
               <i class="fas fa-expand"></i>
             </button>
-            <button class="btn btn-light btn-lg" onclick="refreshStream()" title="Refrescar" style="border-radius: 50%; width: 48px; height: 48px;">
-              <i class="fas fa-sync-alt"></i>
+            <div class="divider-vertical mx-1"></div>
+            <button type="button" class="btn btn-toolbar-record shadow" onclick="toggleRecordingModal()" id="btnRecordModal">
+              <i class="fas fa-record-vinyl me-2 animate-pulse"></i><span>Grabar</span>
             </button>
           </div>
         </div>
         
-        <!-- Status -->
-        <div class="position-absolute bottom-0 start-0 m-3">
-          <div class="bg-dark bg-opacity-75 text-white px-4 py-2 rounded-pill" style="backdrop-filter: blur(10px);">
-            <small id="streamStatus">
-              <i class="fas fa-circle text-success me-1"></i>
-              Conectado
-            </small>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer border-0 p-4 bg-light">
-        <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal" style="border-radius: 10px;">
-          <i class="fas fa-times me-2"></i>Cerrar
-        </button>
-        <button type="button" class="btn btn-danger btn-lg" onclick="startRecording()" style="border-radius: 10px;">
-          <i class="fas fa-record-vinyl me-2"></i>Grabar
-        </button>
       </div>
     </div>
   </div>
 </div>
 
 <style>
-.card {
-  transition: transform 0.2s ease;
+/* Dashboard Styles & Variables */
+.camera-dashboard {
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-hover: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glow-cyan: #06b6d4;
+  --glow-emerald: #10b981;
+  --glow-rose: #ef4444;
+  --text-slate-100: #0f172a;
+  --text-slate-400: #64748b;
 }
 
-.card:hover {
+/* Header style modifications */
+.camera-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+  border: 1px solid rgba(13, 110, 253, 0.2);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.08);
+}
+.camera-icon-wrapper i {
+  background: linear-gradient(135deg, #0d6efd 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-title {
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-muted-cyan {
+  color: #4b5563;
+}
+.bg-glass {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+}
+.bg-glass-dark {
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+.border-glass {
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+.divider-vertical {
+  width: 1px;
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+/* Heartbeat Indicator Animation */
+.heartbeat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+}
+.heartbeat-dot::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  animation: heartbeat-pulse 1.8s infinite ease-in-out;
+}
+.heartbeat-dot.bg-success {
+  background-color: #10b981;
+}
+.heartbeat-dot.bg-success::after {
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.4);
+}
+@keyframes heartbeat-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+
+/* Action buttons */
+.btn-action-glass {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  color: #374151 !important;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.btn-action-glass:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(148, 163, 184, 0.8);
   transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important;
+}
+.btn-action-glow {
+  background: linear-gradient(135deg, #0d6efd 0%, #0284c7 100%);
+  border: none;
+  color: white !important;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+}
+.btn-action-glow:hover {
+  background: linear-gradient(135deg, #0b5ed7 0%, #0284c7 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(13, 110, 253, 0.35) !important;
 }
 
-.card-img-top {
-  transition: transform 0.2s ease;
+/* Camera Card Glass Design */
+.camera-card {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.camera-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(13, 110, 253, 0.25) !important;
+  box-shadow: 0 15px 35px rgba(13, 110, 253, 0.1), 0 0 15px rgba(13, 110, 253, 0.05);
 }
 
-.card:hover .card-img-top {
-  transform: scale(1.02);
+.preview-container {
+  height: 195px;
+  background: #020617;
+  cursor: pointer;
+}
+.preview-img {
+  filter: brightness(0.85);
+}
+.camera-card:hover .preview-img {
+  transform: scale(1.05);
+  filter: brightness(1);
 }
 
-/* Mejoras para móviles */
+/* Hover play button */
+.play-overlay {
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 3;
+}
+.camera-card:hover .play-overlay {
+  opacity: 1;
+}
+.play-btn-circle {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid rgba(13, 110, 253, 0.85);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+  color: #0d6efd;
+  font-size: 1.15rem;
+}
+.play-btn-circle:hover {
+  transform: scale(1.1);
+  background: #0d6efd;
+  border-color: #0284c7;
+  box-shadow: 0 0 25px rgba(13, 110, 253, 0.4);
+  color: white;
+}
+
+/* High-tech preview corners */
+.tech-corners {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+.camera-card:hover .tech-corners {
+  opacity: 0.7;
+}
+.corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid #0d6efd;
+}
+.corner.top-left { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.corner.top-right { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+.corner.bottom-left { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+.corner.bottom-right { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+/* Neon Live Pulse Badge */
+.badge-live-neon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #065f46;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.pulse-wave {
+  width: 6px;
+  height: 6px;
+  background-color: var(--glow-emerald);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+}
+.pulse-wave::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background-color: var(--glow-emerald);
+  animation: wave-pulse 1.5s infinite ease-in-out;
+}
+@keyframes wave-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(3.5); opacity: 0; }
+}
+.pulse-core {
+  width: 6px;
+  height: 6px;
+  background-color: var(--glow-emerald);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Card Information text styles */
+.camera-title {
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+.camera-url {
+  color: var(--text-slate-400);
+}
+
+/* Card Button Actions */
+.btn-action-view {
+  background: linear-gradient(135deg, #0d6efd 0%, #0284c7 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.18);
+}
+.btn-action-view:hover {
+  background: linear-gradient(135deg, #0b5ed7 0%, #0284c7 100%);
+  box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3);
+  transform: translateY(-1px);
+}
+.btn-action-settings {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-slate-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.btn-action-settings:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+  border-color: rgba(203, 213, 225, 0.8) !important;
+}
+
+/* Custom Dropdown glass style */
+.glass-dropdown {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+  padding: 8px !important;
+}
+.glass-dropdown .dropdown-item {
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #334155 !important;
+  transition: all 0.2s ease;
+}
+.glass-dropdown .dropdown-item:hover {
+  background-color: rgba(13, 110, 253, 0.06) !important;
+  color: #0d6efd !important;
+}
+
+/* Command Center Security Monitor Modal Styles */
+.glass-modal-content {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12) !important;
+}
+.glass-modal-content .form-control {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1.5px solid rgba(203, 213, 225, 0.8) !important;
+  color: #0f172a !important;
+  border-radius: 10px;
+}
+.glass-modal-content .form-control:focus {
+  border-color: #0d6efd !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important;
+  background-color: white !important;
+}
+.glass-modal-content .modal-title {
+  color: #0f172a !important;
+}
+
+.hud-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none !important;
+  z-index: 5;
+  padding: 20px;
+}
+.hud-item {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(8px);
+  z-index: 6;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+  pointer-events: none !important;
+}
+.top-left-hud {
+  top: 20px;
+  left: 20px;
+}
+.top-left-hud .text-success {
+  color: #059669 !important;
+}
+.top-left-hud .text-dark {
+  color: #334155 !important;
+}
+.top-right-hud {
+  top: 20px;
+  right: 20px;
+}
+.top-right-hud #hudClock {
+  color: #0f172a !important;
+}
+.hud-crosshair {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  pointer-events: none !important;
+}
+.hud-crosshair.border-top-left { top: 40px; left: 40px; border-right: none; border-bottom: none; }
+.hud-crosshair.border-top-right { top: 40px; right: 40px; border-left: none; border-bottom: none; }
+.hud-crosshair.border-bottom-left { bottom: 85px; left: 40px; border-right: none; border-top: none; }
+.hud-crosshair.border-bottom-right { bottom: 85px; right: 40px; border-left: none; border-top: none; }
+
+/* Camera Shutter Flash effect */
+.shutter-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  opacity: 0;
+  pointer-events: none !important;
+  z-index: 99;
+}
+
+/* Floating Toolbar */
+.floating-toolbar {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+  pointer-events: auto !important;
+}
+.btn-toolbar-item {
+  width: 44px;
+  height: 44px;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  color: #475569 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  pointer-events: auto !important;
+}
+.btn-toolbar-item:hover {
+  background: #0d6efd;
+  color: white !important;
+  border-color: #0d6efd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+  pointer-events: auto !important;
+}
+.btn-toolbar-record {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: none;
+  color: white !important;
+  border-radius: 30px !important;
+  padding: 10px 24px !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+  pointer-events: auto !important;
+}
+.btn-toolbar-record:hover {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  box-shadow: 0 6px 15px rgba(239, 68, 68, 0.35);
+  transform: translateY(-2px);
+  pointer-events: auto !important;
+}
+.btn-toolbar-record.btn-active-recording {
+  background: white;
+  border: 1.5px solid #ef4444;
+  color: #b91c1c !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+  animation: flash-border-light 1.5s infinite;
+  pointer-events: auto !important;
+}
+@keyframes flash-border-light {
+  0% { border-color: rgba(239, 68, 68, 0.4); }
+  50% { border-color: rgba(239, 68, 68, 1); }
+  100% { border-color: rgba(239, 68, 68, 0.4); }
+}
+
+@keyframes pulse-simple {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+.animate-pulse {
+  animation: pulse-simple 2s infinite;
+}
+
+/* Custom HUD Notification Toast */
+.hud-toast {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+/* Mobile Responsiveness styling overrides */
 @media (max-width: 768px) {
   .dropdown-menu {
     position: fixed !important;
@@ -265,10 +796,11 @@
     transform: translate(-50%, -50%) !important;
     width: 90% !important;
     max-width: 300px !important;
-    border-radius: 12px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
-    border: 1px solid rgba(0,0,0,0.1) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
     padding: 12px !important;
+    background: rgba(255, 255, 255, 0.98) !important;
   }
   
   .dropdown-menu::before {
@@ -277,93 +809,112 @@
   
   .dropdown-item {
     padding: 12px 16px !important;
-    border-radius: 8px !important;
-    margin: 2px 0 !important;
+    border-radius: 10px !important;
+    margin: 4px 0 !important;
     font-size: 14px !important;
-    display: flex !important;
-    align-items: center !important;
   }
   
   .dropdown-item:hover {
-    background-color: #f8f9fa !important;
-    transform: translateX(4px) !important;
+    background-color: rgba(13, 110, 253, 0.05) !important;
+    transform: translateX(4px);
     transition: all 0.2s ease !important;
   }
   
   .dropdown-divider {
     margin: 8px 0 !important;
-    border-color: #e9ecef !important;
+    border-color: rgba(226, 232, 240, 0.8) !important;
+  }
+
+  .hud-item {
+    padding: 6px 10px;
+  }
+  
+  .top-left-hud {
+    display: none; /* Hide hardware stats on mobile to preserve screen space */
+  }
+
+  .floating-toolbar {
+    scale: 0.9;
+    bottom: 5px;
   }
 }
 
-@media (max-width: 576px) {
-  .dropdown-menu {
-    width: 95% !important;
-    max-width: 280px !important;
-  }
-  
-  .dropdown-item {
-    font-size: 13px !important;
-    padding: 10px 14px !important;
-  }
+/* Specific overrides to prevent global modal.show * rule from base.html from making overlays interactive */
+#viewCameraModal .hud-layer,
+#viewCameraModal .hud-item,
+#viewCameraModal .hud-crosshair,
+#viewCameraModal .shutter-flash {
+  pointer-events: none !important;
 }
 </style>
 
 <script>
-// Function to open camera modal directly
-function openCameraModal(name, url) {
-  var modal = document.getElementById('viewCameraModal');
-  var modalTitle = modal.querySelector('.modal-title');
-  var cameraStream = modal.querySelector('#cameraStream');
+// Global variables
+let currentCameraId = null;
+let refreshInterval = null;
+let hudClockInterval = null;
+let isRecordingModal = false;
+let recordingIntervalModal = null;
+let camaraIdAEliminar = null;
+
+// Function to open camera modal directly (from manual click or cards)
+function openCameraModal(id, name, url) {
+  currentCameraId = id;
+  const modal = document.getElementById('viewCameraModal');
+  const modalTitle = modal.querySelector('.modal-title');
+  const cameraStream = modal.querySelector('#cameraStream');
   
-  modalTitle.innerHTML = '<i class="fas fa-video me-2"></i>' + name;
+  modalTitle.innerHTML = '<i class="fas fa-video me-2 text-info"></i>' + name;
   cameraStream.src = url;
   
-  var modalInstance = new bootstrap.Modal(modal);
+  const hudUrl = modal.querySelector('#hudUrl');
+  if (hudUrl) hudUrl.textContent = url;
+  
+  const modalInstance = new bootstrap.Modal(modal);
   modalInstance.show();
 }
 
-// Edit Camera Modal
-var editCameraModal = document.getElementById('editCameraModal');
+// Edit Camera Modal handler
+const editCameraModal = document.getElementById('editCameraModal');
 editCameraModal.addEventListener('show.bs.modal', function (event) {
-  var button = event.relatedTarget;
-  var cameraId = button.getAttribute('data-id');
-  var cameraName = button.getAttribute('data-name');
-  var cameraUrl = button.getAttribute('data-url');
+  const button = event.relatedTarget;
+  const cameraId = button.getAttribute('data-id');
+  const cameraName = button.getAttribute('data-name');
+  const cameraUrl = button.getAttribute('data-url');
   
-  var modalTitle = editCameraModal.querySelector('.modal-title');
-  var idInput = editCameraModal.querySelector('#editCameraId');
-  var nombreInput = editCameraModal.querySelector('#editCameraNombre');
-  var urlInput = editCameraModal.querySelector('#editCameraUrl');
-  var form = editCameraModal.querySelector('#editCameraForm');
+  const modalTitle = editCameraModal.querySelector('.modal-title');
+  const idInput = editCameraModal.querySelector('#editCameraId');
+  const nombreInput = editCameraModal.querySelector('#editCameraNombre');
+  const urlInput = editCameraModal.querySelector('#editCameraUrl');
+  const form = editCameraModal.querySelector('#editCameraForm');
   
-  modalTitle.innerHTML = '<i class="fas fa-edit text-primary me-2"></i>Editar Cámara';
+  modalTitle.innerHTML = '<i class="fas fa-edit text-info me-2"></i>Editar Cámara';
   idInput.value = cameraId;
   nombreInput.value = cameraName;
   urlInput.value = cameraUrl;
   
-  // Set the form action dynamically
   form.action = '/editar_camara/' + cameraId;
 });
 
 // Function to refresh stream
 function refreshStream() {
-  var cameraStream = document.getElementById('cameraStream');
-  var currentSrc = cameraStream.src;
-  var separator = currentSrc.includes('?') ? '&' : '?';
-  cameraStream.src = currentSrc + separator + '_t=' + Date.now();
+  const cameraStream = document.getElementById('cameraStream');
+  if (!cameraStream) return;
+  const currentSrc = cameraStream.src;
+  const separator = currentSrc.includes('?') ? '&' : '?';
+  cameraStream.src = currentSrc.split('?')[0] + separator + '_t=' + Date.now();
   
-  var status = document.getElementById('streamStatus');
-  status.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Actualizando...';
+  const status = document.getElementById('streamStatus');
+  status.innerHTML = '<i class="fas fa-spinner fa-spin me-1 text-info"></i>Actualizando...';
   
   setTimeout(() => {
     status.innerHTML = '<i class="fas fa-circle text-success me-1"></i>Conectado';
   }, 1000);
 }
 
-// Function to toggle fullscreen
+// Function to toggle fullscreen for the camera view body
 function toggleFullscreen() {
-  var modalBody = document.querySelector('.modal-body');
+  const modalBody = document.querySelector('.view-camera-body');
   if (!document.fullscreenElement) {
     modalBody.requestFullscreen().catch(err => {
       console.log('Error attempting to enable fullscreen:', err);
@@ -373,43 +924,198 @@ function toggleFullscreen() {
   }
 }
 
-// View Camera Modal
-var viewCameraModal = document.getElementById('viewCameraModal');
+// HUD Clock functions
+function startHudClock() {
+  const clockElement = document.getElementById('hudClock');
+  if (!clockElement) return;
+  
+  function updateClock() {
+    const now = new Date();
+    const hrs = now.getHours().toString().padStart(2, '0');
+    const mins = now.getMinutes().toString().padStart(2, '0');
+    const secs = now.getSeconds().toString().padStart(2, '0');
+    clockElement.textContent = `${hrs}:${mins}:${secs}`;
+  }
+  
+  updateClock();
+  return setInterval(updateClock, 1000);
+}
+
+// Custom Glass HUD Notifications for interactive feedback
+function showHudNotification(message, type = 'success') {
+  const body = document.querySelector('.view-camera-body');
+  if (!body) return;
+  
+  const toast = document.createElement('div');
+  toast.className = `hud-toast bg-glass border-glass px-4 py-2 shadow-lg`;
+  toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger'} me-2"></i>${message}`;
+  
+  // Custom absolute layout inside the video body
+  toast.style.position = 'absolute';
+  toast.style.top = '75px';
+  toast.style.left = '50%';
+  toast.style.transform = 'translateX(-50%)';
+  toast.style.zIndex = '999';
+  toast.style.borderRadius = '30px';
+  toast.style.backdropFilter = 'blur(12px)';
+  toast.style.fontSize = '0.85rem';
+  toast.style.pointerEvents = 'none';
+  toast.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+  toast.style.opacity = '0';
+  toast.style.marginTop = '-10px';
+  
+  body.appendChild(toast);
+  
+  // Animate in
+  setTimeout(() => {
+    toast.style.opacity = '1';
+    toast.style.marginTop = '0px';
+  }, 10);
+  
+  // Animate out and destroy
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.marginTop = '-10px';
+    setTimeout(() => toast.remove(), 400);
+  }, 2600);
+}
+
+// Handle dynamic show/hidden event listeners on viewCameraModal
+const viewCameraModal = document.getElementById('viewCameraModal');
+
 viewCameraModal.addEventListener('show.bs.modal', function (event) {
-  var button = event.relatedTarget;
-  var cameraName = button.getAttribute('data-name');
-  var cameraUrl = button.getAttribute('data-url');
-  
-  var modalTitle = viewCameraModal.querySelector('.modal-title');
-  var cameraStream = viewCameraModal.querySelector('#cameraStream');
-  
-  modalTitle.innerHTML = '<i class="fas fa-video me-2"></i>' + cameraName;
-  cameraStream.src = cameraUrl;
+  const button = event.relatedTarget;
+  if (button) {
+    const cameraName = button.getAttribute('data-name');
+    const cameraUrl = button.getAttribute('data-url');
+    currentCameraId = button.getAttribute('data-id');
+    
+    const modalTitle = viewCameraModal.querySelector('.modal-title');
+    const cameraStream = viewCameraModal.querySelector('#cameraStream');
+    
+    modalTitle.innerHTML = '<i class="fas fa-video me-2 text-info"></i>' + cameraName;
+    cameraStream.src = cameraUrl;
+    
+    const hudUrl = viewCameraModal.querySelector('#hudUrl');
+    if (hudUrl) hudUrl.textContent = cameraUrl;
+  }
 });
 
-// Auto-refresh stream
 viewCameraModal.addEventListener('shown.bs.modal', function () {
-  var cameraStream = document.getElementById('cameraStream');
-  var src = cameraStream.src;
+  const cameraStream = document.getElementById('cameraStream');
+  const src = cameraStream.src;
   cameraStream.src = '';
   setTimeout(() => { cameraStream.src = src; }, 100);
   
-  var status = document.getElementById('streamStatus');
+  const status = document.getElementById('streamStatus');
   status.innerHTML = '<i class="fas fa-circle text-success me-1"></i>Conectado';
-});
-
-var refreshInterval;
-viewCameraModal.addEventListener('shown.bs.modal', function () {
+  
+  // Set intervals for refreshing and the HUD clock
   refreshInterval = setInterval(refreshStream, 30000);
+  hudClockInterval = startHudClock();
 });
 
 viewCameraModal.addEventListener('hidden.bs.modal', function () {
   clearInterval(refreshInterval);
+  clearInterval(hudClockInterval);
+  
+  const cameraStream = document.getElementById('cameraStream');
+  cameraStream.src = ''; // Terminate stream immediately
+  
+  // Force recording to stop if user closes the modal while active
+  if (isRecordingModal) {
+    toggleRecordingModal();
+  }
 });
 
-// Update thumbnails
+// Advanced camera recording functions
+function toggleRecordingModal() {
+  if (!currentCameraId) return;
+  
+  const indicator = document.getElementById('recordingIndicatorModal');
+  const recordingTime = document.getElementById('recordingTimeModal');
+  const btnRecord = document.getElementById('btnRecordModal');
+  const btnText = btnRecord.querySelector('span');
+  
+  if (!isRecordingModal) {
+    fetch(`/api/camara/${currentCameraId}/iniciar_grabacion`, { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          isRecordingModal = true;
+          btnRecord.classList.add('btn-active-recording');
+          btnText.textContent = 'Detener';
+          indicator.style.display = 'flex';
+          let seconds = 0;
+          recordingTime.textContent = '00:00';
+          
+          recordingIntervalModal = setInterval(() => {
+            seconds++;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            recordingTime.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+          }, 1000);
+          
+          showHudNotification('Grabación iniciada correctamente');
+        } else {
+          showHudNotification(data.error || 'Error al iniciar grabación', 'error');
+        }
+      }).catch(err => showHudNotification('Error de conexión', 'error'));
+  } else {
+    fetch(`/api/camara/${currentCameraId}/detener_grabacion`, { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        isRecordingModal = false;
+        btnRecord.classList.remove('btn-active-recording');
+        btnText.textContent = 'Grabar';
+        indicator.style.display = 'none';
+        clearInterval(recordingIntervalModal);
+        
+        if (data.success) {
+          showHudNotification('Grabación guardada correctamente.');
+        } else {
+          showHudNotification('Detención finalizada, error al persistir.', 'error');
+        }
+      }).catch(err => showHudNotification('Error de conexión', 'error'));
+  }
+}
+
+// Take snapshot of live screen
+function tomarCapturaModal() {
+  if (!currentCameraId) return;
+  
+  // Trigger camera shutter flash effect in HUD
+  const shutter = document.getElementById('shutterFlash');
+  if (shutter) {
+    shutter.style.transition = 'none';
+    shutter.style.opacity = '0.85';
+    setTimeout(() => {
+      shutter.style.transition = 'opacity 0.4s ease';
+      shutter.style.opacity = '0';
+    }, 50);
+  }
+  
+  fetch(`/api/camara/${currentCameraId}/captura`, { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const a = document.createElement('a');
+        a.href = data.url;
+        a.download = data.url.split('/').pop();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        showHudNotification('Captura de pantalla guardada en descargas');
+      } else {
+        showHudNotification('Error al capturar: ' + data.error, 'error');
+      }
+    }).catch(err => showHudNotification('Error de conexión al procesar la captura', 'error'));
+}
+
+// Background auto-updater for camera list previews
 function updateThumbnails() {
-  document.querySelectorAll('.camera-preview img').forEach(img => {
+  document.querySelectorAll('.camera-preview').forEach(img => {
     try {
       const originalUrl = img.getAttribute('data-url') || img.src.split('?')[0];
       if (originalUrl) {
@@ -419,39 +1125,23 @@ function updateThumbnails() {
       console.error('Error updating thumbnail:', e);
     }
   });
-  
-  document.querySelectorAll('.last-update').forEach(span => {
-    const now = new Date();
-    span.textContent = 'Actualizado: ' + now.toLocaleTimeString();
-  });
 }
 
 function addTimestamp(url) {
   if (!url) return '';
   const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}_t=${Date.now()}`;
+  return `${url.split('?')[0]}${separator}_t=${Date.now()}`;
 }
 
-// Modal de confirmación para eliminar cámara
-let camaraIdAEliminar = null;
-let camaraNombreAEliminar = null;
+// Preparing deletion values before modal opens
+function prepararEliminarCamara(id, name) {
+  camaraIdAEliminar = id;
+  document.getElementById('camaraNombreEliminar').textContent = name;
+  const modal = new bootstrap.Modal(document.getElementById('eliminarCamaraModal'));
+  modal.show();
+}
 
-// Delete camera handler
-document.addEventListener('click', function(e) {
-  if (e.target.closest('.delete-camera')) {
-    e.preventDefault();
-    const link = e.target.closest('.delete-camera');
-    camaraIdAEliminar = link.getAttribute('data-id');
-    camaraNombreAEliminar = link.getAttribute('data-name');
-    
-    // Mostrar información en el modal
-    document.getElementById('camaraNombreEliminar').textContent = camaraNombreAEliminar;
-    const modal = new bootstrap.Modal(document.getElementById('eliminarCamaraModal'));
-    modal.show();
-  }
-});
-
-// Confirmar eliminación desde el modal
+// Confirming delete from modal footer btn
 document.addEventListener('DOMContentLoaded', function() {
   const confirmarBtn = document.getElementById('confirmarEliminarCamara');
   if (confirmarBtn) {
@@ -461,11 +1151,15 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+  
+  // Start periodically refreshing list previews
+  updateThumbnails();
+  setInterval(updateThumbnails, 30000);
 });
 
 function ejecutarEliminarCamara(id) {
-  // Cerrar modal
-  const modal = bootstrap.Modal.getInstance(document.getElementById('eliminarCamaraModal'));
+  const modalElement = document.getElementById('eliminarCamaraModal');
+  const modal = bootstrap.Modal.getInstance(modalElement);
   if (modal) modal.hide();
   
   const form = document.createElement('form');
@@ -474,11 +1168,5 @@ function ejecutarEliminarCamara(id) {
   document.body.appendChild(form);
   form.submit();
 }
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  updateThumbnails();
-  setInterval(updateThumbnails, 30000);
-});
 </script>
 {% endblock %}

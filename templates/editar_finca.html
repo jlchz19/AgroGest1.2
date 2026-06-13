@@ -8,13 +8,13 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-0">
-                <i class="fas fa-edit text-warning me-2"></i>
+                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="text-warning me-2" role="img" aria-label="edit">✏️</span>
                 Editar Finca
             </h2>
             <p class="text-muted mb-0">Modifica los datos de tu finca</p>
         </div>
         <a href="{{ url_for('fincas') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Volver a Fincas
+            <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="back">◀️</span>Volver a Fincas
         </a>
     </div>
 
@@ -24,7 +24,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
                     <h5 class="mb-0">
-                        <i class="fas fa-edit text-muted me-2"></i>
+                        <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="text-muted me-2" role="img" aria-label="edit">✏️</span>
                         Información de la Finca
                     </h5>
                 </div>
@@ -58,9 +58,16 @@
                                         <option value="Doble propósito" {% if finca.tipo_produccion == 'Doble propósito' %}selected{% endif %}>Doble propósito</option>
                                         <option value="Porcino" {% if finca.tipo_produccion == 'Porcino' %}selected{% endif %}>Porcino</option>
                                         <option value="Avícola" {% if finca.tipo_produccion == 'Avícola' %}selected{% endif %}>Avícola</option>
-                                        <option value="Otro" {% if finca.tipo_produccion == 'Otro' %}selected{% endif %}>Otro</option>
+                                        <option value="Otro" {% if finca.tipo_produccion not in ['Leche', 'Carne', 'Doble propósito', 'Porcino', 'Avícola', ''] %}selected{% endif %}>Otro</option>
                                     </select>
                                     <label for="tipo_produccion">Tipo de Producción</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6" id="otro_tipo_produccion_container" style="display: none;">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="tipo_produccion_otro" name="tipo_produccion_otro" placeholder="Otro tipo de producción" value="{% if finca.tipo_produccion not in ['Leche', 'Carne', 'Doble propósito', 'Porcino', 'Avícola', ''] %}{{ finca.tipo_produccion }}{% endif %}">
+                                    <label for="tipo_produccion_otro">Especifique otro tipo de producción *</label>
+                                    <div class="invalid-feedback">Por favor especifique el tipo de producción.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -93,7 +100,7 @@
                                     <label for="ubicacion">Ubicación en el mapa</label>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#mapModal">
-                                    <i class="fas fa-map-marker-alt me-2"></i>Seleccionar Ubicación
+                                    <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="location">📍</span>Seleccionar Ubicación
                                 </button>
                                 <input type="hidden" name="lat" id="lat" value="{{ finca.latitud or '' }}">
                                 <input type="hidden" name="lng" id="lng" value="{{ finca.longitud or '' }}">
@@ -103,10 +110,10 @@
 
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-warning">
-                                <i class="fas fa-save me-2"></i>Actualizar Finca
+                                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="save">💾</span>Actualizar Finca
                             </button>
                             <a href="{{ url_for('fincas') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Cancelar
+                                <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="cancel">❌</span>Cancelar
                             </a>
                         </div>
                     </form>
@@ -119,7 +126,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-warning text-white">
                     <h6 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
+                        <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="info">ℹ️</span>
                         Información Actual
                     </h6>
                 </div>
@@ -162,7 +169,7 @@
             <div class="card border-0 shadow-sm mt-3">
                 <div class="card-header bg-info text-white">
                     <h6 class="mb-0">
-                        <i class="fas fa-chart-line me-2"></i>
+                        <span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="chart">📈</span>
                         Estado Actual
                     </h6>
                 </div>
@@ -190,7 +197,7 @@
   <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-map me-2"></i>Definir ubicación y límites</h5>
+        <h5 class="modal-title"><span style="font-size:1.2rem; filter:drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" class="me-2" role="img" aria-label="map">🗺️</span>Definir ubicación y límites</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -240,6 +247,9 @@
 <!-- Leaflet-Geosearch -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-geosearch@3.6.0/dist/geosearch.css" />
 <script src="https://cdn.jsdelivr.net/npm/leaflet-geosearch@3.6.0/dist/bundle.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
 .modal #map { 
@@ -408,20 +418,103 @@ document.getElementById('btnSaveLocation').onclick = function(){
     }
 };
 
+// Mostrar/Ocultar campo "Otro" tipo de producción
+const tipoProduccionSelect = document.getElementById('tipo_produccion');
+const otroTipoContainer = document.getElementById('otro_tipo_produccion_container');
+const otroTipoInput = document.getElementById('tipo_produccion_otro');
+
+function toggleOtroTipo() {
+    if (tipoProduccionSelect && tipoProduccionSelect.value === 'Otro') {
+        otroTipoContainer.style.display = 'block';
+        otroTipoInput.setAttribute('required', 'required');
+    } else {
+        otroTipoContainer.style.display = 'none';
+        otroTipoInput.removeAttribute('required');
+        otroTipoInput.value = '';
+        otroTipoInput.classList.remove('is-invalid');
+        otroTipoInput.classList.remove('is-valid');
+    }
+}
+
+if (tipoProduccionSelect) {
+    tipoProduccionSelect.addEventListener('change', toggleOtroTipo);
+    toggleOtroTipo();
+}
+
+// Validaciones en tiempo real para campos requeridos
+const inputs = document.querySelectorAll('input[required], select[required]');
+inputs.forEach(input => {
+    input.addEventListener('blur', function() {
+        if (!this.value.trim()) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    input.addEventListener('input', function() {
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+        }
+    });
+});
+
+// Validación en tiempo real específica para el input dinámico
+if (otroTipoInput) {
+    otroTipoInput.addEventListener('blur', function() {
+        if (tipoProduccionSelect.value === 'Otro' && !this.value.trim()) {
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+    otroTipoInput.addEventListener('input', function() {
+        if (this.value.trim()) {
+            this.classList.remove('is-invalid');
+        }
+    });
+}
+
 // Validación del formulario
 document.getElementById('editarFincaForm').addEventListener('submit', function(e) {
-    const nombre = document.getElementById('nombre').value.trim();
-    const direccion = document.getElementById('direccion').value.trim();
+    const nombre = document.getElementById('nombre');
+    const direccion = document.getElementById('direccion');
+    let isValid = true;
     
-    if (!nombre) {
-        e.preventDefault();
-        alert('Por favor ingresa el nombre de la finca');
-        return;
+    if (!nombre.value.trim()) {
+        nombre.classList.add('is-invalid');
+        isValid = false;
+    } else {
+        nombre.classList.remove('is-invalid');
     }
     
-    if (!direccion) {
+    if (!direccion.value.trim()) {
+        direccion.classList.add('is-invalid');
+        isValid = false;
+    } else {
+        direccion.classList.remove('is-invalid');
+    }
+    
+    if (tipoProduccionSelect && tipoProduccionSelect.value === 'Otro') {
+        if (!otroTipoInput.value.trim()) {
+            otroTipoInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            otroTipoInput.classList.remove('is-invalid');
+        }
+    }
+    
+    if (!isValid) {
         e.preventDefault();
-        alert('Por favor ingresa la dirección de la finca');
+        Swal.fire({
+            icon: 'error',
+            title: 'Datos Incompletos',
+            text: 'Por favor, completa los campos obligatorios (marcados con *).',
+            confirmButtonColor: '#0d6efd'
+        });
         return;
     }
 });

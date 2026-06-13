@@ -2,8 +2,12 @@
 <html lang="es">
 <head>
     <script>
-        // Función global para abrir/cerrar el menú móvil
+        // Función global para abrir/cerrar el menú móvil con protección contra múltiples llamadas simultáneas
         window.toggleMobileMenu = function() {
+            if (window.toggleMobileMenu.running) return;
+            window.toggleMobileMenu.running = true;
+            setTimeout(() => { window.toggleMobileMenu.running = false; }, 100);
+
             console.log('toggleMobileMenu called');
             const mobileNav = document.getElementById('mobileNav');
             const overlay = document.querySelector('.mobile-menu-overlay');
@@ -49,8 +53,8 @@
     <title>{% block title %}AgroGest{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/styles.css', v='3.0') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css', v='13.0') }}" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -226,7 +230,7 @@
             --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --shadow-lg: 0 20px 25px rgba(0,0,0,0.1);
             
-            --font-family-sans-serif: 'Inter', sans-serif;
+            --font-family-sans-serif: 'Outfit', sans-serif;
         }
 
         body {
@@ -260,30 +264,28 @@
             overflow-x: hidden;
         }
 
-        /* Personalizar scrollbar para la sidebar */
+        /* Scrollbar visible para la sidebar */
         #sidebar::-webkit-scrollbar {
             width: 6px;
         }
 
         #sidebar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         #sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
-            transition: background 0.3s ease;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
         }
 
         #sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.3);
         }
 
         /* Para Firefox */
         #sidebar {
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
         }
 
         #sidebar.active {
@@ -806,6 +808,34 @@
 
         #content.active {
             width: 100%;
+        }
+
+        /* Sidebar Mini Mode for Desktop */
+        @media (min-width: 769px) {
+            #sidebar.mini {
+                min-width: 80px !important;
+                max-width: 80px !important;
+            }
+            #sidebar.mini .sidebar-header h3,
+            #sidebar.mini ul li a span:not(:first-child) {
+                display: none !important;
+            }
+            #sidebar.mini ul li a {
+                text-align: center;
+                padding: 15px 0;
+            }
+            #sidebar.mini ul li a span:first-child, #sidebar.mini ul li a i {
+                margin-right: 0 !important;
+                font-size: 1.5rem !important;
+                display: block;
+                margin: 0 auto;
+            }
+            #sidebar.mini .dropdown-toggle::after {
+                display: none !important;
+            }
+            #content.mini {
+                width: calc(100% - 80px) !important;
+            }
         }
 
         /* Responsive Content Area */
@@ -1872,7 +1902,7 @@
             }
             /* In case some app overlays set pointer-events:none or cover the modal,
                make sure modal contents are interactive. */
-            .modal, .modal * {
+            .modal.show, .modal.show * {
                 pointer-events: auto !important;
             }
         </style>
@@ -2047,7 +2077,7 @@
 
     
     <!-- Overlay para el menú móvil -->
-    <div class="mobile-menu-overlay" onclick="window.toggleMobileMenu()"></div>
+    <div class="mobile-menu-overlay"></div>
     
     <div class="wrapper">
         <!-- Sidebar para escritorio y móvil -->
@@ -2064,6 +2094,16 @@
                 <li class="{% if request.endpoint == 'index' %}active{% endif %}">
                     <a href="{{ url_for('index') }}"><span style="font-size: 1.2rem;">📊</span> <span data-translate="Dashboard">Dashboard</span></a>
                 </li>
+                <li class="{% if 'fincas' in request.endpoint %}active{% endif %}">
+                    <a href="{{ url_for('fincas') }}"><span style="font-size: 1.2rem;">🚜</span> <span data-translate="Farms">Fincas</span></a>
+                </li>
+                {% if current_user.is_authenticated and current_user.rol == 'admin' %}
+                <li class="{% if 'usuarios' in request.endpoint %}active{% endif %}">
+                    <a href="{{ url_for('usuarios') }}"><span style="font-size: 1.2rem;">👥</span> <span data-translate="Users">Usuarios</span></a>
+                </li>
+                {% endif %}
+                
+                {% if session.get('finca_id') %}
                 <li class="{% if 'animales' in request.endpoint %}active{% endif %}">
                     <a href="#animalesSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span style="font-size: 1.2rem;">🐄</span> <span data-translate="Animals">Animales</span></a>
                     <ul class="collapse list-unstyled ps-4" id="animalesSubmenu">
@@ -2076,13 +2116,17 @@
                     <a href="#ubicacionesSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span style="font-size: 1.2rem;">🏡</span> <span data-translate="Locations">Ubicaciones</span></a>
                     <ul class="collapse list-unstyled ps-4" id="ubicacionesSubmenu">
                         <li><a href="{{ url_for('potreros') }}"><span style="font-size: 1rem; margin-right: 8px;">🌿</span><span data-translate="Paddocks">Potreros (Bovinos)</span></a></li>
-                        <li><a href="{{ url_for('cochiqueras') }}"><span style="font-size: 1rem; margin-right: 8px;">🏠</span><span data-translate="Pig Pens">Cochiqueras</span></a></li>
+                        <li><a href="{{ url_for('rotacion_pastoreo') }}"><span style="font-size: 1rem; margin-right: 8px;">🔄</span><span>Rotación de Pastoreo</span></a></li>
+                        <li><a href="{{ url_for('cochiqueras') }}"><span style="font-size: 1rem; margin-right: 8px;">🏠</span><span data-translate="Pig Pens">Cochineras</span></a></li>
                         <li><a href="{{ url_for('gallineros') }}"><span style="font-size: 1rem; margin-right: 8px;">🐔</span><span data-translate="Chicken Coops">Gallineros</span></a></li>
                         <li><a href="{{ url_for('establos') }}"><span style="font-size: 1rem; margin-right: 8px;">🐴</span><span data-translate="Stables">Establos/Corrales</span></a></li>
                         <li class="dropdown-divider"></li>
                         <li><a href="{{ url_for('nuevo_potrero') }}"><span style="font-size: 1rem; margin-right: 8px;">➕</span><span data-translate="New Paddock">Nuevo Potrero</span></a></li>
                         <li><a href="{{ url_for('nueva_ubicacion') }}"><span style="font-size: 1rem; margin-right: 8px;">➕</span><span data-translate="New Location">Nueva Ubicación</span></a></li>
                     </ul>
+                </li>
+                <li class="{% if request.endpoint and 'alquileres' in request.endpoint %}active{% endif %}">
+                    <a href="{{ url_for('alquileres') }}"><span style="font-size: 1.2rem;">🤝</span> <span data-translate="Rentals">Alquileres</span></a>
                 </li>
                 <li>
                     <a href="#vacunasSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span style="font-size: 1.2rem;">💉</span> <span data-translate="Vaccines">Vacunas</span></a>
@@ -2108,18 +2152,22 @@
                     <ul class="collapse list-unstyled ps-4" id="produccionSubmenu">
                         <li><a href="{{ url_for('produccion') }}"><span data-translate="View Production">Ver Producción</span></a></li>
                         <li><a href="{{ url_for('nueva_produccion') }}"><span data-translate="New Production">Nueva Producción</span></a></li>
-                        <li><a href="{{ url_for('graficos_produccion') }}"><i class="fas fa-chart-line me-2"></i>Gráficos de Producción</a></li>
+                        <li><a href="{{ url_for('graficos_produccion') }}"><span style="font-size: 1rem; margin-right: 8px;">📈</span>Gráficos de Producción</a></li>
                     </ul>
                 </li>
                 <li>
-                    <a href="#alertasSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span style="font-size: 1.2rem;">🔔</span> <span data-translate="Alerts">Alertas</span></a>
+                    <a href="#alertasSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span style="font-size: 1.2rem;">🔔</span> <span data-translate="Alerts">Alertas</span>{% if total_alertas_activas and total_alertas_activas > 0 %} <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">{{ total_alertas_activas }}</span>{% endif %}</a>
                     <ul class="collapse list-unstyled ps-4" id="alertasSubmenu">
-                        <li><a href="{{ url_for('alertas') }}"><span data-translate="View Alerts">Ver Alertas</span></a></li>
+                        <li>
+                            <a href="{{ url_for('alertas') }}" class="d-flex justify-content-between align-items-center">
+                                <span data-translate="View Alerts">Ver Alertas</span>
+                                {% if total_alertas_activas and total_alertas_activas > 0 %}
+                                    <span class="badge bg-danger rounded-pill px-2 py-0.5 me-3" style="font-size: 0.65rem;">{{ total_alertas_activas }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
                         <li><a href="{{ url_for('nueva_alerta') }}"><span data-translate="New Alert">Nueva Alerta</span></a></li>
                     </ul>
-                </li>
-                <li class="{% if 'fincas' in request.endpoint %}active{% endif %}">
-                    <a href="{{ url_for('fincas') }}"><span style="font-size: 1.2rem;">🚜</span> <span data-translate="Farms">Fincas</span></a>
                 </li>
                 <li>
                     <a href="#maquinariaSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span style="font-size: 1.2rem;">🚜</span> <span data-translate="Machinery">Maquinaria</span></a>
@@ -2132,16 +2180,14 @@
                 <li class="{% if 'eventos' in request.endpoint %}active{% endif %}">
                     <a href="{{ url_for('eventos') }}"><span style="font-size: 1.2rem;">📅</span> <span data-translate="Events">Eventos</span></a>
                 </li>
-                {% if current_user.is_authenticated and current_user.rol == 'admin' %}
-                <li class="{% if 'usuarios' in request.endpoint %}active{% endif %}">
-                    <a href="{{ url_for('usuarios') }}"><span style="font-size: 1.2rem;">👥</span> <span data-translate="Users">Usuarios</span></a>
-                </li>
-                {% endif %}
                 <li class="{% if 'empleados' in request.endpoint %}active{% endif %}">
                     <a href="{{ url_for('empleados') }}"><span style="font-size: 1.2rem;">👷</span> <span data-translate="Employees">Empleados</span></a>
                 </li>
                 <li class="{% if 'camara' in request.endpoint %}active{% endif %}">
                     <a href="{{ url_for('camaras') }}"><span style="font-size: 1.2rem;">📹</span> <span>Cámaras</span></a>
+                </li>
+                <li class="{% if request.endpoint == 'drones' or request.endpoint == 'simulador_dron' %}active{% endif %}">
+                    <a href="{{ url_for('drones') }}"><span style="font-size: 1.2rem;">🚁</span> <span>Gestión de Drones</span></a>
                 </li>
                 <li>
                     <a href="#inventarioSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><span style="font-size: 1.2rem;">📦</span> <span data-translate="Inventory">Inventario</span></a>
@@ -2150,6 +2196,7 @@
                         <li><a href="{{ url_for('nuevo_inventario') }}"><span data-translate="New Item">Nuevo Item</span></a></li>
                     </ul>
                 </li>
+                {% endif %}
             </ul>
         </nav>
 
@@ -2158,7 +2205,12 @@
                 <div class="container-fluid">
                     <!-- Mobile Hamburger Button - Solo visible en móviles -->
                     <!-- Mobile Hamburger Button -->
-                    <button id="mobileMenuButton" class="btn btn-link mobile-menu-toggler" type="button" aria-label="Menú" onclick="window.toggleMobileMenu()">
+                    <button id="mobileMenuButton" class="btn btn-link mobile-menu-toggler d-md-none" type="button" aria-label="Menú">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <!-- Desktop Sidebar Toggle Button -->
+                    <button id="desktopSidebarToggle" class="btn btn-link me-3 d-none d-md-block text-dark text-decoration-none" type="button" aria-label="Toggle Sidebar" style="font-size: 1.2rem;">
                         <i class="fas fa-bars"></i>
                     </button>
                     
@@ -2172,7 +2224,7 @@
                         {% endif %}
                         {% if finca %}
                         <div class="navbar-text me-auto d-flex align-items-center">
-                            <i class="fas fa-tractor me-3" style="font-size: 2rem; color: #007bff;"></i>
+                            <span style="font-size: 2rem; margin-right: 1rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🚜</span>
                             <div class="d-flex align-items-center">
                                 <span class="text-muted me-2" style="font-size: 1.2rem;">Finca Activa:</span>
                                 <strong class="text-primary" style="font-size: 1.8rem; line-height: 1.2;">{{ finca.nombre }}</strong>
@@ -2182,6 +2234,11 @@
                     {% endif %}
                     
                     <div class="ms-auto d-flex align-items-center">
+                        
+                        <!-- Dark Mode Toggle -->
+                        <button id="darkModeToggle" class="btn btn-link me-3 text-dark text-decoration-none" style="font-size: 1.2rem;">
+                            <i class="fas fa-moon"></i>
+                        </button>
                         
                         <!-- User Avatar Dropdown -->
                         <div class="dropdown">
@@ -2193,7 +2250,7 @@
                                 <span class="user-name d-none d-md-inline">{{ current_user.username or 'Usuario' }}</span>
                                 {% else %}
                                 <div class="user-avatar">
-                                    <i class="fas fa-user"></i>
+                                    <span style="font-size: 1.2rem;">👤</span>
                                 </div>
                                 <span class="user-name d-none d-md-inline">Iniciar Sesión</span>
                                 {% endif %}
@@ -2223,13 +2280,13 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                                        <i class="fas fa-sign-out-alt me-2"></i><span data-translate="Logout">Cerrar Sesión</span>
+                                        <span style="font-size: 1.2rem; margin-right: 8px;">🚪</span><span data-translate="Logout">Cerrar Sesión</span>
                                     </a>
                                 </li>
                                 {% else %}
                                 <li>
                                     <a class="dropdown-item" href="{{ url_for('login') }}">
-                                        <i class="fas fa-sign-in-alt me-2"></i><span data-translate="Login">Iniciar Sesión</span>
+                                        <span style="font-size: 1.2rem; margin-right: 8px;">🔑</span><span data-translate="Login">Iniciar Sesión</span>
                                     </a>
                                 </li>
                                 {% endif %}
@@ -2336,8 +2393,8 @@
     <div id="mobileNav" class="mobile-nav d-md-none">
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
-                <h3><i class="fas fa-tractor" style="font-size: 1.2rem; margin-right: 8px;"></i>AgroGest</h3>
-                <button class="close-nav" onclick="window.toggleMobileMenu()">
+                <h3><span style="font-size: 1.2rem; margin-right: 8px;">🚜</span>AgroGest</h3>
+                <button class="close-nav">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -2357,13 +2414,17 @@
                     <a href="#ubicacionesMobileSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle mobile-nav-item"><span style="font-size: 1.2rem;">🏡</span> <span data-translate="Locations">Ubicaciones</span></a>
                     <ul class="collapse list-unstyled ps-4" id="ubicacionesMobileSubmenu">
                         <li><a href="{{ url_for('potreros') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">🌿</span><span data-translate="Paddocks">Potreros (Bovinos)</span></a></li>
-                        <li><a href="{{ url_for('cochiqueras') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">🏠</span><span data-translate="Pig Pens">Cochiqueras</span></a></li>
+                        <li><a href="{{ url_for('rotacion_pastoreo') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">🔄</span><span>Rotación de Pastoreo</span></a></li>
+                        <li><a href="{{ url_for('cochiqueras') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">🏠</span><span data-translate="Pig Pens">Cochineras</span></a></li>
                         <li><a href="{{ url_for('gallineros') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">🐔</span><span data-translate="Chicken Coops">Gallineros</span></a></li>
                         <li><a href="{{ url_for('establos') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">🐴</span><span data-translate="Stables">Establos/Corrales</span></a></li>
                         <li class="dropdown-divider"></li>
                         <li><a href="{{ url_for('nuevo_potrero') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">➕</span><span data-translate="New Paddock">Nuevo Potrero</span></a></li>
                         <li><a href="{{ url_for('nueva_ubicacion') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">➕</span><span data-translate="New Location">Nueva Ubicación</span></a></li>
                     </ul>
+                </li>
+                <li class="{% if request.endpoint and 'alquileres' in request.endpoint %}active{% endif %}">
+                    <a href="{{ url_for('alquileres') }}" class="mobile-nav-item"><span style="font-size: 1.2rem;">🤝</span> <span data-translate="Rentals">Alquileres</span></a>
                 </li>
                 <li>
                     <a href="#vacunasMobileSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle mobile-nav-item"><span style="font-size: 1.2rem;">💉</span> <span data-translate="Vaccines">Vacunas</span></a>
@@ -2388,13 +2449,28 @@
                     <ul class="collapse list-unstyled ps-4" id="produccionMobileSubmenu">
                         <li><a href="{{ url_for('produccion') }}" class="mobile-nav-item"><span data-translate="View Production">Ver Producción</span></a></li>
                         <li><a href="{{ url_for('nueva_produccion') }}" class="mobile-nav-item"><span data-translate="New Production">Nueva Producción</span></a></li>
-                        <li><a href="{{ url_for('graficos_produccion') }}" class="mobile-nav-item"><i class="fas fa-chart-line me-2"></i>Gráficos de Producción</a></li>
+                        <li><a href="{{ url_for('graficos_produccion') }}" class="mobile-nav-item"><span style="font-size: 1rem; margin-right: 8px;">📈</span>Gráficos de Producción</a></li>
                     </ul>
                 </li>
                 <li>
-                    <a href="#alertasMobileSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle mobile-nav-item"><span style="font-size: 1.2rem;">🔔</span> <span data-translate="Alerts">Alertas</span></a>
+                    <a href="#alertasMobileSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle mobile-nav-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span style="font-size: 1.2rem; margin-right: 8px;">🔔</span>
+                            <span data-translate="Alerts">Alertas</span>
+                        </div>
+                        {% if total_alertas_activas > 0 %}
+                            <span class="badge bg-danger rounded-pill px-2 py-1 small me-3" style="font-size: 0.72rem;">{{ total_alertas_activas }}</span>
+                        {% endif %}
+                    </a>
                     <ul class="collapse list-unstyled ps-4" id="alertasMobileSubmenu">
-                        <li><a href="{{ url_for('alertas') }}" class="mobile-nav-item"><span data-translate="View Alerts">Ver Alertas</span></a></li>
+                        <li>
+                            <a href="{{ url_for('alertas') }}" class="mobile-nav-item d-flex justify-content-between align-items-center">
+                                <span data-translate="View Alerts">Ver Alertas</span>
+                                {% if total_alertas_activas > 0 %}
+                                    <span class="badge bg-danger rounded-pill px-2 py-0.5 me-3" style="font-size: 0.65rem;">{{ total_alertas_activas }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
                         <li><a href="{{ url_for('nueva_alerta') }}" class="mobile-nav-item"><span data-translate="New Alert">Nueva Alerta</span></a></li>
                     </ul>
                 </li>
@@ -2422,6 +2498,9 @@
                 </li>
                 <li class="{% if 'camara' in request.endpoint %}active{% endif %}">
                     <a href="{{ url_for('camaras') }}" class="mobile-nav-item"><span style="font-size: 1.2rem;">📹</span> <span>Cámaras</span></a>
+                </li>
+                <li class="{% if request.endpoint == 'drones' or request.endpoint == 'simulador_dron' %}active{% endif %}">
+                    <a href="{{ url_for('drones') }}" class="mobile-nav-item"><span style="font-size: 1.2rem;">🚁</span> <span>Gestión de Drones</span></a>
                 </li>
                 <li>
                     <a href="#inventarioMobileSubmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle mobile-nav-item"><span style="font-size: 1.2rem;">📦</span> <span data-translate="Inventory">Inventario</span></a>
@@ -2456,6 +2535,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     
     <!-- Custom UI JavaScript (stubs seguros y lógica de menú móvil/escritorio) -->
     <script>
@@ -2495,8 +2575,12 @@
                 });
             }
             
-            // Cerrar menú al hacer clic en un enlace
-            const navItems = document.querySelectorAll('.mobile-nav-item');
+            // Cerrar menú al hacer clic en un enlace (excluyendo menús desplegables)
+            const navItems = Array.from(document.querySelectorAll('.mobile-nav-item')).filter(item => {
+                return !item.classList.contains('dropdown-toggle') && 
+                       !item.hasAttribute('data-bs-toggle') && 
+                       (!item.getAttribute('href') || !item.getAttribute('href').startsWith('#'));
+            });
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -2525,7 +2609,11 @@
         
         // Cerrar menú al hacer clic en un enlace
         document.addEventListener('DOMContentLoaded', function() {
-            const navItems = document.querySelectorAll('.mobile-nav-item');
+            const navItems = Array.from(document.querySelectorAll('.mobile-nav-item')).filter(item => {
+                return !item.classList.contains('dropdown-toggle') && 
+                       !item.hasAttribute('data-bs-toggle') && 
+                       (!item.getAttribute('href') || !item.getAttribute('href').startsWith('#'));
+            });
             navItems.forEach(item => {
                 item.addEventListener('click', toggleMobileMenu);
             });
@@ -2558,16 +2646,20 @@
             }
         }
         
-        // Close sidebar when clicking on a link (mobile)
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileLinks = document.querySelectorAll('#sidebar a');
+        // Close sidebar when clicking on a link (mobile, excluding submenu toggles)
+        function initMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const body = document.body;
+
+            const mobileLinks = Array.from(document.querySelectorAll('#sidebar a')).filter(link => {
+                return !link.classList.contains('dropdown-toggle') && 
+                       !link.hasAttribute('data-bs-toggle') && 
+                       (!link.getAttribute('href') || !link.getAttribute('href').startsWith('#'));
+            });
             mobileLinks.forEach(link => {
                 link.addEventListener('click', function() {
                     if (window.innerWidth < 768) {
-                        const sidebar = document.getElementById('sidebar');
-                        const overlay = document.getElementById('sidebarOverlay');
-                        const body = document.body;
-                        
                         if (sidebar && overlay) {
                             sidebar.classList.remove('show-mobile');
                             overlay.classList.remove('show');
@@ -2601,6 +2693,7 @@
             
             console.log('Mobile menu initialized');
         }
+        document.addEventListener('DOMContentLoaded', initMobileMenu);
         
         // Also re-initialize after a short delay to catch any dynamic content
         setTimeout(initMobileMenu, 1000);
@@ -2663,8 +2756,12 @@
                 }, { passive: false });
             }
             
-            // Close menu when clicking on a nav link
-            const navLinks = document.querySelectorAll('#sidebar a');
+            // Close menu when clicking on a nav link (excluding submenu toggles)
+            const navLinks = Array.from(document.querySelectorAll('#sidebar a')).filter(link => {
+                return !link.classList.contains('dropdown-toggle') && 
+                       !link.hasAttribute('data-bs-toggle') && 
+                       (!link.getAttribute('href') || !link.getAttribute('href').startsWith('#'));
+            });
             navLinks.forEach(link => {
                 link.addEventListener('click', function() {
                     if (window.innerWidth <= 768) {
@@ -2931,97 +3028,111 @@
             // Create and show profile modal
             const modalHtml = `
                 <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl" style="max-width: 900px;">
-                        <div class="modal-content" style="border: none; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.15); height: 85vh;">
-                            <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); border: none; padding: 2rem; position: relative;">
-                                <h5 class="modal-title" id="profileModalLabel" style="color: white; font-weight: 600; font-size: 1.5rem;">
-                                    <span style="font-size: 1.5rem; margin-right: 12px;">👤</span>Mi Perfil
+                    <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 850px;">
+                        <div class="modal-content" style="border: none; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+                            
+                            <!-- Custom Scrollbar Style for this modal -->
+                            <style>
+                                #profileModal .modal-body::-webkit-scrollbar {
+                                    width: 6px;
+                                }
+                                #profileModal .modal-body::-webkit-scrollbar-track {
+                                    background: #f1f5f9;
+                                    border-radius: 10px;
+                                }
+                                #profileModal .modal-body::-webkit-scrollbar-thumb {
+                                    background: #cbd5e1;
+                                    border-radius: 10px;
+                                }
+                                #profileModal .modal-body::-webkit-scrollbar-thumb:hover {
+                                    background: #94a3b8;
+                                }
+                            </style>
+
+                            <!-- Header / Cover -->
+                            <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border: none; padding: 2.5rem 2rem 5rem 2rem; position: relative;">
+                                <h5 class="modal-title" id="profileModalLabel" style="color: white; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.5px;">
+                                    <i class="fas fa-user-circle me-2"></i> Mi Perfil
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1); opacity: 0.8;"></button>
                             </div>
-                            <div class="modal-body" style="padding: 0; background: #f8f9fa; height: calc(85vh - 140px); overflow-y: auto;">
-                                <!-- Navigation Tabs -->
-                                <div style="background: white; border-bottom: 1px solid #e2e8f0; padding: 1rem 2.5rem; position: sticky; top: 0; z-index: 10;">
-                                    <div class="nav nav-tabs" style="border: none;">
-                                        <button class="nav-link active" style="border: none; color: #3b82f6; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 8px; margin-right: 0.5rem;" onclick="showProfileTab('info')">
-                                            <span style="margin-right: 8px;">📋</span>Información
-                                        </button>
+                            
+                            <!-- Body with Scrollbar -->
+                            <div class="modal-body" style="background-color: #f8fafc; padding: 0 2rem 2rem 2rem; max-height: 65vh; overflow-y: auto;">
+                                <div class="row">
+                                    <!-- Left Column: Avatar Card -->
+                                    <div class="col-md-4 text-center">
+                                        <div style="background: white; border-radius: 16px; padding: 2rem 1.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); margin-top: -65px; position: relative; z-index: 10; border: 1px solid #f1f5f9;">
+                                            <div class="mx-auto mb-3" style="width: 110px; height: 110px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 3rem; font-weight: 700; box-shadow: 0 0 0 6px white, 0 10px 20px rgba(37, 99, 235, 0.15);">
+                                                ${userInitial}
+                                            </div>
+                                            <h4 style="font-weight: 800; color: #0f172a; margin-bottom: 0.25rem; font-size: 1.3rem;">${username}</h4>
+                                            <p style="color: #64748b; font-weight: 500; font-size: 0.95rem; margin-bottom: 1.2rem;">${userRole}</p>
+                                            <span class="badge" style="background-color: #f0fdf4; color: #166534; padding: 0.6rem 1.2rem; border-radius: 9999px; font-weight: 600; border: 1px solid #bbf7d0;">
+                                                <i class="fas fa-check-circle me-1"></i> Cuenta Activa
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                <!-- Tab Content -->
-                                <div style="padding: 2.5rem;">
-                                    <!-- Info Tab -->
-                                    <div id="infoTab" class="profile-tab">
-                                        <div class="row">
-                                            <div class="col-md-4 text-center" style="position: relative;">
-                                                <div class="user-avatar-large mx-auto mb-4" style="width: 120px; height: 120px; font-size: 3rem; background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); position: relative; border: 4px solid white;">
-                                                    ${userInitial}
-                                                </div>
-                                                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-top: -20px; position: relative; z-index: 1;">
-                                                    <h5 style="font-weight: 700; color: #2d3748; margin-bottom: 0.5rem;">${username}</h5>
-                                                    <p class="text-muted" style="margin: 0; font-weight: 500;">${userRole}</p>
-                                                    <div style="margin-top: 1rem;">
-                                                        <span class="badge" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">Activo</span>
+                                    
+                                    <!-- Right Column: Info Form -->
+                                    <div class="col-md-8">
+                                        <div style="padding-top: 2rem;">
+                                            <h6 style="font-weight: 700; color: #334155; margin-bottom: 1.5rem; font-size: 1.15rem; display: flex; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.8rem;">
+                                                <i class="fas fa-address-card text-primary me-2"></i> Detalles Personales
+                                            </h6>
+                                            <form id="profileForm">
+                                                <div class="row g-3">
+                                                    <!-- Username (Readonly) -->
+                                                    <div class="col-md-6 mb-2">
+                                                        <label class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Usuario de Ingreso</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" style="background-color: #f1f5f9; border-color: #e2e8f0; border-right: none;"><i class="fas fa-at text-muted"></i></span>
+                                                            <input type="text" class="form-control" id="profileUsername" value="${username}" readonly style="background-color: #f1f5f9; border-color: #e2e8f0; border-left: none; color: #475569; font-weight: 600; border-radius: 0 10px 10px 0;">
+                                                        </div>
+                                                    </div>
+                                                    <!-- Role (Readonly) -->
+                                                    <div class="col-md-6 mb-2">
+                                                        <label class="form-label" style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Nivel de Acceso</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text" style="background-color: #f1f5f9; border-color: #e2e8f0; border-right: none;"><i class="fas fa-shield-alt text-muted"></i></span>
+                                                            <input type="text" class="form-control" value="${userRole}" readonly style="background-color: #f1f5f9; border-color: #e2e8f0; border-left: none; color: #475569; font-weight: 600; border-radius: 0 10px 10px 0;">
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- First Name -->
+                                                    <div class="col-md-6 mt-3">
+                                                        <label class="form-label" style="font-size: 0.85rem; font-weight: 700; color: #334155;">Nombres</label>
+                                                        <input type="text" class="form-control" id="profileNombre" value="${userNombre || ''}" placeholder="Tus nombres" style="border: 2px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; transition: border-color 0.2s;">
+                                                    </div>
+                                                    <!-- Last Name -->
+                                                    <div class="col-md-6 mt-3">
+                                                        <label class="form-label" style="font-size: 0.85rem; font-weight: 700; color: #334155;">Apellidos</label>
+                                                        <input type="text" class="form-control" id="profileApellido" value="${userApellido || ''}" placeholder="Tus apellidos" style="border: 2px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; transition: border-color 0.2s;">
+                                                    </div>
+                                                    
+                                                    <!-- Email -->
+                                                    <div class="col-md-6 mt-4">
+                                                        <label class="form-label" style="font-size: 0.85rem; font-weight: 700; color: #334155;">Correo Electrónico</label>
+                                                        <input type="email" class="form-control" id="profileEmail" value="${userEmail || ''}" placeholder="usuario@ejemplo.com" style="border: 2px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; transition: border-color 0.2s;">
+                                                    </div>
+                                                    <!-- Phone -->
+                                                    <div class="col-md-6 mt-4">
+                                                        <label class="form-label" style="font-size: 0.85rem; font-weight: 700; color: #334155;">Teléfono</label>
+                                                        <input type="tel" class="form-control" id="profilePhone" value="${userTelefono || ''}" placeholder="+57 300 123 4567" style="border: 2px solid #e2e8f0; border-radius: 10px; padding: 0.6rem 1rem; transition: border-color 0.2s;">
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-8">
-                                                <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08);">
-                                                    <h6 style="font-weight: 700; color: #2d3748; margin-bottom: 1.5rem; font-size: 1.1rem;">
-                                                        <span style="margin-right: 8px;">📋</span>Información del Usuario
-                                                    </h6>
-                                                    <form id="profileForm">
-                                                        <div class="row">
-                                                            <div class="col-md-6 mb-4">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Nombre de Usuario</label>
-                                                                <input type="text" class="form-control" id="profileUsername" value="${username}" readonly style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-weight: 500; background: #f7fafc;">
-                                                            </div>
-                                                            <div class="col-md-6 mb-4">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Rol</label>
-                                                                <input type="text" class="form-control" value="${userRole}" readonly style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-weight: 500; background: #f7fafc;">
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-md-6 mb-4">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Nombre</label>
-                                                                <input type="text" class="form-control" id="profileNombre" value="${userNombre || ''}" placeholder="Tu nombre" style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; transition: all 0.3s;">
-                                                            </div>
-                                                            <div class="col-md-6 mb-4">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Apellido</label>
-                                                                <input type="text" class="form-control" id="profileApellido" value="${userApellido || ''}" placeholder="Tu apellido" style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; transition: all 0.3s;">
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-md-6 mb-4">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Email</label>
-                                                                <input type="email" class="form-control" id="profileEmail" value="${userEmail || ''}" placeholder="usuario@ejemplo.com" style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; transition: all 0.3s;">
-                                                            </div>
-                                                            <div class="col-md-6 mb-4">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Teléfono</label>
-                                                                <input type="tel" class="form-control" id="profilePhone" value="${userTelefono || ''}" placeholder="+57 300 123 4567" style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; transition: all 0.3s;">
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Fecha de Registro</label>
-                                                                <input type="text" class="form-control" value="01/01/2024" readonly style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-weight: 500; background: #f7fafc;">
-                                                            </div>
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label" style="font-weight: 600; color: #4a5568; margin-bottom: 0.5rem;">Último Acceso</label>
-                                                                <input type="text" class="form-control" value="Hoy" readonly style="border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-weight: 500; background: #f7fafc;">
-                                                            </div>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer" style="background: white; border: none; padding: 1.5rem 2.5rem;">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; border: 2px solid #e2e8f0;">Cerrar</button>
-                                <button type="button" class="btn btn-primary" onclick="saveProfile()" style="padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); border: none;">Guardar Cambios</button>
+                            
+                            <!-- Footer -->
+                            <div class="modal-footer" style="background-color: white; border-top: 1px solid #f1f5f9; padding: 1.25rem 2rem;">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="font-weight: 600; border-radius: 8px; padding: 0.6rem 1.5rem; color: #475569; border: 1px solid #cbd5e1;">Cancelar</button>
+                                <button type="button" class="btn btn-primary" onclick="saveProfile()" style="font-weight: 600; border-radius: 8px; padding: 0.6rem 1.5rem; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1);">
+                                    <i class="fas fa-save me-1"></i> Guardar Cambios
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -3354,20 +3465,37 @@
             });
             
             // Traducir botones nuevamente (pueden tener iconos)
+
             document.querySelectorAll('button, .btn').forEach(button => {
+
                 const originalHTML = button.innerHTML;
+
                 let translatedHTML = originalHTML;
+
                 
-                Object.keys(translations).forEach(spanish => {
-                    const english = translations[spanish];
-                    if (translatedHTML.includes(spanish)) {
-                        translatedHTML = translatedHTML.replace(new RegExp(spanish, 'g'), english);
+
+                Object.keys(translations).forEach(key => {
+
+                    const val = translations[key];
+
+                    if (translatedHTML.includes(key)) {
+
+                        // Usar RegExp con \b para evitar el problema de "Cancelar" -> "Cancelarar"
+
+                        translatedHTML = translatedHTML.replace(new RegExp('\\b' + key + '\\b', 'g'), val);
+
                     }
+
                 });
+
                 
+
                 if (translatedHTML !== originalHTML) {
+
                     button.innerHTML = translatedHTML;
+
                 }
+
             });
             
             console.log('Traducciones retardadas aplicadas');
@@ -4043,8 +4171,207 @@
             if (typeof initCloseButton === 'function') {
                 initCloseButton();
             }
+        });
+    </script>
     
     {% endblock %}
     
-    </body>
+    
+    <!-- UI Style & Dark Mode Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar el Estilo Premium/Pro si está activo
+            const currentStyle = localStorage.getItem('ui_style');
+            if (currentStyle === 'premium') {
+                document.documentElement.setAttribute('data-style', 'premium');
+            } else if (currentStyle === 'pro') {
+                document.documentElement.setAttribute('data-style', 'pro');
+            } else if (currentStyle === 'analitico') {
+                document.documentElement.setAttribute('data-style', 'analitico');
+            }
+            
+            // Dark Mode Logic
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const icon = darkModeToggle ? darkModeToggle.querySelector('i') : null;
+            
+            // Ver si ya hay un tema oscuro guardado
+            const isDarkMode = localStorage.getItem('theme') === 'dark';
+            if (isDarkMode) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                if (icon) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                    darkModeToggle.classList.replace('text-dark', 'text-light');
+                }
+            }
+            
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', () => {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    if (currentTheme === 'dark') {
+                        document.documentElement.removeAttribute('data-theme');
+                        localStorage.setItem('theme', 'light');
+                        icon.classList.remove('fa-sun');
+                        icon.classList.add('fa-moon');
+                        darkModeToggle.classList.replace('text-light', 'text-dark');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('theme', 'dark');
+                        icon.classList.remove('fa-moon');
+                        icon.classList.add('fa-sun');
+                        darkModeToggle.classList.replace('text-dark', 'text-light');
+                    }
+                });
+            }
+        });
+    </script>
+    <!-- Toggle Sidebar Mini Mode Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const desktopToggle = document.getElementById('desktopSidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            
+            if (desktopToggle) {
+                desktopToggle.addEventListener('click', function() {
+                    if(sidebar && content) {
+                        sidebar.classList.toggle('mini');
+                        content.classList.toggle('mini');
+                    }
+                });
+            }
+
+            // Si está en modo mini, en lugar de abrir el submenú, ir a la página principal de esa sección
+            if (sidebar) {
+                sidebar.addEventListener('click', function(e) {
+                    if (sidebar.classList.contains('mini')) {
+                        const link = e.target.closest('a');
+                        if (link && link.classList.contains('dropdown-toggle')) {
+                            // Evitar que Bootstrap abra el menú desplegable
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            
+                            // Buscar el submenú asociado
+                            const targetId = link.getAttribute('href');
+                            if (targetId && targetId.startsWith('#')) {
+                                const submenu = document.querySelector(targetId);
+                                if (submenu) {
+                                    // Encontrar el primer enlace válido dentro del submenú y navegar hacia allá
+                                    const firstLink = submenu.querySelector('a');
+                                    if (firstLink && firstLink.href) {
+                                        window.location.href = firstLink.href;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }, true); // Usar fase de captura para ganar a Bootstrap
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Función para verificar si un campo debe ser tratado como numérico
+            function esCampoNumerico(input) {
+                if (input.type === 'number') return true;
+                if (input.type === 'tel') return true;
+                const idName = (input.id || '') + ' ' + (input.name || '');
+                if (/cedula|telefono|celular|documento|monto|precio|costo|salario|peso|cantidad/i.test(idName)) {
+                    return true;
+                }
+                if (/edad/i.test(idName) && !/enfermedad|sociedad/i.test(idName)) {
+                    return true;
+                }
+                return false;
+            }
+
+            // Función para verificar si un campo es estrictamente de letras (sin números)
+            function esCampoTexto(input) {
+                if (input.type === 'email' || input.type === 'password' || input.type === 'url') return false;
+                const idName = (input.id || '') + ' ' + (input.name || '');
+                // Nombres comunes para campos que solo llevan letras
+                if (/nombre|apellido|cargo|profesion|ciudad|estado|pais|raza|parentesco/i.test(idName)) {
+                    // Excluir campos de usuario que podrían llevar números
+                    if (/username|usuario/i.test(idName)) return false;
+                    return true;
+                }
+                return false;
+            }
+
+            // Prevenir ingreso de teclas no válidas en toda la aplicación
+            document.body.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    if (esCampoNumerico(e.target)) {
+                        const isNumberType = e.target.type === 'number';
+                        
+                        if (isNumberType) {
+                            if (['e', 'E', '+', '-'].includes(e.key)) {
+                                e.preventDefault();
+                            }
+                        } else {
+                            const allowedKeys = ['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Delete', 'Enter', 'Home', 'End'];
+                            const isNumberKey = /^[0-9]$/.test(e.key);
+                            const isSpecialKey = allowedKeys.includes(e.key);
+                            const isCtrl = e.ctrlKey || e.metaKey;
+                            
+                            const idName = (e.target.id || '') + ' ' + e.target.type;
+                            const isPhoneChar = (e.key === '+' || e.key === ' ') && /telefono|celular|tel/i.test(idName);
+                            const isDecimal = (e.key === '.' || e.key === ',') && /monto|precio|costo|salario|peso|cantidad/i.test(e.target.id || '');
+                            
+                            if (!isNumberKey && !isSpecialKey && !isCtrl && !isPhoneChar && !isDecimal) {
+                                e.preventDefault();
+                            }
+                        }
+                    } else if (esCampoTexto(e.target)) {
+                        // Bloquear números si es un campo de solo letras
+                        if (/^[0-9]$/.test(e.key)) {
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+
+            // Limpiar valores al escribir o pegar
+            document.body.addEventListener('input', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    if (e.target.type !== 'number' && esCampoNumerico(e.target)) {
+                        const originalValue = e.target.value;
+                        let newValue = originalValue;
+                        
+                        const idName = (e.target.id || '') + ' ' + e.target.type;
+                        
+                        if (/telefono|celular|tel/i.test(idName)) {
+                            newValue = originalValue.replace(/[^0-9+ ]/g, '');
+                        } else if (/monto|precio|costo|salario|peso|cantidad/i.test(e.target.id || '')) {
+                            newValue = originalValue.replace(/[^0-9.,]/g, '');
+                        } else {
+                            newValue = originalValue.replace(/[^0-9]/g, '');
+                        }
+                        
+                        if (originalValue !== newValue) {
+                            e.target.value = newValue;
+                        }
+                    } else if (esCampoTexto(e.target)) {
+                        const originalValue = e.target.value;
+                        // Permitir letras, espacios, puntos, comas, punto y coma y guiones
+                        const newValue = originalValue.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ .,;\-\s]/g, '');
+                        if (originalValue !== newValue) {
+                            e.target.value = newValue;
+                        }
+                    }
+                }
+            });
+            
+            document.body.addEventListener('paste', function(e) {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'number') {
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    if (!/^[0-9.]+$/.test(paste)) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
 </html>

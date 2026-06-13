@@ -5,22 +5,162 @@
 
 {% block content %}
 <div class="card mb-4 border-0 shadow-sm">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+    <div class="card-header bg-primary text-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 py-3" style="border-radius: 10px;">
         <div class="d-flex align-items-center">
             <div class="icon-circle me-3">
                 <span style="font-size: 1.2rem;">🗺️</span>
             </div>
             <h5 class="mb-0 fw-semibold">Gestión de Potreros</h5>
         </div>
-        <a href="{{ url_for('nuevo_potrero') }}" class="btn btn-light btn-sm shadow-sm">
-            <span style="font-size: 1rem; margin-right: 4px;">➕</span> Nuevo Potrero
+        
+        <!-- Selector de Vistas Premium -->
+        <div class="btn-group p-1 bg-white bg-opacity-20 rounded-pill shadow-sm" role="group" style="backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15);">
+            <button type="button" class="btn btn-light btn-sm rounded-pill px-3 py-1.5" id="btnMapView" onclick="switchView('map')" style="font-weight: 600; font-size: 0.85rem; transition: all 0.2s ease;">
+                🗺️ Vista Mapa
+            </button>
+            <button type="button" class="btn text-white btn-sm rounded-pill px-3 py-1.5" id="btnCardsView" onclick="switchView('cards')" style="font-weight: 600; font-size: 0.85rem; transition: all 0.2s ease;">
+                📋 Vista Fichas
+            </button>
+        </div>
+
+        <a href="{{ url_for('nuevo_potrero') }}" class="btn btn-light btn-sm shadow-sm px-3 rounded-pill fw-semibold">
+            <span style="font-size: 0.95rem; margin-right: 4px;">➕</span> Nuevo Potrero
         </a>
     </div>
 </div>
+<!-- SECCIÓN DE VISTA DE MAPA -->
+<div id="mapViewSection">
+<!-- MAPA INTERACTIVO DE LA FINCA -->
+<div class="card mb-4 border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
+    <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+        <h5 class="mb-0 fw-bold text-dark d-flex align-items-center" style="font-size: 1.25rem; letter-spacing: -0.02em; color: #0f172a !important;">
+            <span style="font-size: 1.4rem; margin-right: 8px;">🗺️</span> Mapa Interactivo de la Finca (Vista de Pájaro)
+        </h5>
+        <div class="d-flex flex-wrap gap-2 small text-muted">
+            <span class="d-flex align-items-center me-2"><span class="legend-color legend-green me-1"></span> Disponible (Lush)</span>
+            <span class="d-flex align-items-center me-2"><span class="legend-color legend-gold me-1"></span> Ocupado (Pastoreo)</span>
+            <span class="d-flex align-items-center"><span class="legend-color legend-rust me-1"></span> Descanso (Abono)</span>
+        </div>
+    </div>
+    <div class="card-body p-0 position-relative" style="background-color: #eef2f3; overflow: hidden; border-radius: 0 0 12px 12px;">
+        <!-- Canvas/SVG del Mapa -->
+        <div id="farmMapWrapper" class="w-100 overflow-hidden position-relative">
+            <svg id="farmMapSvg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto; display: block;">
+                <defs>
+                    <pattern id="grassPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <rect width="40" height="40" fill="#e2ede4" />
+                        <circle cx="10" cy="10" r="1" fill="#c4dcc8" />
+                        <circle cx="30" cy="20" r="1.5" fill="#c4dcc8" />
+                        <path d="M 5 35 Q 8 30 10 35 M 8 35 Q 11 31 13 35" stroke="#a3cfa9" stroke-width="1" fill="none" />
+                        <path d="M 25 15 Q 27 11 29 15 M 27 15 Q 29 12 31 15" stroke="#a3cfa9" stroke-width="1" fill="none" />
+                    </pattern>
+                    
+                    <linearGradient id="paddockGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#10b981" stop-opacity="0.85" />
+                        <stop offset="100%" stop-color="#047857" stop-opacity="0.95" />
+                    </linearGradient>
+                    
+                    <linearGradient id="paddockGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.85" />
+                        <stop offset="100%" stop-color="#b45309" stop-opacity="0.95" />
+                    </linearGradient>
+                    
+                    <linearGradient id="paddockRust" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f87171" stop-opacity="0.85" />
+                        <stop offset="100%" stop-color="#b91c1c" stop-opacity="0.95" />
+                    </linearGradient>
+                    
+                    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+                        <feDropShadow dx="2" dy="4" stdDeviation="4" flood-opacity="0.15" />
+                    </filter>
+                    
+                    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="8" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                </defs>
+                
+                <!-- Césped de Base -->
+                <rect width="800" height="400" fill="url(#grassPattern)" />
+                
+                <!-- Río Sinuoso Decorativo (Límite Natural en el Margen Superior) -->
+                <path d="M -50 20 Q 400 15 850 25" fill="none" stroke="#60a5fa" stroke-width="16" stroke-linecap="round" opacity="0.3" />
+                <path d="M -50 20 Q 400 15 850 25" fill="none" stroke="#93c5fd" stroke-width="8" stroke-linecap="round" opacity="0.5" />
+                
+                <!-- Corral Central/Granja Decoración (Ubicada en el Margen Superior Derecho) -->
+                <g transform="translate(735, 5) scale(0.8)" opacity="0.85">
+                    <!-- Base Cabaña -->
+                    <rect x="0" y="15" width="50" height="35" rx="4" fill="#64748b" />
+                    <!-- Techo Rojo -->
+                    <polygon points="25,0 -5,18 55,18" fill="#ef4444" />
+                    <!-- Puerta Corral -->
+                    <rect x="18" y="27" width="14" height="23" fill="#334155" />
+                    <!-- Silo de Trigo -->
+                    <rect x="-15" y="10" width="12" height="40" fill="#94a3b8" />
+                    <path d="M -15 10 Q -9 -2 -3 10 Z" fill="#475569" />
+                </g>
+                
+                <!-- Bosque y Árboles Decorativos (Distribuidos en los Márgenes de la Finca) -->
+                <g class="decor-tree" transform="translate(30, 20)" opacity="0.75"><circle r="10" fill="#047857"/><circle cx="-6" cy="6" r="7" fill="#065f46"/><circle cx="6" cy="6" r="7" fill="#065f46"/><rect x="-2" y="8" width="4" height="10" fill="#78350f"/></g>
+                <g class="decor-tree" transform="translate(30, 200)" opacity="0.8"><circle r="12" fill="#047857"/><circle cx="-6" cy="6" r="8" fill="#065f46"/><circle cx="6" cy="6" r="8" fill="#065f46"/><rect x="-2" y="9" width="4" height="11" fill="#78350f"/></g>
+                <g class="decor-tree" transform="translate(30, 370)" opacity="0.65"><circle r="10" fill="#047857"/><rect x="-2" y="8" width="4" height="10" fill="#78350f"/></g>
+                
+                <g class="decor-tree" transform="translate(765, 200)" opacity="0.75"><circle r="12" fill="#047857"/><circle cx="-6" cy="6" r="8" fill="#065f46"/><rect x="-2" y="9" width="4" height="11" fill="#78350f"/></g>
+                <g class="decor-tree" transform="translate(765, 370)" opacity="0.7"><circle r="10" fill="#047857"/><rect x="-2" y="8" width="4" height="10" fill="#78350f"/></g>
+                
+                <!-- Grupo de Polígonos de Potreros -->
+                <g id="mapPaddockGroup"></g>
+                
+                <!-- Grupo de Cercas Internas divisorias (se dibuja encima) -->
+                <g id="mapFenceGroup" fill="none" stroke="#7c2d12" stroke-width="2.5" stroke-dasharray="3,5" opacity="0.6"></g>
+            </svg>
+        </div>
+        
+        <!-- Tooltip flotante estilizado -->
+        <div id="farmMapTooltip" class="farm-map-tooltip card border-0 shadow" style="display: none; position: absolute; pointer-events: none; z-index: 1060; width: 260px; border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);">
+            <div class="card-header bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center" style="border: none;">
+                <span id="tooltipName" class="fw-semibold">Potrero</span>
+                <span id="tooltipStatus" class="badge rounded-pill">Estado</span>
+            </div>
+            <div class="card-body py-3 px-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small"><span style="font-size: 1rem; margin-right: 0.2rem;">📏</span> Área:</span>
+                    <span id="tooltipArea" class="fw-semibold">0.0 ha</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small"><span style="font-size: 1rem; margin-right: 0.2rem;">🐄</span> Ocupación:</span>
+                    <span id="tooltipOcupacion" class="fw-semibold">0 / 0</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small"><span style="font-size: 1rem; margin-right: 0.2rem;">🌿</span> Pasto:</span>
+                    <span id="tooltipPasto" class="fw-semibold">Mestizo</span>
+                </div>
+                <div class="pt-2 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small text-muted fw-semibold">Salud de Pastura</span>
+                        <span id="tooltipHealthVal" class="small fw-bold text-success">85%</span>
+                    </div>
+                    <div class="progress" style="height: 6px; border-radius: 3px; background-color: #e2e8f0;">
+                        <div id="tooltipProgressBar" class="progress-bar" role="progressbar" style="width: 85%;"></div>
+                    </div>
+                </div>
+                <div class="text-center mt-3 pt-2 border-top small text-primary fw-semibold" style="font-size: 11px;">
+                    <span style="font-size: 1rem; margin-right: 0.2rem;">🖱️</span> Haz clic para ver animales en detalle
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
 
+<div id="cardsViewSection" class="d-none">
+    <!-- Barra de búsqueda -->
+    <div class="mb-4">
+        <input type="text" id="searchInput" class="form-control rounded-pill shadow-sm px-4 py-2" placeholder="🔍 Buscar potrero por nombre..." onkeyup="filterCards()">
+    </div>
 <div class="row">
     {% for potrero in potreros %}
-    <div class="col-md-6 col-lg-4 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4 filter-card">
         <div class="card h-100 border-0 shadow-sm hover-card">
             <div class="position-relative">
                 {% if potrero.imagen %}
@@ -32,7 +172,7 @@
                 </div>
                 {% else %}
                 <div class="bg-light text-center py-5" style="height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 8px 8px 0 0;">
-                    <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                    <span style="font-size: 3rem; margin-bottom: 0.5rem; opacity: 0.5;">🖼️</span>
                     <p class="small text-muted mb-0">Sin imagen</p>
                 </div>
                 {% endif %}
@@ -45,7 +185,7 @@
             <div class="card-body">
                 <h5 class="card-title fw-semibold mb-2">{{ potrero.nombre }}</h5>
                 <p class="text-muted small mb-3">
-                    <i class="fas fa-tag me-1"></i> {{ potrero.funcion }}
+                    <span style="font-size: 1rem; margin-right: 0.2rem;">🏷️</span> {{ potrero.funcion }}
                 </p>
                 <div class="row text-center g-3 mb-3">
                     <div class="col-4">
@@ -70,75 +210,120 @@
                 
                 <div class="d-grid gap-2">
                     <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#potreroModal{{ potrero.id }}">
-                        <i class="fas fa-eye me-1"></i> Ver Detalles
+                        <span style="font-size: 1rem; margin-right: 0.2rem;">👁️</span> Ver Detalles
                     </button>
                     <a href="{{ url_for('editar_potrero', potrero_id=potrero.id) }}" class="btn btn-outline-secondary btn-sm me-2">
-                        <i class="fas fa-edit me-1"></i> Editar
+                        <span style="font-size: 1rem; margin-right: 0.2rem;">✏️</span> Editar
                     </a>
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ potrero.id }}">
-                        <i class="fas fa-trash-alt me-1"></i> Eliminar
+                        <span style="font-size: 1rem; margin-right: 0.2rem;">🗑️</span> Eliminar
                     </button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Modal Detalles del Potrero -->
-    <div class="modal fade" id="potreroModal{{ potrero.id }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Potrero</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Modal Detalles del Potrero Premium -->
+    <div class="modal fade" id="potreroModal{{ potrero.id }}" tabindex="-1" aria-labelledby="potreroModalLabel{{ potrero.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header del Modal con Degradado Temático según Estado -->
+                <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%;">
+                            <span style="font-size: 1.5rem;">🗺️</span>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white" id="potreroModalLabel{{ potrero.id }}">{{ potrero.nombre }}</h5>
+                            <small class="text-white text-opacity-80 fw-semibold">{{ potrero.funcion or 'Sin función específica' }}</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">Información General</h6>
-                            <p><strong>Nombre:</strong> {{ potrero.nombre }}</p>
-                            <p><strong>Función:</strong> {{ potrero.funcion }}</p>
-                            <p><strong>Estado:</strong> 
-                                <span class="badge rounded-pill {% if potrero.estado == 'disponible' %}bg-success{% elif potrero.estado == 'ocupado' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-                                    {{ potrero.estado|title }}
+                
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <!-- Métrica de Tarjetas Rápidas de Alta Tecnología -->
+                    <div class="row g-3 mb-4">
+                        <!-- Estado Badge Card -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><span style="font-size: 1rem; margin-right: 0.2rem;">🔘</span> Estado</div>
+                                <span class="badge rounded-pill d-inline-block py-2 {% if potrero.estado == 'disponible' %}bg-success-soft text-success{% elif potrero.estado == 'ocupado' %}bg-warning-soft text-warning-dark{% else %}bg-danger-soft text-danger{% endif %}" style="font-size: 0.8rem; font-weight: 700; width: fit-content;">
+                                    {{ potrero.estado|upper }}
                                 </span>
-                            </p>
-                            {% if potrero.tipo_pasto %}
-                            <p><strong>Tipo de Pasto:</strong> {{ potrero.tipo_pasto }}</p>
-                            {% endif %}
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6 class="text-info mb-3">Capacidad y Ocupación</h6>
-                            <p><strong>Área:</strong> {{ potrero.area }} hectáreas</p>
-                            <p><strong>Capacidad:</strong> {{ potrero.capacidad }} animales</p>
-                            <p><strong>Ocupado:</strong> {{ animales_por_potrero.get(potrero.id, 0) }} animales</p>
-                            <p><strong>Disponible:</strong> {{ potrero.capacidad - animales_por_potrero.get(potrero.id, 0) }} animales</p>
+                        
+                        <!-- Área -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><span style="font-size: 1rem; margin-right: 0.2rem;">📏</span> Superficie</div>
+                                <div class="fw-bold fs-5 text-dark">{{ potrero.area }} <span class="small text-muted" style="font-size: 0.8rem;">ha</span></div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    {% if potrero.fecha_creacion %}
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <p><strong>Fecha de Creación:</strong> {{ potrero.fecha_creacion.strftime('%d/%m/%Y') }}</p>
+
+                        <!-- Tipo de Pasto -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><span style="font-size: 1rem; margin-right: 0.2rem;">🌿</span> Tipo de Pasto</div>
+                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ potrero.tipo_pasto or 'No definido' }}</div>
+                            </div>
                         </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Lista de animales en el potrero -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h6 class="text-success mb-3">
-                                <i class="fas fa-cow me-2"></i>Animales en este Potrero ({{ animales_por_potrero.get(potrero.id, 0) }})
-                            </h6>
-                            <div id="animalesPotrero{{ potrero.id }}" class="row">
-                                <!-- Se llenará dinámicamente con JavaScript -->
+
+                        <!-- Capacidad -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><span style="font-size: 1rem; margin-right: 0.2rem;">📊</span> Capacidad Max</div>
+                                <div class="fw-bold fs-5 text-dark">{{ potrero.capacidad }} <span class="small text-muted" style="font-size: 0.8rem;">animales</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Ocupados -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><span style="font-size: 1rem; margin-right: 0.2rem;">🐄</span> Ocupación Actual</div>
+                                <div class="fw-bold fs-5 text-dark">{{ animales_por_potrero.get(potrero.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">animales</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Disponibles -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><span style="font-size: 1rem; margin-right: 0.2rem;">✅</span> Cupos Libres</div>
+                                <div class="fw-bold fs-5 {% if potrero.capacidad - animales_por_potrero.get(potrero.id, 0) > 0 %}text-success{% else %}text-muted{% endif %}">
+                                    {{ potrero.capacidad - animales_por_potrero.get(potrero.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">vacantes</span>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    {% if potrero.fecha_creacion %}
+                    <div class="mb-4 text-muted small px-2">
+                        <span style="font-size: 1rem; margin-right: 0.2rem;">📅</span> <strong>Fecha de Creación:</strong> {{ potrero.fecha_creacion.strftime('%d/%m/%Y') }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Panel de Animales Detallado -->
+                    <div class="card border-0 shadow-xs p-3" style="border-radius: 16px; background-color: #ffffff;">
+                        <h6 class="text-dark fw-bold mb-3 d-flex align-items-center">
+                            <span class="icon-circle bg-success-soft text-success me-2 d-flex align-items-center justify-content-center animate-pulse" style="width: 32px; height: 32px; border-radius: 50%;">
+                                🐄
+                            </span>
+                            Animales Asignados en este Potrero ({{ animales_por_potrero.get(potrero.id, 0) }})
+                        </h6>
+                        
+                        <div id="animalesPotrero{{ potrero.id }}" class="row g-2 overflow-auto" style="max-height: 240px; padding-bottom: 5px;">
+                            <!-- Cargado mediante JS dinámico -->
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <a href="{{ url_for('editar_potrero', potrero_id=potrero.id) }}" class="btn btn-primary">
-                        <i class="fas fa-edit me-2"></i>Editar Potrero
+
+                <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-between" style="border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">❌</span>Cerrar
+                    </button>
+                    <a href="{{ url_for('editar_potrero', potrero_id=potrero.id) }}" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm">
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">✏️</span>Editar Potrero
                     </a>
                 </div>
             </div>
@@ -151,22 +336,22 @@
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="deleteModalLabel{{ potrero.id }}">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Eliminación
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">⚠️</span>Confirmar Eliminación
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
                     <p>¿Estás seguro que deseas eliminar el potrero <strong>{{ potrero.nombre }}</strong>?</p>
-                    <p class="text-danger mb-0"><i class="fas fa-exclamation-circle me-1"></i>Esta acción no se puede deshacer.</p>
+                    <p class="text-danger mb-0"><span style="font-size: 1rem; margin-right: 0.2rem;">❗</span>Esta acción no se puede deshacer.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i> Cancelar
+                        <span style="font-size: 1rem; margin-right: 0.2rem;">❌</span> Cancelar
                     </button>
                     <form action="{{ url_for('eliminar_potrero', potrero_id=potrero.id) }}" method="POST" style="display: inline;">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash-alt me-1"></i> Eliminar
+                            <span style="font-size: 1rem; margin-right: 0.2rem;">🗑️</span> Eliminar
                         </button>
                     </form>
                 </div>
@@ -178,17 +363,148 @@
 
 {% if not potreros %}
 <div class="text-center py-5">
-    <i class="fas fa-map-signs fa-4x text-muted mb-3"></i>
+    <span style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">🪧</span>
     <h5 class="text-muted mb-3">No hay potreros registrados</h5>
     <p>Empieza a organizar tu finca creando tu primer potrero.</p>
     <a href="{{ url_for('nuevo_potrero') }}" class="btn btn-primary mt-2">
-        <i class="fas fa-plus me-2"></i>Crear Primer Potrero
+        <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">➕</span>Crear Primer Potrero
     </a>
 </div>
 {% endif %}
+</div>
 
 
 <style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+.modal-header.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+/* Degradados Premium del Modal de Detalle */
+.modal-header.bg-gradient-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.modal-header.bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.modal-header.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+.bg-gradient-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+/* Colores Soft para Badges y Contenedores */
+.bg-success-soft {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+}
+.bg-warning-soft {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
+}
+.bg-danger-soft {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #ef4444 !important;
+}
+.bg-primary-soft {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    color: #3b82f6 !important;
+}
+.text-warning-dark {
+    color: #b45309 !important;
+}
+
+.shadow-xs {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+.animate-pulse {
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+/* Barra de Desplazamiento Personalizada para el Cuerpo del Modal */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Leyendas y Mapa */
+.legend-color {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    vertical-align: middle;
+}
+.legend-green { background: linear-gradient(135deg, #10b981, #047857); }
+.legend-gold { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.legend-rust { background: linear-gradient(135deg, #f87171, #b91c1c); }
+
+.farm-map-tooltip {
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1) !important;
+}
+
+svg path {
+    filter: drop-shadow(0px 3px 5px rgba(0,0,0,0.08));
+}
+
+.centroid-text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 700;
+    fill: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    pointer-events: none;
+    text-anchor: middle;
+    font-size: 14px;
+    transition: font-size 0.2s ease;
+}
+.centroid-subtext {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 600;
+    fill: #f8fafc;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    pointer-events: none;
+    text-anchor: middle;
+    font-size: 11px;
+    transition: font-size 0.2s ease;
+}
+
+@media (max-width: 992px) {
+    .centroid-text { font-size: 16px; }
+    .centroid-subtext { font-size: 13px; }
+}
+
+@media (max-width: 768px) {
+    .centroid-text { font-size: 20px; }
+    .centroid-subtext { font-size: 15px; }
+}
+
+@media (max-width: 576px) {
+    .centroid-text { font-size: 26px; }
+    .centroid-subtext { font-size: 20px; }
+}
+
 .hover-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-radius: 10px;
@@ -255,90 +571,325 @@
 </style>
 
 <script>
-function showPotreroDetails(potreroId) {
-    const button = document.querySelector(`[data-potrero-id="${potreroId}"]`);
-    const data = button.dataset;
-    
-    document.getElementById('modalPotreroTitle').innerHTML = '<i class="fas fa-map-signs me-2"></i>Potrero: ' + data.potreroNombre;
-    document.getElementById('modalPotreroNombre').textContent = data.potreroNombre;
-    document.getElementById('modalPotreroFuncion').textContent = data.potreroFuncion;
-    document.getElementById('modalPotreroEstado').textContent = data.potreroEstado;
-    document.getElementById('modalPotreroArea').textContent = data.potreroArea + ' hectáreas';
-    document.getElementById('modalPotreroCapacidad').textContent = data.potreroCapacidad + ' animales';
-    document.getElementById('modalPotreroOcupado').textContent = data.potreroOcupado + ' animales';
-    
-    // Cargar lista de animales
-    loadAnimalsInLocation('potrero', potreroId);
-    
-    document.getElementById('potreroDetailsModal').style.display = 'flex';
-}
+// Datos dinámicos de Potreros renderizados desde Jinja2 de forma segura
+const potrerosData = [
+    {% for potrero in potreros %}
+    {
+        id: {{ potrero.id }},
+        nombre: {{ potrero.nombre|tojson }},
+        area: {{ potrero.area }},
+        capacidad: {{ potrero.capacidad }},
+        estado: {{ potrero.estado|tojson }},
+        tipo_pasto: {{ (potrero.tipo_pasto or 'Mestizo')|tojson }},
+        ocupacion: {{ animales_por_potrero.get(potrero.id, 0) }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
 
-function loadAnimalsInLocation(locationType, locationId) {
-    const animalesList = document.getElementById('modalAnimalesList');
-    animalesList.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando animales...</div>';
+document.addEventListener('DOMContentLoaded', function() {
+    const wrapper = document.getElementById('farmMapWrapper');
+    const svg = document.getElementById('farmMapSvg');
+    const paddockGroup = document.getElementById('mapPaddockGroup');
+    const fenceGroup = document.getElementById('mapFenceGroup');
+    const tooltip = document.getElementById('farmMapTooltip');
     
-    fetch(`/api/animales_en_ubicacion?tipo=${locationType}&id=${locationId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.animales && data.animales.length > 0) {
-                let html = '';
-                data.animales.forEach(animal => {
-                    let animalEmoji = '🐄'; // Default cow
-                    if (animal.tipo === 'Cerdo') animalEmoji = '🐷';
-                    else if (animal.tipo === 'Cabra') animalEmoji = '🐐';
-                    else if (animal.tipo === 'Oveja') animalEmoji = '🐑';
-                    else if (animal.tipo === 'Caballo') animalEmoji = '🐴';
-                    else if (animal.tipo === 'Pollo') animalEmoji = '🐔';
-                    else if (animal.tipo === 'Pato') animalEmoji = '🦆';
-                    else if (animal.tipo === 'Conejo') animalEmoji = '🐰';
-                    
-                    html += `
-                        <div class="animal-item">
-                            <div class="animal-info">
-                                <div class="animal-icon">
-                                    <span class="animal-emoji">${animalEmoji}</span>
+    if (!svg || !paddockGroup || !fenceGroup || potrerosData.length === 0) {
+        // Ocultar mapa si no hay datos
+        const mapCard = document.getElementById('farmMapWrapper')?.closest('.card');
+        if (mapCard) mapCard.style.display = 'none';
+        return;
+    }
+    
+    const width = 800;
+    const height = 400;
+    
+    // Márgenes internos para dar espacio (breathing room) y que el mapa flote centrado sin cortarse en los bordes
+    const marginX = 60;
+    const marginY = 40;
+    const usableW = width - (marginX * 2);
+    const usableH = height - (marginY * 2);
+    
+    const N = potrerosData.length;
+    // Calcular columnas y filas de la cuadrícula de la finca
+    const cols = Math.ceil(Math.sqrt(N));
+    const rows = Math.ceil(N / cols);
+    
+    const cellW = usableW / cols;
+    const cellH = usableH / rows;
+    
+    // Algoritmo para obtener vértices wobbled (deformados orgánicamente)
+    function getNode(i, j) {
+        let x = marginX + (i * cellW);
+        let y = marginY + (j * cellH);
+        
+        // Excluir los bordes externos para mantener el marco rectangular de la finca
+        if (i > 0 && i < cols && j > 0 && j < rows) {
+            // Generador determinista basado en posiciones e ID de potrero base
+            let seed = i * 43 + j * 97 + potrerosData[0].id;
+            let wobbleX = Math.sin(seed) * cellW * 0.16;
+            let wobbleY = Math.cos(seed * 1.5) * cellH * 0.16;
+            x += wobbleX;
+            y += wobbleY;
+        }
+        return { x, y, i, j };
+    }
+    
+    // Algoritmo de cercas/paredes curvas orgánicas (wavy)
+    function getWobblyWall(A, B) {
+        let isOuter = (A.i === 0 && B.i === 0) || (A.i === cols && B.i === cols) || 
+                      (A.j === 0 && B.j === 0) || (A.j === rows && B.j === rows);
+        if (isOuter) {
+            return [B]; // Pared externa recta para cerrar la finca
+        }
+        
+        // Subdividir la pared interna y ondularla
+        let mid1 = { x: A.x * 0.67 + B.x * 0.33, y: A.y * 0.67 + B.y * 0.33 };
+        let mid2 = { x: A.x * 0.33 + B.x * 0.67, y: A.y * 0.33 + B.y * 0.67 };
+        
+        let dx = B.x - A.x;
+        let dy = B.y - A.y;
+        let len = Math.sqrt(dx*dx + dy*dy);
+        let nx = -dy / len;
+        let ny = dx / len;
+        
+        let seed = A.x * 3 + B.y * 7;
+        let wVal = Math.sin(seed) * (cellW * 0.05); // Grado de ondulación
+        
+        mid1.x += nx * wVal;
+        mid1.y += ny * wVal;
+        mid2.x += nx * -wVal * 0.7;
+        mid2.y += ny * -wVal * 0.7;
+        
+        return [mid1, mid2, B];
+    }
+    
+    // Limpiar contenido previo del SVG
+    paddockGroup.innerHTML = '';
+    fenceGroup.innerHTML = '';
+    
+    // Dibujar cada potrero
+    potrerosData.forEach((p, idx) => {
+        let r = Math.floor(idx / cols);
+        let c = idx % cols;
+        
+        // Nodos esquineros
+        let n1 = getNode(c, r);
+        let n2 = getNode(c + 1, r);
+        let n3 = getNode(c + 1, r + 1);
+        let n4 = getNode(c, r + 1);
+        
+        // Crear camino continuo wobbly
+        let pts = [n1];
+        pts = pts.concat(getWobblyWall(n1, n2));
+        pts = pts.concat(getWobblyWall(n2, n3));
+        pts = pts.concat(getWobblyWall(n3, n4));
+        pts = pts.concat(getWobblyWall(n4, n1));
+        
+        let d = "M " + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+        for (let i = 1; i < pts.length; i++) {
+            d += " L " + pts[i].x.toFixed(1) + " " + pts[i].y.toFixed(1);
+        }
+        d += " Z";
+        
+        // Gradiente según el estado
+        let fillGrad = "url(#paddockGreen)";
+        if (p.estado === 'ocupado') fillGrad = "url(#paddockGold)";
+        else if (p.estado === 'mantenimiento') fillGrad = "url(#paddockRust)";
+        
+        // Crear elemento path de SVG
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", d);
+        path.setAttribute("fill", fillGrad);
+        path.setAttribute("stroke", "#ffffff");
+        path.setAttribute("stroke-width", "2");
+        path.setAttribute("filter", "url(#shadow)");
+        path.style.transition = "all 0.25s ease";
+        path.style.cursor = "pointer";
+        
+        // Hover efectos y tooltip
+        path.addEventListener('mouseover', function(e) {
+            this.setAttribute("stroke", "#ffffff");
+            this.setAttribute("stroke-width", "4");
+            this.style.filter = "url(#neonGlow)";
+            
+            document.getElementById('tooltipName').innerText = p.nombre;
+            
+            let badge = document.getElementById('tooltipStatus');
+            badge.className = "badge rounded-pill";
+            let healthVal = 95;
+            let bar = document.getElementById('tooltipProgressBar');
+            bar.className = "progress-bar";
+            
+            if (p.estado === 'disponible') {
+                badge.innerText = "Disponible";
+                badge.classList.add("bg-success");
+                healthVal = 90 + (p.id % 9);
+                bar.classList.add("bg-success");
+            } else if (p.estado === 'ocupado') {
+                badge.innerText = "Ocupado";
+                badge.classList.add("bg-warning", "text-dark");
+                healthVal = 55 + (p.id % 20);
+                bar.classList.add("bg-warning");
+            } else {
+                badge.innerText = "Descanso";
+                badge.classList.add("bg-danger");
+                healthVal = 15 + (p.id % 20);
+                bar.classList.add("bg-danger");
+            }
+            
+            document.getElementById('tooltipArea').innerText = p.area.toFixed(1) + " ha";
+            document.getElementById('tooltipOcupacion').innerText = p.ocupacion + " / " + p.capacidad;
+            document.getElementById('tooltipPasto').innerText = p.tipo_pasto;
+            document.getElementById('tooltipHealthVal').innerText = healthVal + "%";
+            bar.style.width = healthVal + "%";
+            
+            tooltip.style.display = 'block';
+        });
+        
+        path.addEventListener('mousemove', function(e) {
+            let rect = wrapper.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+            
+            // Colocar tooltip offseteado
+            tooltip.style.left = (x + 15) + "px";
+            tooltip.style.top = (y + 15) + "px";
+        });
+        
+        path.addEventListener('mouseout', function() {
+            this.setAttribute("stroke", "#ffffff");
+            this.setAttribute("stroke-width", "2");
+            this.style.filter = "url(#shadow)";
+            tooltip.style.display = 'none';
+        });
+        
+        // Click abre modal correspondiente
+        path.addEventListener('click', function() {
+            let modalId = 'potreroModal' + p.id;
+            let modalEl = document.getElementById(modalId);
+            if (modalEl) {
+                let myModal = new bootstrap.Modal(modalEl);
+                myModal.show();
+            }
+        });
+        
+        paddockGroup.appendChild(path);
+        
+        // Centroid para etiquetas
+        let cx = (n1.x + n2.x + n3.x + n4.x) / 4;
+        let cy = (n1.y + n2.y + n3.y + n4.y) / 4;
+        
+        // Dibujar texto del nombre
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", cx);
+        text.setAttribute("y", cy - 4);
+        text.setAttribute("class", "centroid-text");
+        text.textContent = p.nombre;
+        paddockGroup.appendChild(text);
+        
+        // Dibujar subtexto de cantidad
+        const subtext = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        subtext.setAttribute("x", cx);
+        subtext.setAttribute("y", cy + 14);
+        subtext.setAttribute("class", "centroid-subtext");
+        subtext.textContent = p.ocupacion + " 🐄";
+        paddockGroup.appendChild(subtext);
+    });
+    
+    // Dibujar cercas decorativas divisorias internas
+    for (let i = 0; i <= cols; i++) {
+        for (let j = 0; j <= rows; j++) {
+            let n = getNode(i, j);
+            
+            // Fila horizontal
+            if (i < cols) {
+                let nRight = getNode(i + 1, j);
+                let isOuter = (j === 0 || j === rows);
+                if (!isOuter) {
+                    let pts = [n].concat(getWobblyWall(n, nRight));
+                    let fencePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    let fd = "M " + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+                    for(let p = 1; p < pts.length; p++) fd += " L " + pts[p].x.toFixed(1) + " " + pts[p].y.toFixed(1);
+                    fencePath.setAttribute("d", fd);
+                    fenceGroup.appendChild(fencePath);
+                }
+            }
+            
+            // Fila vertical
+            if (j < rows) {
+                let nDown = getNode(i, j + 1);
+                let isOuter = (i === 0 || i === cols);
+                if (!isOuter) {
+                    let pts = [n].concat(getWobblyWall(n, nDown));
+                    let fencePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    let fd = "M " + pts[0].x.toFixed(1) + " " + pts[0].y.toFixed(1);
+                    for(let p = 1; p < pts.length; p++) fd += " L " + pts[p].x.toFixed(1) + " " + pts[p].y.toFixed(1);
+                    fencePath.setAttribute("d", fd);
+                    fenceGroup.appendChild(fencePath);
+                }
+            }
+        }
+    }
+});
+
+// Listener moderno para cargar animales al abrir cualquier modal de Potrero
+document.querySelectorAll('[id^="potreroModal"]').forEach(modalEl => {
+    modalEl.addEventListener('show.bs.modal', function (event) {
+        const potreroId = this.id.replace('potreroModal', '');
+        const listContainer = document.getElementById('animalesPotrero' + potreroId);
+        
+        if (listContainer) {
+            listContainer.innerHTML = '<div class="text-center w-100 py-3"><span style="font-size: 1.2rem; margin-right: 0.5rem;">⏳</span>Cargando animales...</div>';
+            
+            fetch(`/api/animales_en_ubicacion?tipo=potrero&id=${potreroId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.animales && data.animales.length > 0) {
+                        let html = '';
+                        data.animales.forEach(animal => {
+                            let animalEmoji = '🐄';
+                            if (animal.tipo === 'Cerdo') animalEmoji = '🐷';
+                            else if (animal.tipo === 'Cabra') animalEmoji = '🐐';
+                            else if (animal.tipo === 'Oveja') animalEmoji = '🐑';
+                            else if (animal.tipo === 'Caballo') animalEmoji = '🐴';
+                            else if (animal.tipo === 'Pollo') animalEmoji = '🐔';
+                            else if (animal.tipo === 'Pato') animalEmoji = '🦆';
+                            else if (animal.tipo === 'Conejo') animalEmoji = '🐰';
+                            
+                            html += `
+                                <div class="col-md-6 mb-2">
+                                    <div class="card border-0 bg-light p-2 d-flex flex-row align-items-center rounded-3 shadow-xs">
+                                        <div class="fs-3 me-3">${animalEmoji}</div>
+                                        <div>
+                                            <div class="fw-bold text-dark small">${animal.identificacion}</div>
+                                            <div class="text-muted" style="font-size: 11px;">${animal.nombre || 'Sin nombre'} · ${animal.tipo} ${animal.raza}</div>
+                                            <div class="badge bg-secondary-soft text-secondary mt-1" style="font-size: 9px;">${animal.peso} kg</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="animal-details">
-                                    <h6>${animal.identificacion}</h6>
-                                    <small>${animal.nombre || 'Sin nombre'} - ${animal.tipo} ${animal.raza}</small>
-                                </div>
+                            `;
+                        });
+                        listContainer.innerHTML = html;
+                    } else {
+                        listContainer.innerHTML = `
+                            <div class="text-center w-100 py-4 text-muted">
+                                <span style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;">🐄</span>
+                                <p class="mb-0 small">No hay animales en este potrero.</p>
                             </div>
-                            <div class="animal-stats">
-                                <small class="text-muted">${animal.peso} kg</small>
-                            </div>
+                        `;
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    listContainer.innerHTML = `
+                        <div class="text-center w-100 py-4 text-danger">
+                            <span style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;">⚠️</span>
+                            <p class="mb-0 small">Error al cargar animales.</p>
                         </div>
                     `;
                 });
-                animalesList.innerHTML = html;
-            } else {
-                animalesList.innerHTML = `
-                    <div class="no-animals">
-                        <i class="fas fa-cow fa-2x mb-2"></i>
-                        <p>No hay animales en esta ubicación</p>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            animalesList.innerHTML = `
-                <div class="no-animals">
-                    <i class="fas fa-exclamation-triangle fa-2x mb-2 text-warning"></i>
-                    <p>Error al cargar los animales</p>
-                </div>
-            `;
-        });
-}
-
-function closePotreroModal() {
-    document.getElementById('potreroDetailsModal').style.display = 'none';
-}
-
-// Cerrar modal con ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closePotreroModal();
-    }
+        }
+    });
 });
 </script>
 
@@ -390,6 +941,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 100);
 });
+</script>
+
+<script>
+function switchView(view) {
+    const btnMap = document.getElementById('btnMapView');
+    const btnCards = document.getElementById('btnCardsView');
+    const sectionMap = document.getElementById('mapViewSection');
+    const sectionCards = document.getElementById('cardsViewSection');
+    
+    if (!btnMap || !btnCards || !sectionMap || !sectionCards) return;
+    
+    if (view === 'map') {
+        sectionMap.classList.remove('d-none');
+        sectionCards.classList.add('d-none');
+        
+        btnMap.className = 'btn btn-light btn-sm rounded-pill px-3 py-1.5';
+        btnCards.className = 'btn text-white btn-sm rounded-pill px-3 py-1.5';
+    } else {
+        sectionMap.classList.add('d-none');
+        sectionCards.classList.remove('d-none');
+        
+        btnMap.className = 'btn text-white btn-sm rounded-pill px-3 py-1.5';
+        btnCards.className = 'btn btn-light btn-sm rounded-pill px-3 py-1.5';
+    }
+}
+
+// Filtro de búsqueda
+function filterCards() {
+    let input = document.getElementById('searchInput');
+    if (!input) return;
+    let filter = input.value.toLowerCase();
+    let cards = document.getElementsByClassName('filter-card');
+    for (let i = 0; i < cards.length; i++) {
+        let titleElement = cards[i].querySelector('.card-title');
+        if (titleElement) {
+            let title = titleElement.innerText.toLowerCase();
+            if (title.indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+}
 </script>
 
 {% endblock %} 

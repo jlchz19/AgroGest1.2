@@ -2,430 +2,86 @@
 
 {% block title %}Maquinaria{% endblock %}
 
-{% block extra_css %}
-<style>
-.card-header-stripe {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
-    border-radius: 8px 8px 0 0 !important;
-    padding: 15px 20px !important;
-    border: none !important;
-    margin: 0 !important;
-}
 
-.card .card-header-stripe {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
-    border-radius: 8px 8px 0 0 !important;
-    padding: 15px 20px !important;
-    border: none !important;
-    margin: 0 !important;
-}
-
-.card .card-header.card-header-stripe {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
-    border: none !important;
-    border-radius: 8px 8px 0 0 !important;
-}
-
-.animal-type-icon {
-    width: 50px !important;
-    height: 50px !important;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    position: relative;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.animal-type-icon i {
-    font-size: 20px;
-    color: white;
-}
-
-.animal-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-/* Dark theme fixes for machinery page */
-body.dark-theme .card-header-stripe {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-}
-
-body.dark-theme .card .card-header-stripe {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-}
-
-body.dark-theme .card .card-header.card-header-stripe {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-}
-
-body.dark-theme .animal-type-icon {
-    background: rgba(79, 70, 229, 0.2) !important;
-    border: 1px solid #4f46e5 !important;
-}
-
-body.dark-theme .animal-type-icon i {
-    color: #818cf8 !important;
-}
-
-body.dark-theme .animal-image {
-    border: 2px solid #2d2e3f !important;
-}
-
-body.dark-theme .card {
-    background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%) !important;
-    border: 1px solid #2d2e3f !important;
-}
-
-body.dark-theme .card .card-title {
-    color: #ffffff !important;
-}
-
-body.dark-theme .card .card-text {
-    color: #e5e7eb !important;
-}
-
-body.dark-theme .card .text-muted {
-    color: #9ca3af !important;
-}
-
-body.dark-theme .badge {
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1b26 100%) !important;
-    color: #ffffff !important;
-    border: 1px solid #2d2e3f !important;
-}
-
-body.dark-theme .table {
-    background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%) !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .table th {
-    background: linear-gradient(135deg, #24283b 0%, #2d2e3f 100%) !important;
-    border-color: #2d2e3f !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .table td {
-    border-color: #2d2e3f !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .table-hover tbody tr:hover {
-    background: rgba(79, 70, 229, 0.05) !important;
-}
-
-body.dark-theme .btn-primary {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-    border-color: #4f46e5 !important;
-}
-
-body.dark-theme .btn-outline-primary {
-    color: #818cf8 !important;
-    border-color: #4f46e5 !important;
-}
-
-body.dark-theme .btn-outline-primary:hover {
-    background: #4f46e5 !important;
-    border-color: #4f46e5 !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .btn-outline-secondary {
-    color: #9ca3af !important;
-    border-color: #2d2e3f !important;
-}
-
-body.dark-theme .btn-outline-secondary:hover {
-    background: #6b7280 !important;
-    border-color: #6b7280 !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .btn-info {
-    background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%) !important;
-    border-color: #0891b2 !important;
-}
-
-body.dark-theme .btn-info:hover {
-    background: linear-gradient(135deg, #0e7490 0%, #155e75 100%) !important;
-    border-color: #0e7490 !important;
-}
-
-.badge-modern {
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-}
-
-.badge-modern.badge-success {
-    background: rgba(40, 167, 69, 0.2);
-    color: #28a745;
-}
-
-.badge-modern.badge-warning {
-    background: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
-}
-
-.badge-modern.badge-danger {
-    background: rgba(220, 53, 69, 0.2);
-    color: #dc3545;
-}
-
-.badge-modern.badge-secondary {
-    background: rgba(108, 117, 125, 0.2);
-    color: #6c757d;
-}
-
-.badge.badge-sold {
-    background: rgba(220, 53, 69, 0.2);
-    color: #dc3545;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-}
-
-.location-badge {
-    background: rgba(23, 162, 184, 0.1);
-    color: #17a2b4;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-}
-
-.location-badge i {
-    font-size: 10px;
-}
-
-/* Machinery Modal Styles */
-.machinery-profile-header {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-bottom: 1px solid #dee2e6;
-}
-
-body.dark-theme .machinery-profile-header {
-    background: linear-gradient(135deg, #24283b 0%, #2d2e3f 100%);
-    border-bottom-color: #4f46e5;
-}
-
-.machinery-image-container {
-    position: relative;
-    display: inline-block;
-}
-
-.machinery-profile-image {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 3px solid white;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-    transition: transform 0.3s ease;
-}
-
-.machinery-profile-image:hover {
-    transform: scale(1.05);
-}
-
-body.dark-theme .machinery-profile-image {
-    border-color: #2d2e3f;
-}
-
-.machinery-profile-placeholder {
-    width: 120px;
-    height: 120px;
-    border-radius: 12px;
-    border: 3px solid #dee2e6;
-    background: #f8f9fa;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    margin: 0 auto;
-    transition: transform 0.3s ease;
-}
-
-.machinery-profile-placeholder:hover {
-    transform: scale(1.05);
-}
-
-body.dark-theme .machinery-profile-placeholder {
-    background: #1a1b26;
-    border-color: #2d2e3f;
-    color: #9ca3af;
-}
-
-.modal .nav-tabs {
-    border-bottom: 2px solid #dee2e6;
-}
-
-body.dark-theme .modal .nav-tabs {
-    border-bottom-color: #2d2e3f;
-}
-
-.modal .nav-tabs .nav-link {
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.modal .nav-tabs .nav-link.active {
-    color: #007bff;
-    border-bottom-color: #007bff;
-    background: none;
-}
-
-body.dark-theme .modal .nav-tabs .nav-link {
-    color: #9ca3af;
-}
-
-body.dark-theme .modal .nav-tabs .nav-link.active {
-    color: #818cf8;
-    border-bottom-color: #818cf8;
-}
-
-.modal .table td {
-    border: none;
-    padding: 0.5rem 0;
-}
-
-.modal .table td:first-child {
-    padding-left: 0;
-}
-
-.modal .table td:last-child {
-    padding-right: 0;
-}
-
-body.dark-theme .modal {
-    background: rgba(0, 0, 0, 0.8);
-}
-
-body.dark-theme .modal-content {
-    background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%);
-    border: 1px solid #2d2e3f;
-}
-
-body.dark-theme .modal-header {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    border-bottom-color: #2d2e3f;
-}
-
-body.dark-theme .modal-body {
-    color: #e5e7eb;
-}
-
-body.dark-theme .modal-footer {
-    border-top-color: #2d2e3f;
-}
-
-body.dark-theme .modal .table td {
-    color: #e5e7eb;
-}
-
-body.dark-theme .alert-info {
-    background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
-    border-color: #0891b2;
-    color: white;
-}
-</style>
-{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-tractor me-2"></i>Maquinaria</h2>
-        <div>
-            <a href="{{ url_for('nueva_maquinaria') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Nueva Maquinaria
+<div class="container-fluid py-4">
+    <!-- Encabezado y Filtro Premium -->
+    <div class="row mb-4 align-items-center g-3">
+        <div class="col-12 col-md-5">
+            <h3 class="fw-bold text-dark mb-0"><span style="font-size:1.2rem; margin-right:0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="tractor">🚜</span>Maquinaria</h3>
+        </div>
+        <div class="col-12 col-md-7 d-flex justify-content-md-end gap-2 align-items-center flex-wrap">
+            <div class="position-relative flex-grow-1" style="max-width: 300px;">
+                <i class="fas fa-search position-absolute text-muted" style="left: 1rem; top: 50%; transform: translateY(-50%);"></i>
+                <input type="text" id="filtroMaquinaria" class="form-control rounded-pill border-0 shadow-sm" style="padding-left: 2.5rem; padding-top: 0.6rem; padding-bottom: 0.6rem;" placeholder="Buscar maquinaria...">
+            </div>
+            <a href="{{ url_for('reporte_maquinaria_pdf') }}" class="btn btn-white text-danger border-0 shadow-sm rounded-pill px-4 fw-semibold">
+                <i class="fas fa-file-pdf me-2"></i>PDF
             </a>
-            <a href="{{ url_for('reporte_maquinaria_pdf') }}" class="btn btn-danger">
-                <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+            <a href="{{ url_for('nueva_maquinaria') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;">
+                <i class="fas fa-plus me-2"></i>Nueva Máquina
             </a>
         </div>
     </div>
 
     <!-- Tarjetas de Resumen -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h4 class="mb-0">{{ total_maquinaria }}</h4>
-                            <small>Total Máquinas</small>
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted text-uppercase small fw-bold mb-1" style="letter-spacing: 0.5px;">Total Máquinas</p>
+                            <h3 class="text-dark fw-bold mb-0">{{ total_maquinaria }}</h3>
                         </div>
-                        <div class="fs-1 opacity-50">
-                            <i class="fas fa-tractor"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h4 class="mb-0">{{ operativas }}</h4>
-                            <small>Operativas</small>
-                        </div>
-                        <div class="fs-1 opacity-50">
-                            <i class="fas fa-check-circle"></i>
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-primary" style="width: 50px; height: 50px;">
+                            <span style="font-size:1.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="tractor">🚜</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h4 class="mb-0">{{ en_mantenimiento }}</h4>
-                            <small>En Mantenimiento</small>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted text-uppercase small fw-bold mb-1" style="letter-spacing: 0.5px;">Operativas</p>
+                            <h3 class="text-success fw-bold mb-0">{{ operativas }}</h3>
                         </div>
-                        <div class="fs-1 opacity-50">
-                            <i class="fas fa-tools"></i>
+                        <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-success" style="width: 50px; height: 50px;">
+                            <span style="font-size:1.5rem; color:#10b981; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="check">✅</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card bg-danger text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <h4 class="mb-0">{{ fuera_servicio }}</h4>
-                            <small>Fuera de Servicio</small>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted text-uppercase small fw-bold mb-1" style="letter-spacing: 0.5px;">Mantenimiento</p>
+                            <h3 class="text-warning fw-bold mb-0">{{ en_mantenimiento }}</h3>
                         </div>
-                        <div class="fs-1 opacity-50">
-                            <i class="fas fa-times-circle"></i>
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-warning" style="width: 50px; height: 50px;">
+                            <span style="font-size:1.5rem; color:#f59e0b; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="tools">🛠️</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="text-muted text-uppercase small fw-bold mb-1" style="letter-spacing: 0.5px;">Fuera de Uso</p>
+                            <h3 class="text-danger fw-bold mb-0">{{ fuera_servicio }}</h3>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-danger" style="width: 50px; height: 50px;">
+                            <span style="font-size:1.5rem; color:#ef4444; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="times">❌</span>
                         </div>
                     </div>
                 </div>
@@ -434,205 +90,451 @@ body.dark-theme .alert-info {
     </div>
 
     {% if maquinarias %}
-    <div class="row">
+    <div class="row g-4" id="maquinariaContainer">
         {% for maquina in maquinarias %}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100 machinery-card">
-                <div class="card-header-stripe">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="animal-type-icon">
-                            {% if maquina.imagen %}
-                                <img src="{{ url_for('static', filename='uploads/maquinaria/' + maquina.imagen) }}" alt="{{ maquina.tipo }}" class="animal-image" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;">
-                            {% elif maquina.tipo == 'tractor' %}
-                                <i class="fas fa-tractor"></i>
-                            {% elif maquina.tipo == 'cosechadora' %}
-                                <i class="fas fa-tractor"></i>
-                            {% elif maquina.tipo == 'pulverizadora' %}
-                                <i class="fas fa-spray-can"></i>
-                            {% elif maquina.tipo == 'sembradora' %}
-                                <i class="fas fa-seedling"></i>
-                            {% elif maquina.tipo == 'arado' %}
-                                <i class="fas fa-grip-lines"></i>
-                            {% elif maquina.tipo == 'cargador' %}
-                                <i class="fas fa-truck-loading"></i>
-                            {% elif maquina.tipo == 'retroexcavadora' %}
-                                <i class="fas fa-truck-monster"></i>
-                            {% else %}
-                                <i class="fas fa-cogs"></i>
-                            {% endif %}
-                        </span>
+        <div class="col-lg-4 col-md-6 mb-2 maquina-item" data-nombre="{{ maquina.nombre|lower }}" data-tipo="{{ maquina.tipo|lower }}">
+            <div class="card maquina-card h-100">
+                <div class="card-header position-relative">
+                    <!-- Icono / Imagen Principal -->
+                    <div class="maquina-icon-wrapper">
+                        {% if maquina.imagen %}
+                            <img src="{{ url_for('static', filename='uploads/maquinaria/' + maquina.imagen) }}" alt="{{ maquina.tipo }}">
+                        {% elif maquina.tipo == 'tractor' or maquina.tipo == 'cosechadora' %}
+                            <i class="fas fa-tractor text-white opacity-75"></i>
+                        {% elif maquina.tipo == 'pulverizadora' %}
+                            <i class="fas fa-spray-can text-white opacity-75"></i>
+                        {% elif maquina.tipo == 'sembradora' %}
+                            <i class="fas fa-seedling text-white opacity-75"></i>
+                        {% elif maquina.tipo == 'arado' %}
+                            <i class="fas fa-grip-lines text-white opacity-75"></i>
+                        {% else %}
+                            <i class="fas fa-cogs text-white opacity-75"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="maquina-header-content">
+                        <h5 class="mb-0 text-white fw-bold text-truncate" style="padding-right: 70px;">{{ maquina.nombre }}</h5>
+                        <p class="mb-0 text-white opacity-75 small text-uppercase fw-semibold" style="letter-spacing: 0.5px;">{{ maquina.tipo|title }}</p>
+                    </div>
+
+                    <!-- Estado Badge -->
+                    <div class="position-absolute" style="bottom: -15px; left: 1.5rem; z-index: 3;">
                         {% if maquina.estado == 'vendido' %}
-                        <span class="badge badge-sold">
-                            <i class="fas fa-circle me-1"></i> Vendido
+                        <span class="badge rounded-pill bg-danger border border-2 border-white text-uppercase" style="padding: 0.4em 0.8em; font-size: 0.7rem; font-weight: 700;">
+                            <i class="fas fa-circle me-1" style="font-size: 5px; vertical-align: middle;"></i> Vendido
                         </span>
                         {% else %}
-                        <span class="badge-modern badge-{{ 'success' if maquina.estado == 'operativo' else 'warning' if maquina.estado == 'en_mantenimiento' else 'danger' if maquina.estado == 'fuera_servicio' else 'secondary' }}">
-                            <i class="fas fa-circle me-1" style="font-size: 6px;"></i>{{ maquina.estado|title }}
+                        <span class="badge rounded-pill border border-2 border-white text-uppercase bg-{{ 'success' if maquina.estado == 'operativo' else 'warning text-dark' if maquina.estado == 'en_mantenimiento' else 'danger' if maquina.estado == 'fuera_servicio' else 'secondary' }}" style="padding: 0.4em 0.8em; font-size: 0.7rem; font-weight: 700;">
+                            <i class="fas fa-circle me-1" style="font-size: 5px; vertical-align: middle;"></i> {{ maquina.estado|replace('_', ' ')|title }}
                         </span>
                         {% endif %}
                     </div>
-                </div>
-                <div class="card-body p-4">
-                    <div class="animal-info mb-3">
-                        <h5 class="mb-2 text-dark fw-bold">{{ maquina.nombre }}</h5>
-                        <p class="mb-0 text-muted">{{ maquina.tipo|title }}</p>
+
+                    <!-- Acciones Superiores -->
+                    <div class="maquina-actions-top">
+                        <a href="{{ url_for('editar_maquinaria', id=maquina.id) }}" class="btn-action-top" title="Editar">
+                            <i class="fas fa-pen"></i>
+                        </a>
+                        <form id="deleteForm_{{ maquina.id }}" action="{{ url_for('eliminar_maquinaria', id=maquina.id) }}" method="POST" style="display: none;"></form>
+                        <button type="button" class="btn-action-top delete" title="Eliminar" onclick="showConfirmModal('¿Estás seguro de eliminar esta maquinaria?', function() { document.getElementById('deleteForm_' + {{ maquina.id }}).submit(); }, 'Eliminar Maquinaria')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
-                    
-                    <div class="animal-details mb-3">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <small class="text-muted d-block">MARCA</small>
-                                <span class="fw-semibold">{{ maquina.marca or 'N/A' }}</span>
-                            </div>
-                            <div class="col-6">
-                                <small class="text-muted d-block">MODELO</small>
-                                <span class="fw-semibold">{{ maquina.modelo or 'N/A' }}</span>
-                            </div>
-                            <div class="col-6">
-                                <small class="text-muted d-block">AÑO</small>
-                                <span class="fw-semibold">{{ maquina.año_fabricacion or 'N/A' }}</span>
-                            </div>
-                            <div class="col-6">
-                                <small class="text-muted d-block">HORAS USO</small>
-                                <span class="fw-semibold">{{ "{:,.1f}".format(maquina.horas_uso) if maquina.horas_uso else 'N/A' }}</span>
-                            </div>
+                </div>
+
+                <div class="card-body mt-3">
+                    <div class="maquina-info-grid mb-3">
+                        <div class="info-cell">
+                            <span class="info-label">Marca</span>
+                            <span class="info-value text-truncate">{{ maquina.marca or 'N/D' }}</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="info-label">Modelo</span>
+                            <span class="info-value text-truncate">{{ maquina.modelo or 'N/D' }}</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="info-label">Año Fab.</span>
+                            <span class="info-value">{{ maquina.año_fabricacion or 'N/D' }}</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="info-label">Hrs Uso</span>
+                            <span class="info-value text-danger">{{ "{:,.1f}".format(maquina.horas_uso) if maquina.horas_uso else 'N/D' }}</span>
                         </div>
                     </div>
                     
-                    {% if maquina.ubicacion_actual %}
-                    <div class="animal-location mb-3">
-                        <small class="text-muted d-block">UBICACIÓN</small>
-                        <span class="location-badge">
-                            <i class="fas fa-map-marker-alt me-1"></i>{{ maquina.ubicacion_actual }}
-                        </span>
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        {% if maquina.ubicacion_actual %}
+                        <div class="d-flex align-items-center rounded-3 bg-light p-2">
+                            <div class="bg-primary bg-opacity-10 rounded text-primary d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block lh-1" style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Ubicación</small>
+                                <span class="fw-bold text-dark text-truncate d-block" style="font-size: 0.85rem;">{{ maquina.ubicacion_actual }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if maquina.responsable %}
+                        <div class="d-flex align-items-center rounded-3 bg-light p-2">
+                            <div class="bg-info bg-opacity-10 rounded text-info d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block lh-1" style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Responsable</small>
+                                <span class="fw-bold text-dark text-truncate d-block" style="font-size: 0.85rem;">{{ maquina.responsable }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
                     
-                    {% if maquina.responsable %}
-                    <div class="animal-location mb-3">
-                        <small class="text-muted d-block">RESPONSABLE</small>
-                        <span class="location-badge">
-                            <i class="fas fa-user me-1"></i>{{ maquina.responsable }}
-                        </span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="button" class="btn btn-action btn-info" data-bs-toggle="modal" data-bs-target="#maquinariaModal{{ maquina.id }}" title="Ver Detalles">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <a href="{{ url_for('editar_maquinaria', id=maquina.id) }}" class="btn btn-action btn-outline-secondary" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <form action="{{ url_for('eliminar_maquinaria', id=maquina.id) }}" method="POST" style="display: inline;">
-                            <button type="button" class="btn btn-action btn-outline-danger" title="Eliminar" onclick="showConfirmModal('¿Estás seguro de eliminar esta maquinaria?', function() { document.getElementById('deleteForm_' + {{ maquina.id }}).submit(); }, 'Eliminar Maquinaria')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </div>
+                    <button type="button" class="maquina-main-action" data-bs-toggle="modal" data-bs-target="#maquinariaModal{{ maquina.id }}">
+                        Ver Detalles <i class="fas fa-arrow-right ms-1"></i>
+                    </button>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-5">
-        <i class="fas fa-tractor fa-3x text-muted mb-3"></i>
-        <h4 class="text-muted">No hay maquinaria registrada</h4>
-        <p class="text-muted">Comienza agregando tu primera máquina</p>
-        <a href="{{ url_for('nueva_maquinaria') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Agregar Maquinaria
-        </a>
+    <div class="col-12">
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-light" style="margin-top: 2rem;">
+            <div class="mb-4" style="width: 120px; height: 120px; background: #f0f9ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                <span style="font-size:3.5rem; margin-right:0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));" role="img" aria-label="tractor">🚜</span>
+            </div>
+            <h3 class="fw-bold text-dark mb-2">No tienes maquinaria registrada</h3>
+            <p class="text-muted mb-4" style="font-size: 1.1rem;">Comienza agregando tus tractores, equipos y herramientas agrícolas al inventario.</p>
+            <a href="{{ url_for('nueva_maquinaria') }}" class="btn btn-primary px-5 py-3 fw-bold rounded-pill shadow-sm" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;">
+                <i class="fas fa-plus me-2"></i>Registrar mi primera máquina
+            </a>
+        </div>
     </div>
     {% endif %}
 
-    <!-- Modales de Detalles -->
+    <!-- Modales de Detalles Premium -->
     {% for maquina in maquinarias %}
-    <div class="modal fade" id="maquinariaModal{{ maquina.id }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles de Maquinaria</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-3">
-                    <div class="row g-2">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
-                                <div>
-                                    <h6 class="mb-0 text-primary">{{ maquina.nombre }}</h6>
-                                    <small class="text-muted">{{ maquina.tipo|title }}</small>
-                                </div>
-                                <span class="badge bg-{{ 'success' if maquina.estado == 'operativo' else 'warning' if maquina.estado == 'en_mantenimiento' else 'danger' if maquina.estado == 'fuera_servicio' else 'secondary' }}">
-                                    {{ maquina.estado|title }}
-                                </span>
-                            </div>
+    <div class="modal fade" id="maquinariaModal{{ maquina.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:20px; overflow:hidden;">
+                <!-- Header del Modal con Degradado Azul Premium -->
+                <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden;">
+                            {% if maquina.imagen %}
+                                <img src="{{ url_for('static', filename='uploads/maquinaria/' + maquina.imagen) }}" alt="{{ maquina.nombre }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% elif maquina.tipo == 'tractor' or maquina.tipo == 'cosechadora' %}
+                                <span style="font-size: 1.5rem;">🚜</span>
+                            {% elif maquina.tipo == 'pulverizadora' %}
+                                <span style="font-size: 1.5rem;">💨</span>
+                            {% elif maquina.tipo == 'sembradora' %}
+                                <span style="font-size: 1.5rem;">🌱</span>
+                            {% else %}
+                                <span style="font-size: 1.5rem;">⚙️</span>
+                            {% endif %}
                         </div>
-                        <div class="col-6">
-                            <small class="text-muted">Marca</small>
-                            <div class="fw-bold">{{ maquina.marca or 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Modelo</small>
-                            <div class="fw-bold">{{ maquina.modelo or 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Año</small>
-                            <div class="fw-bold">{{ maquina.año_fabricacion or 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Serie</small>
-                            <div class="fw-bold small">{{ maquina.numero_serie or 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Horas Uso</small>
-                            <div class="fw-bold">{{ "{:,.1f}".format(maquina.horas_uso) if maquina.horas_uso else 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Valor</small>
-                            <div class="fw-bold">${{ "{:,.2f}".format(maquina.valor_compra) if maquina.valor_compra else 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Adquisición</small>
-                            <div class="fw-bold">{{ maquina.fecha_adquisicion.strftime('%d/%m/%Y') if maquina.fecha_adquisicion else 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Ubicación</small>
-                            <div class="fw-bold">{{ maquina.ubicacion_actual or 'N/A' }}</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Responsable</small>
-                            <div class="fw-bold">{{ maquina.responsable or 'N/A' }}</div>
-                        </div>
-                        {% if maquina.observaciones %}
-                        <div class="col-6">
-                            <small class="text-muted">Observaciones</small>
-                            <div class="fw-bold">{{ maquina.observaciones }}</div>
-                        </div>
-                        {% endif %}
-                        <div class="col-12 mt-2 pt-2 border-top">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">Fecha Registro</small>
-                                <div class="fw-bold text-primary">{{ maquina.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</div>
-                            </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white">{{ maquina.nombre }}</h5>
+                            <small class="text-white text-opacity-80 fw-semibold">{{ maquina.tipo|title }} - {{ maquina.estado|replace('_',' ')|title }}</small>
                         </div>
                     </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-footer">
-                    <a href="{{ url_for('editar_maquinaria', id=maquina.id) }}" class="btn btn-primary">
+                <div class="modal-body p-4" style="background:#f8fafc;">
+                    <!-- Grid de métricas Premium de 3 Columnas -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-trademark text-primary mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small">{{ maquina.marca or 'N/A' }}</div>
+                                <small class="text-muted">Marca</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-layer-group text-info mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small">{{ maquina.modelo or 'N/A' }}</div>
+                                <small class="text-muted">Modelo</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-calendar-day text-warning mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small">{{ maquina.año_fabricacion or 'N/A' }}</div>
+                                <small class="text-muted">Año Fabricación</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-clock text-danger mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small">{{ "{:,.0f}".format(maquina.horas_uso) if maquina.horas_uso else 'N/A' }} h</div>
+                                <small class="text-muted">Horas de Uso</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-dollar-sign text-success mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small">${{ "{:,.0f}".format(maquina.valor_compra) if maquina.valor_compra else 'N/A' }}</div>
+                                <small class="text-muted">Valor Compra</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-barcode text-secondary mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small" style="word-break:break-all;">{{ maquina.numero_serie or 'N/A' }}</div>
+                                <small class="text-muted">Nº Serie</small>
+                            </div>
+                        </div>
+                        {% if maquina.ubicacion_actual %}
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-map-marker-alt text-primary mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small">{{ maquina.ubicacion_actual }}</div>
+                                <small class="text-muted">Ubicación</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if maquina.responsable %}
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <i class="fas fa-user-tie text-info mb-2" style="font-size:1.3rem;"></i>
+                                <div class="fw-bold text-dark small">{{ maquina.responsable }}</div>
+                                <small class="text-muted">Responsable</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if maquina.observaciones %}
+                    <div class="bg-white rounded-3 p-3 shadow-xs">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-clipboard-list text-muted me-2"></i>
+                            <small class="text-muted text-uppercase fw-semibold">Observaciones</small>
+                        </div>
+                        <p class="mb-0 text-dark small">{{ maquina.observaciones }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-end" style="border-radius:0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cerrar
+                    </button>
+                    <a href="{{ url_for('editar_maquinaria', id=maquina.id) }}" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-xs">
                         <i class="fas fa-edit me-2"></i>Editar
                     </a>
-                    <form action="{{ url_for('eliminar_maquinaria', id=maquina.id) }}" method="POST" style="display:inline;">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de eliminar esta maquinaria?')">
-                            <i class="fas fa-trash me-2"></i>Eliminar
-                        </button>
-                    </form>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
+
+<style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+.bg-gradient-success { background: linear-gradient(135deg,#10b981,#059669) !important; }
+.bg-gradient-warning { background: linear-gradient(135deg,#f59e0b,#d97706) !important; }
+.bg-gradient-danger  { background: linear-gradient(135deg,#ef4444,#dc2626) !important; }
+.bg-gradient-secondary { background: linear-gradient(135deg,#64748b,#475569) !important; }
+.bg-success-soft { background-color:rgba(16,185,129,.12) !important; color:#10b981 !important; }
+.bg-warning-soft { background-color:rgba(245,158,11,.12) !important; color:#d97706 !important; }
+.bg-danger-soft  { background-color:rgba(239,68,68,.12) !important;  color:#ef4444 !important; }
+.text-warning-dark { color:#b45309 !important; }
+.shadow-xs { box-shadow:0 1px 3px rgba(0,0,0,.05) !important; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.animate-pulse { animation:pulse 2.5s infinite ease-in-out; }
+.modal-body::-webkit-scrollbar { width:6px; }
+.modal-body::-webkit-scrollbar-track { background:#f8fafc; }
+.modal-body::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:10px; }
+.modal-body::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+
+/* Tarjetas Premium de Maquinaria */
+.maquina-card {
+    transition: all 0.3s ease;
+    border: 1px solid #f1f5f9;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+}
+
+.maquina-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: #e2e8f0;
+}
+
+.maquina-card .card-header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    border: none;
+    padding: 1.5rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.maquina-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.maquina-icon-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.maquina-header-content {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.maquina-actions-top {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action-top {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-action-top:hover {
+    background: #ffffff;
+    color: #0284c7;
+    transform: scale(1.1);
+}
+
+.btn-action-top.delete:hover {
+    color: #ef4444;
+}
+
+.maquina-card .card-body {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.maquina-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.info-cell {
+    display: flex;
+    flex-direction: column;
+    padding: 0.8rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+}
+
+.info-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.info-value {
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.maquina-main-action {
+    margin-top: auto;
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #0284c7;
+    font-weight: 700;
+    padding: 0.8rem;
+    border-radius: 12px;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.maquina-main-action:hover {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.3);
+}
+
+/* Soporte para modo oscuro */
+body.dark-theme .maquina-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+body.dark-theme .info-cell {
+    background: #0f172a !important;
+    border-color: #1e293b !important;
+}
+
+body.dark-theme .info-value, body.dark-theme .text-dark {
+    color: #f8fafc !important;
+}
+
+body.dark-theme .maquina-main-action {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputFiltro = document.getElementById('filtroMaquinaria');
+        const tarjetas = document.querySelectorAll('.maquina-item');
+        
+        if(inputFiltro) {
+            inputFiltro.addEventListener('keyup', function() {
+                const valor = this.value.toLowerCase().trim();
+                
+                tarjetas.forEach(function(tarjeta) {
+                    const nombre = tarjeta.getAttribute('data-nombre');
+                    const tipo = tarjeta.getAttribute('data-tipo');
+                    
+                    if (nombre.includes(valor) || tipo.includes(valor)) {
+                        tarjeta.style.display = '';
+                    } else {
+                        tarjeta.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}
+
+

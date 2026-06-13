@@ -3,33 +3,225 @@
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: Arial, sans-serif; margin: 24px; }
-    .header { text-align: center; margin-bottom: 16px; }
-    .box { border: 1px solid #ccc; padding: 16px; border-radius: 8px; }
-    .qr { float: right; }
-    .muted { color: #666; font-size: 12px; }
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --border: #d1d9e6;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
+                  radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 24%),
+                  var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .page-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .header h2 {
+      font-size: clamp(1.8rem, 2.5vw, 2.8rem);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
+    }
+
+    .header .subtext {
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .certificate-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      padding: 32px;
+    }
+
+    .certificate-card .details {
+      display: grid;
+      gap: 18px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      background: #f8fafc;
+      align-items: center;
+    }
+
+    .detail-row strong {
+      color: var(--muted);
+      font-weight: 600;
+      min-width: 110px;
+    }
+
+    .detail-row span {
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+      min-width: 120px;
+    }
+
+    .qr-card {
+      background: #f8fafc;
+      border-radius: 28px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(37, 99, 235, 0.14);
+    }
+
+    .qr-card h3 {
+      margin: 0 0 16px;
+      font-size: 1.05rem;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .qr-box {
+      width: 260px;
+      height: 260px;
+      padding: 16px;
+      background: white;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+      margin-bottom: 18px;
+    }
+
+    .qr-box canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    .qr-caption {
+      font-size: 0.95rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .footer p {
+      margin: 0;
+    }
+
+    @media (max-width: 880px) {
+      .certificate-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .certificate-card {
+        padding: 22px;
+      }
+
+      .qr-card, .detail-row {
+        padding: 18px;
+      }
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
-  <div class="header">
-    <h2>Certificado de Identidad Animal</h2>
-    <div class="muted">Emitido por AgroGest - {{ date.today().strftime('%d/%m/%Y') }}</div>
+  <div class="page-wrapper">
+    <div class="header">
+      <h2>Certificado de Identidad Animal</h2>
+      <div class="subtext">Emitido por AgroGest • {{ date.today().strftime('%d/%m/%Y') }}</div>
+    </div>
+
+    <div class="certificate-card">
+      <div class="details">
+        <div class="detail-row">
+          <strong>Identificación</strong>
+          <span>{{ animal.identificacion }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Nombre</strong>
+          <span>{{ animal.nombre or '-' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Tipo</strong>
+          <span>{{ animal.tipo|title }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Raza</strong>
+          <span>{{ animal.raza or '-' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Sexo</strong>
+          <span>{{ animal.sexo or '-' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Nacimiento</strong>
+          <span>{{ animal.fecha_nacimiento.strftime('%d/%m/%Y') }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Finca</strong>
+          <span>{{ animal.finca.nombre if animal.finca else '-' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Verificación</strong>
+          <span style="font-size:0.86rem; color: var(--muted); text-align: left;">{{ verification_url }}</span>
+        </div>
+      </div>
+
+      <div class="qr-card">
+        <h3>Código QR</h3>
+        <div class="qr-box">
+          <canvas id="qr"></canvas>
+        </div>
+        <div class="qr-caption">Escanea este código para ver los detalles del animal de forma rápida y segura.</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Reporte generado por AgroGest</p>
+      <p>AgroGest - Gestión inteligente de fincas</p>
+    </div>
   </div>
-  <div class="box">
-    <div id="qr" class="qr"></div>
-    <p><strong>Identificación:</strong> {{ animal.identificacion }}</p>
-    <p><strong>Nombre:</strong> {{ animal.nombre or '-' }}</p>
-    <p><strong>Tipo:</strong> {{ animal.tipo|title }} | <strong>Raza:</strong> {{ animal.raza }}</p>
-    <p><strong>Sexo:</strong> {{ animal.sexo or '-' }} | <strong>Nacimiento:</strong> {{ animal.fecha_nacimiento.strftime('%d/%m/%Y') }}</p>
-    <p><strong>Finca:</strong> {{ animal.finca.nombre if animal.finca else '-' }}</p>
-    <p class="muted">Verificación: {{ verification_url }}</p>
-  </div>
-  <div style="text-align: center; margin-top: 30px; font-size: 10px; color: #666;">
-    <p>Reporte generado por AgroGest &#129414;</p>
-  </div>
+
   <script>
-    QRCode.toCanvas(document.getElementById('qr'), '{{ verification_url }}', { width: 120 })
+    QRCode.toCanvas(document.getElementById('qr'), '{{ verification_url }}', { width: 240, margin: 1 })
   </script>
 </body>
 </html>

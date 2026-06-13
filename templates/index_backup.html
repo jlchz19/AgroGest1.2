@@ -1,0 +1,843 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <style>
+        .weather-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            transition: all 0.5s ease;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+        .weather-effects {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+        }
+        .weather-rain {
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAQCAYAAAA+jZqIAAAAL0lEQVQYV2NkgII/QAAkAhIEQyAFIASygIogCmACEEVAASQBEEAUBQk4AShAFAUJAD23BgV/y5hRAAAAAElFTkSuQmCC');
+            animation: rainAnim 0.4s linear infinite;
+        }
+        .weather-sun {
+            background: radial-gradient(circle at 85% 15%, rgba(255, 215, 0, 0.4) 0%, transparent 50%);
+            animation: pulseSun 4s infinite alternate;
+        }
+        @keyframes rainAnim {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 100px; }
+        }
+        @keyframes pulseSun {
+            0% { opacity: 0.6; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+    </style>
+
+    {# ================================================================== #}
+    {# VISTA GLOBAL (CUANDO NO HAY FINCA SELECCIONADA)                    #}
+    {# ================================================================== #}
+    {% if no_finca %}
+    <div class="card shadow-sm text-center p-4 p-md-5 mb-4">
+        <div class="card-body">
+            <h4 class="card-title mb-3">Bienvenido a AgroGest</h4>
+            <p class="text-muted mb-4">No has seleccionado una finca. Elige una existente o crea una nueva para empezar a gestionar.</p>
+            <a href="{{ url_for('fincas') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-tractor me-2"></i>Gestionar Fincas
+            </a>
+        </div>
+    </div>
+    
+    <div class="row g-4 mt-2">
+        <!-- Resumen Global -->
+        <div class="col-12">
+             <div class="card shadow-sm glass-effect card-hover">
+                <div class="card-header"><h6 class="mb-0">Resumen Global</h6></div>
+                <div class="card-body">
+                     <div class="row g-4">
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-home text-primary" style="font-size: 2rem; margin-right: 1rem;"></i>
+                                <div>
+                                    <p class="mb-1 text-muted">Total Fincas</p>
+                                    <h5 class="mb-0">{{ total_fincas }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-cow text-info" style="font-size: 2rem; margin-right: 1rem;"></i>
+                                <div>
+                                    <p class="mb-1 text-muted">Total Animales</p>
+                                    <h5 class="mb-0">{{ total_animales }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-users text-success" style="font-size: 2rem; margin-right: 1rem;"></i>
+                                <div>
+                                    <p class="mb-1 text-muted">Total Empleados</p>
+                                    <h5 class="mb-0">{{ total_empleados }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xl-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-seedling text-success" style="font-size: 2rem; margin-right: 1rem;"></i>
+                                <div>
+                                    <p class="mb-1 text-muted">Total Potreros</p>
+                                    <h5 class="mb-0">{{ total_potreros }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Gráfico Global -->
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100 glass-effect card-hover">
+                <div class="card-header"><h6 class="mb-0">Distribución de Animales por Finca</h6></div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    {% if finca_labels and finca_data %}
+                        <canvas id="finca-chart"></canvas>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No hay datos de animales para mostrar.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Actividad Reciente Global -->
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 glass-effect card-hover">
+                <div class="card-header"><h6 class="mb-0">Actividad Reciente</h6></div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <tbody>
+                                {% for animal in animales_recientes %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-cow text-info me-2"></i>
+                                        <strong>{{ animal.identificacion }}</strong>
+                                        <small class="d-block text-muted">{{ animal.finca.nombre }}</small>
+                                    </td>
+                                    <td class="text-end text-muted">{{ (today - animal.fecha_ingreso.date()).days }}d atrás</td>
+                                </tr>
+                                {% else %}
+                                <tr><td class="p-4 text-muted text-center">No hay actividad reciente.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ================================================================== #}
+    {# VISTA DE FINCA (CUANDO HAY UNA FINCA SELECCIONADA)                 #}
+    {# ================================================================== #}
+    {% else %}
+    <div class="row g-4">
+        <!-- COLUMNA PRINCIPAL (IZQUIERDA) -->
+        <div class="col-xl-8">
+            <!-- Stats Cards Mejoradas -->
+            <div class="row g-4">
+                <div class="col-sm-6 col-xl-6">
+                    <div class="card shadow-sm border-0 card-hover" id="cardAnimales" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%); cursor: pointer;">
+                        <div class="card-body d-flex align-items-center text-white">
+                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
+                                <span style="font-size: 2rem;">🐄</span>
+                            </div>
+                            <div>
+                                <p class="mb-1 opacity-75">Animales</p>
+                                <h3 class="mb-0 fw-bold">{{ total_animales }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-6">
+                     <div class="card shadow-sm border-0 card-hover" id="cardPotreros" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); cursor: pointer;">
+                        <div class="card-body d-flex align-items-center text-white">
+                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
+                                <span style="font-size: 2rem;">🌿</span>
+                            </div>
+                            <div>
+                                <p class="mb-1 opacity-75">Potreros</p>
+                                <h3 class="mb-0 fw-bold">{{ total_potreros }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-6">
+                     <div class="card shadow-sm border-0 card-hover" id="cardEmpleados" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); cursor: pointer;">
+                        <div class="card-body d-flex align-items-center text-white">
+                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
+                                <span style="font-size: 2rem;">👷</span>
+                            </div>
+                            <div>
+                                <p class="mb-1 opacity-75">Empleados</p>
+                                <h3 class="mb-0 fw-bold">{{ total_empleados }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="col-sm-6 col-xl-6">
+                     <div class="card shadow-sm border-0 card-hover" id="cardInventario" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); cursor: pointer;">
+                        <div class="card-body d-flex align-items-center text-white">
+                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
+                                <span style="font-size: 2rem;">📦</span>
+                            </div>
+                            <div>
+                                <p class="mb-1 opacity-75">Valor Inventario</p>
+                                <h3 class="mb-0 fw-bold">${{ "{:,.0f}".format(valor_total_inventario) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-6">
+                    <div class="card shadow-sm border-0 card-hover" id="cardParto" style="background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); cursor: pointer;">
+                        <div class="card-body d-flex align-items-center text-white">
+                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-horse" style="font-size: 2rem;"></i>
+                            </div>
+                            <div>
+                                <p class="mb-1 opacity-75">Parto</p>
+                                <h3 class="mb-0 fw-bold">{{ total_partos }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-6">
+                    <div class="card shadow-sm border-0 card-hover" id="cardUbicacion" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); cursor: pointer;">
+                        <div class="card-body d-flex align-items-center text-white">
+                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-map-marker-alt" style="font-size: 2rem;"></i>
+                            </div>
+                            <div>
+                                <p class="mb-1 opacity-75">Ubicación</p>
+                                <h3 class="mb-0 fw-bold">{{ total_ubicaciones }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                         <!-- KPIs -->
+             <div class="row g-4 mt-1">
+                 <div class="col-md-6">
+                     <div class="card shadow-sm glass-effect card-hover">
+                         <div class="card-body text-center">
+                             <h6 class="text-muted mb-1">Vaca con Más Leche (Mes)</h6>
+                             <h4 class="mb-0">{% if vaca_top_produccion %}{{ vaca_top_produccion.nombre or vaca_top_produccion.identificacion }}: {{ "{:,.1f}".format(vaca_top_leche) }} L{% else %}Sin producción este mes{% endif %}</h4>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="col-md-6">
+                     <div class="card shadow-sm glass-effect card-hover">
+                         <div class="card-body text-center">
+                             <h6 class="text-muted mb-1">Alertas del Mes</h6>
+                             <h4 class="mb-0">{% if alertas_mes %}{{ alertas_mes }}{% else %}0{% endif %}</h4>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+
+            <!-- Widget de Clima Dinámico -->
+            <div class="row g-4 mt-1">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 weather-card card-hover" id="weatherWidget" style="position: relative;">
+                        <div class="weather-effects" id="weatherEffects"></div>
+                        <div class="card-body p-4 position-relative text-white d-flex justify-content-between align-items-center" style="z-index: 2;">
+                            <div>
+                                <h5 class="mb-1" style="font-weight: 700;">Clima en Finca</h5>
+                                <p class="mb-0 opacity-75" id="weatherDesc">Cargando pronóstico...</p>
+                                <div class="mt-2 d-flex align-items-center">
+                                    <i class="fas fa-temperature-high me-2"></i>
+                                    <span id="weatherTemp" style="font-size: 2.5rem; font-weight: 800; line-height: 1;">--°C</span>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <i class="fas fa-cloud-sun" id="weatherIcon" style="font-size: 4rem;"></i>
+                                <div class="mt-2 text-sm opacity-75">
+                                    <span class="me-3"><i class="fas fa-tint me-1"></i> <span id="weatherHum">--%</span></span>
+                                    <span><i class="fas fa-wind me-1"></i> <span id="weatherWind">-- km/h</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- Tabla de Producción Reciente -->
+            <div class="card shadow-sm mt-4 glass-effect card-hover">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Producción Reciente</h6>
+                    <a href="{{ url_for('produccion') }}" class="btn btn-outline-primary btn-sm">Ver Todo</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-3">Fecha</th>
+                                    <th>Animal</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Calidad</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for prod, animal_id in produccion_reciente %}
+                                <tr>
+                                    <td class="ps-3">{{ prod.fecha.strftime('%d %b %Y') }}</td>
+                                    <td>{{ animal_id }}</td>
+                                    <td>{{ prod.tipo_produccion }}</td>
+                                    <td>{{ prod.cantidad }} {{ prod.unidad }}</td>
+                                    <td>
+                                        <span class="badge 
+                                        {% if prod.calidad == 'buena' %}bg-success-soft
+                                        {% elif prod.calidad == 'regular' %}bg-warning-soft
+                                        {% else %}bg-danger-soft{% endif %} text-dark">
+                                        {{ prod.calidad|capitalize }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center p-4 text-muted">No hay registros de producción.</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA LATERAL (DERECHA) -->
+        <div class="col-xl-4">
+            <!-- Acciones Rápidas -->
+            <div class="card shadow-sm mb-4 glass-effect card-hover">
+                <div class="card-header"><h6 class="mb-0">Acciones Rápidas</h6></div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('nuevo_animal') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">🐄</span>Registrar Animal</a>
+                        <a href="{{ url_for('nueva_produccion') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">🥛</span>Anotar Producción</a>
+                        <a href="{{ url_for('nueva_vacuna') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">💉</span>Registrar Vacuna</a>
+                        <a href="{{ url_for('nuevo_inventario') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">📦</span>Añadir Inventario</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Centro de Alertas -->
+            <div class="card shadow-sm mb-4 glass-effect card-hover">
+                <div class="card-header d-flex align-items-center">
+                    <i class="fa fa-bell me-2 text-primary"></i>
+                    <h6 class="mb-0">Centro de Alertas</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for alerta in alertas %}
+                        <a href="{{ alerta.url }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100">
+                                {% if alerta.tipo == 'vacuna' %}<i class="fas fa-syringe fa-2x text-warning me-3 align-self-center"></i>
+                                {% elif alerta.tipo == 'inventario_caduca' %}<i class="fas fa-calendar-times fa-2x text-danger me-3 align-self-center"></i>
+                                {% elif alerta.tipo == 'inventario_bajo' %}<i class="fas fa-box-open fa-2x text-info me-3 align-self-center"></i>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-1 small">
+                                        {% if alerta.tipo == 'vacuna' %}Vacuna Próxima
+                                        {% elif alerta.tipo == 'inventario_caduca' %}Producto por Caducar
+                                        {% elif alerta.tipo == 'inventario_bajo' %}Bajo Inventario
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">{{ alerta.mensaje }}</small>
+                                </div>
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="text-center p-4">
+                            <i class="fa fa-check-circle fa-3x text-success mb-2"></i>
+                            <p class="text-muted mb-0">¡Todo en orden!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventario Bajo -->
+            <div class="card shadow-sm mb-4 glass-effect card-hover">
+                <div class="card-header"><h6 class="mb-0">Inventario Bajo</h6></div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for item in bajo_inventario_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-box-open text-warning me-2"></i>
+                                {{ item.producto }}
+                            </div>
+                            <span class="badge bg-warning-soft rounded-pill">{{ item.cantidad|int }} {{ item.unidad }}</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted text-center p-3">
+                            <i class="fas fa-check-circle text-success me-1"></i>
+                            Stock en niveles óptimos.
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% if bajo_inventario_items %}
+                <div class="card-footer text-center py-2 bg-light">
+                    <a href="{{ url_for('inventario') }}" class="text-muted small">Gestionar inventario</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Carga de Potreros -->
+            <div class="card shadow-sm glass-effect card-hover">
+                <div class="card-header"><h6 class="mb-0">Carga de Potreros</h6></div>
+                <div class="card-body" style="max-height: 260px; overflow-y: auto;">
+                    {% if potreros_carga %}
+                    <ul class="list-unstyled mb-0">
+                        {% for potrero in potreros_carga %}
+                        <li class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="small"><strong>{{ potrero.nombre }}</strong></span>
+                                <span class="small text-muted">{{ potrero.ocupantes }} / {{ potrero.capacidad }}</span>
+                            </div>
+                            {% set progress_width = potrero.carga_percent|default(0) %}
+                            {% set progress_class = 'bg-' + potrero.color if potrero.color else 'bg-primary' %}
+                            <div class="progress progress-custom">
+                                <div class="progress-bar {{ progress_class }}" 
+                                     role="progressbar" 
+                                     data-width="{{ progress_width }}"
+                                     aria-valuenow="{{ progress_width }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted text-center small py-4">No hay potreros para mostrar.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modales de Resumen -->
+<!-- Modal Animales -->
+<div class="modal fade" id="animalesModal" tabindex="-1" style="z-index: 1055;"> <!-- Aumentar z-index para prioridad -->
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);">
+                <h5 class="modal-title text-white"><i class="fas fa-paw me-2"></i>Resumen de Animales</h5>
+            </div>
+            <div class="modal-body" id="animalesContent" style="max-height: 70vh; overflow-y: auto;">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('animales') }}" class="btn btn-primary">Ver Todos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Potreros -->
+<div class="modal fade" id="potrerosModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <h5 class="modal-title text-white"><i class="fas fa-seedling me-2"></i>Resumen de Potreros</h5>
+            </div>
+            <div class="modal-body" id="potrerosContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('potreros') }}" class="btn btn-success">Ver Todos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Empleados -->
+<div class="modal fade" id="empleadosModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                <h5 class="modal-title text-white"><i class="fas fa-users me-2"></i>Resumen de Empleados</h5>
+            </div>
+            <div class="modal-body" id="empleadosContent" style="max-height: 70vh; overflow-y: auto;">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-info" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('empleados') }}" class="btn btn-info text-white">Ver Todos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Inventario -->
+<div class="modal fade" id="inventarioModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <h5 class="modal-title text-white"><i class="fas fa-box-open me-2"></i>Resumen de Inventario</h5>
+            </div>
+            <div class="modal-body" id="inventarioContent" style="max-height: 70vh; overflow-y: auto;">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('inventario') }}" class="btn btn-warning">Ver Todos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Parto -->
+<div class="modal fade" id="partoModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);">
+                <h5 class="modal-title text-white"><i class="fas fa-horse me-2"></i>Control de Partos</h5>
+            </div>
+            <div class="modal-body" id="partoContent">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="card-title text-success mb-4"><i class="fas fa-baby-carriage me-2"></i>Animales que han Parido</h5>
+                                <div id="vacasParidas">
+                                    <div class="text-center py-3">
+                                        <div class="spinner-border text-success" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('eventos_salud') }}" class="btn btn-warning">Ver Todos</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ubicación -->
+<div class="modal fade" id="ubicacionModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+                <h5 class="modal-title text-white"><i class="fas fa-map-marker-alt me-2"></i>Ubicación de Animales</h5>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchAnimal" placeholder="Escriba el nombre del animal...">
+                        <button class="btn btn-success" type="button" id="btnSearchAnimal">Buscar</button>
+                    </div>
+                </div>
+                <div id="ubicacionResult">
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Ingrese el nombre del animal para ver su ubicación</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos generales */
+.card-hover {
+    transition: all 0.3s ease;
+}
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+}
+
+/* Estilos adicionales para modales para evitar conflictos */
+.modal {
+    z-index: 1055 !important; /* Prioridad alta */
+}
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+/* Asegurar que el modal se pueda cerrar fácilmente */
+.modal-dialog {
+    pointer-events: auto;
+}
+
+/* Estilos para tooltips */
+.tooltip {
+    z-index: 1070 !important;
+}
+
+/* Ajustes para select2 en modales */
+.select2-container {
+    z-index: 1060 !important;
+}
+
+/* Ajustes para el menú desplegable de usuario */
+.dropdown-menu[data-bs-popper] {
+    z-index: 1060 !important;
+}
+
+/* Estilos para la barra de progreso */
+.progress-custom {
+    height: 8px;
+}
+
+.progress-bar[data-width] {
+    width: 0;
+    transition: width 0.5s ease-in-out;
+}
+</style>
+
+<!-- Scripts JavaScript -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<!-- Combined JavaScript Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize chart data if available
+    (function() {
+        const fincaChart = document.getElementById('finca-chart');
+        if (fincaChart) {
+            // Chart data will be loaded via separate API call
+            console.log('Chart initialized');
+        }
+    })();
+    
+    // Click handlers for cards
+    const cardParto = document.getElementById('cardParto');
+    const cardUbicacion = document.getElementById('cardUbicacion');
+    
+    if (cardParto) {
+        cardParto.addEventListener('click', function() {
+            loadPartoData();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('partoModal')).show();
+        });
+    }
+    
+    if (cardUbicacion) {
+        cardUbicacion.addEventListener('click', function() {
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('ubicacionModal')).show();
+        });
+    }
+    
+    // Search functionality
+    const searchInput = document.getElementById('searchAnimal');
+    const searchBtn = document.getElementById('btnSearchAnimal');
+    
+    function searchAnimal() {
+        const searchTerm = searchInput.value.trim();
+        const resultDiv = document.getElementById('ubicacionResult');
+        
+        if (!searchTerm) {
+            resultDiv.innerHTML = '<div class="text-center py-4"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p class="text-muted">Ingrese el nombre del animal para ver su ubicación</p></div>';
+            return;
+        }
+        
+        // Show loading
+        resultDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Buscando...</span></div><p class="text-muted mt-2">Buscando animal...</p></div>';
+        
+        // Real API call to search animal
+        fetch('/api/buscar_animal?termino=' + encodeURIComponent(searchTerm))
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    resultDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>' + data.error + '</div>';
+                } else if (data.encontrado) {
+                    resultDiv.innerHTML = '<div class="alert alert-success"><h5><i class="fas fa-check-circle me-2"></i>Animal Encontrado</h5><div class="row mt-3"><div class="col-md-6"><strong>Identificación:</strong> ' + data.animal.identificacion + '<br><strong>Nombre:</strong> ' + (data.animal.nombre || 'Sin nombre') + '<br><strong>Tipo:</strong> ' + data.animal.tipo + '<br><strong>Estado:</strong> <span class="badge bg-success">' + data.animal.estado + '</span></div><div class="col-md-6"><strong>Ubicación:</strong> ' + data.animal.potrero + '<br><strong>Sexo:</strong> ' + (data.animal.sexo || 'N/A') + '<br><strong>Fecha Ingreso:</strong> ' + data.animal.fecha_ingreso + '<br><strong>Edad:</strong> ' + (data.animal.edad || 'N/A') + '</div></div></div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-search me-2"></i>Animal no encontrado en esta finca</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error buscando animal:', error);
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Error al buscar el animal</div>';
+            });
+    }
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchAnimal);
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchAnimal();
+            }
+        });
+    }
+    
+    // Load parto data
+    function loadPartoData() {
+        const vacasParidas = document.getElementById('vacasParidas');
+        
+        // Show loading
+        vacasParidas.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Cargando...</span></div></div>';
+        
+        // Load real data from API
+        fetch('/api/partos_data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Render partos con detalles mejorados
+                if (data.partidos && data.partidos.length > 0) {
+                    let partidosHtml = '<div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Animal</th><th>Fecha Parto</th><th>Días</th><th>Crías Vivas</th><th>Estado</th></tr></thead><tbody>';
+                    data.partidos.forEach(animal => {
+                        const nombre = animal.nombre || animal.identificacion;
+                        let badgeClass = 'bg-secondary';
+                        let estadoTexto = 'Hace ' + animal.dias_desde_parto + ' días';
+                        
+                        if (animal.dias_desde_parto <= 7) {
+                            badgeClass = 'bg-success';
+                            estadoTexto = 'Reciente';
+                        } else if (animal.dias_desde_parto <= 30) {
+                            badgeClass = 'bg-primary';
+                            estadoTexto = 'Normal';
+                        } else {
+                            badgeClass = 'bg-secondary';
+                            estadoTexto = 'Anterior';
+                        }
+                        
+                        partidosHtml += '<tr>';
+                        partidosHtml += '<td><strong>' + animal.identificacion + '</strong>';
+                        if (animal.nombre) {
+                            partidosHtml += '<br><small class="text-muted">' + animal.nombre + '</small>';
+                        }
+                        partidosHtml += '</td>';
+                        partidosHtml += '<td>' + animal.fecha_parto + '</td>';
+                        partidosHtml += '<td>' + animal.dias_desde_parto + '</td>';
+                        partidosHtml += '<td><span class="badge bg-success">' + (animal.crias_vivas || 0) + '</span></td>';
+                        partidosHtml += '<td><span class="badge ' + badgeClass + '">' + estadoTexto + '</span></td>';
+                        partidosHtml += '</tr>';
+                    });
+                    partidosHtml += '</tbody></table></div>';
+                    vacasParidas.innerHTML = partidosHtml;
+                } else {
+                    vacasParidas.innerHTML = '<div class="text-center py-4"><i class="fas fa-calendar-times fa-3x text-muted mb-3"></i><p class="text-muted">No hay partos registrados recientemente.</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando datos de partos:', error);
+                vacasParidas.innerHTML = '<div class="text-center py-4"><i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i><p class="text-danger">Error al cargar los datos.</p></div>';
+            });
+    }
+});
+</script>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function fetchWeather(lat, lon) {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&timezone=auto`;
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const weather = data.current_weather;
+                const temp = weather.temperature;
+                const code = weather.weathercode;
+                const wind = weather.windspeed;
+                const hum = data.hourly.relativehumidity_2m ? data.hourly.relativehumidity_2m[0] : 60; // aprox
+
+                document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                document.getElementById('weatherWind').innerText = `${wind} km/h`;
+                document.getElementById('weatherHum').innerText = `${hum}%`;
+
+                let desc = "Despejado";
+                let iconClass = "fa-sun";
+                let bgGradient = "linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%)";
+                let effectClass = "weather-sun";
+
+                if (code >= 1 && code <= 3) {
+                    desc = "Parcialmente Nublado";
+                    iconClass = "fa-cloud-sun";
+                } else if (code >= 45 && code <= 48) {
+                    desc = "Niebla";
+                    iconClass = "fa-smog";
+                    bgGradient = "linear-gradient(135deg, #94a3b8 0%, #475569 100%)";
+                    effectClass = "";
+                } else if (code >= 51 && code <= 67) {
+                    desc = "Lluvia";
+                    iconClass = "fa-cloud-showers-heavy";
+                    bgGradient = "linear-gradient(135deg, #475569 0%, #1e293b 100%)";
+                    effectClass = "weather-rain";
+                    
+                    if (window.showToast) {
+                        setTimeout(() => window.showToast("Alerta: Lluvia detectada en la finca. Proteja su maquinaria.", "warning"), 2000);
+                    }
+                } else if (code >= 71 && code <= 77) {
+                    desc = "Nieve";
+                    iconClass = "fa-snowflake";
+                } else if (code >= 80 && code <= 82) {
+                    desc = "Tormenta Fuerte";
+                    iconClass = "fa-poo-storm";
+                    bgGradient = "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)";
+                    effectClass = "weather-rain";
+                    if (window.showToast) {
+                        setTimeout(() => window.showToast("Alerta Severa: Tormenta detectada.", "warning"), 2000);
+                    }
+                }
+
+                document.getElementById('weatherDesc').innerText = desc;
+                document.getElementById('weatherIcon').className = `fas ${iconClass}`;
+                document.getElementById('weatherWidget').style.background = bgGradient;
+                document.getElementById('weatherEffects').className = `weather-effects ${effectClass}`;
+            })
+            .catch(err => console.error("Error fetching weather:", err));
+    }
+
+    // Coordenadas fijas para Maracaibo, Venezuela
+    const maracaiboLat = 10.6316;
+    const maracaiboLon = -71.6406;
+    fetchWeather(maracaiboLat, maracaiboLon);
+});
+</script>
+{% endblock %}

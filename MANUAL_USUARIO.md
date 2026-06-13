@@ -462,7 +462,7 @@ Menú lateral → **"Cámara"**
 
 ### 4. Análisis y Estadísticas
 
-#### Dashboard Analítico
+#### Dashboard
 **Acceso**: Menú lateral → **"Análisis"**
 
 #### Métricas Disponibles

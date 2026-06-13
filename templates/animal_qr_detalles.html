@@ -502,26 +502,26 @@
     <div class="hero-header">
         <div class="hero-content">
             <div class="animal-avatar">
-                <i class="fas fa-paw"></i>
+                <span style=\"font-size:1.5rem;margin-right:0.3rem;filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));\">🐾</span>
             </div>
             <h1 class="hero-title">{{ animal.identificacion }}</h1>
             <p class="hero-subtitle">{{ animal.nombre or 'Sin nombre' }} - {{ animal.tipo|title }}</p>
 
             <div class="stats-badges">
                 <div class="stat-badge">
-                    <i class="fas fa-birthday-cake"></i>
+                    <span style=\"font-size:1rem;margin-right:0.3rem;\">🎂</span>
                     {{ ((date.date() - animal.fecha_nacimiento).days // 365) if animal.fecha_nacimiento else 0 }} años
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-weight"></i>
+                    <span style=\"font-size:1rem;margin-right:0.3rem;\">⚖️</span>
                     {{ animal.peso or 0 }} kg
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-{{ 'venus' if animal.sexo == 'hembra' else 'mars' }}"></i>
+                    <span style="font-size:1rem;margin-right:0.3rem;">{{ '♀️' if animal.sexo == 'hembra' else '♂️' }}</span>
                     {{ animal.sexo|title if animal.sexo else 'N/A' }}
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-circle status-indicator" data-status="{{ animal.estado }}"></i>
+                    <span style="font-size:1rem;margin-right:0.3rem;">●</span>
                     {{ animal.estado|title }}
                 </div>
             </div>
@@ -537,7 +537,7 @@
                 Información General
             </button></li>
             <li><button class="tab-button" onclick="showTab('vacunas')">
-                <i class="fas fa-heartbeat"></i>
+                 <span style="font-size:1rem;margin-right:0.3rem;">💓</span>
                 Salud y Vacunas
             </button></li>
         </ul>
@@ -588,7 +588,7 @@
                     <!-- Información Básica -->
                     <div class="info-card">
                         <h5 class="card-header-custom">
-                            <i class="fas fa-info-circle"></i>
+                            <span style="font-size:1rem;margin-right:0.3rem;">ℹ️</span>
                             Información Básica
                         </h5>
                         <div class="card-body-custom">
@@ -626,7 +626,7 @@
                     <!-- Datos Físicos -->
                     <div class="info-card">
                         <h5 class="card-header-custom">
-                            <i class="fas fa-weight"></i>
+                            <span style="font-size:1rem;margin-right:0.3rem;">⚖️</span>
                             Datos Físicos
                         </h5>
                         <div class="card-body-custom">
@@ -660,7 +660,7 @@
                     <!-- Propietario -->
                     <div class="info-card">
                         <h5 class="card-header-custom">
-                            <i class="fas fa-user-tie"></i>
+                             <span style="font-size:1rem;margin-right:0.3rem;">📍</span>
                             Información del Propietario
                         </h5>
                         <div class="card-body-custom">
@@ -682,7 +682,7 @@
                     <!-- Estadísticas Rápidas -->
                     <div class="info-card">
                         <h5 class="card-header-custom">
-                            <i class="fas fa-chart-bar"></i>
+                             <span style="font-size:1rem;margin-right:0.3rem;">📊</span>
                             Estadísticas Rápidas
                         </h5>
                         <div class="card-body-custom">
@@ -711,7 +711,7 @@
             <div class="tab-panel" id="vacunasTab">
                 <div class="info-card">
                     <h5 class="card-header-custom">
-                        <i class="fas fa-syringe"></i>
+                         <span style="font-size:1rem;margin-right:0.3rem;">💉</span>
                         Historial de Vacunas
                     </h5>
                     <div class="card-body-custom">
@@ -746,7 +746,7 @@
                         </div>
                         {% else %}
                         <div class="text-center py-4">
-                            <i class="fas fa-info-circle text-muted" style="font-size: 2rem;"></i>
+                             <span style="font-size:2rem;margin-right:0.3rem;">ℹ️</span>
                             <p class="text-muted mt-2">No hay vacunas registradas para este animal</p>
                         </div>
                         {% endif %}

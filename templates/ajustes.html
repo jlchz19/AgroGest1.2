@@ -93,6 +93,44 @@
 
             </div>
 
+        <!-- Interfaz y Estilo -->
+        <div class="col-lg-12 mb-4">
+            <div class="card glass-effect card-hover">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-paint-brush me-2"></i>Apariencia de la Interfaz</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold">Estilo Visual</label>
+                            <div class="d-flex flex-wrap gap-4 mt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="uiStyle" id="styleClassic" value="classic">
+                                    <label class="form-check-label fw-semibold" for="styleClassic">
+                                        <i class="fas fa-water text-info me-1"></i> Clásico
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="uiStyle" id="stylePremium" value="premium">
+                                    <label class="form-check-label fw-semibold" for="stylePremium">
+                                        <i class="fas fa-crown text-warning me-1"></i> Premium
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="uiStyle" id="stylePro" value="pro">
+                                    <label class="form-check-label fw-semibold" for="stylePro">
+                                        <i class="fas fa-space-shuttle text-primary me-1"></i> Pro (Neumórfico)
+                                    </label>
+                                </div>
+                                <!-- Opción 'Analítico' eliminada según petición del usuario -->
+                            </div>
+                            <small class="text-muted d-block mt-2">El estilo Premium usa colores sólidos y claros. El estilo Pro usa un diseño oscuro con acentos de neón.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <!-- Estadísticas de Respaldo -->
     <div class="row">
         <div class="col-12">
@@ -154,6 +192,40 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('totalSalud').textContent = '{{ salud_count if salud_count else "0" }}';
         document.getElementById('totalVacunas').textContent = '{{ vacunas_count if vacunas_count else "0" }}';
     }, 500);
+
+    // Lógica para UI Style
+    const styleRadios = document.querySelectorAll('input[name="uiStyle"]');
+    const currentStyle = localStorage.getItem('ui_style') || 'classic';
+    
+    // Marcar el radio correcto
+    if (currentStyle === 'premium') {
+        document.getElementById('stylePremium').checked = true;
+    } else if (currentStyle === 'pro') {
+        document.getElementById('stylePro').checked = true;
+    } else {
+        document.getElementById('styleClassic').checked = true;
+    }
+    
+    // Al cambiar la selección
+    styleRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                const newStyle = this.value;
+                localStorage.setItem('ui_style', newStyle);
+                
+                // Aplicar el estilo de inmediato
+                if (newStyle === 'premium') {
+                    document.documentElement.setAttribute('data-style', 'premium');
+                } else if (newStyle === 'pro') {
+                    document.documentElement.setAttribute('data-style', 'pro');
+                } else {
+                    document.documentElement.removeAttribute('data-style');
+                }
+                
+                showToast("Estilo visual actualizado", "success");
+            }
+        });
+    });
 });
 </script>
 {% endblock %}

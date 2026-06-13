@@ -871,7 +871,7 @@
 .mobile-nav-header {
     background: linear-gradient(to right, #007bff, #0056b3);
     padding: 15px 20px;
-    border-bottom: none; /* Remove any default border */
+    border-bottom: none;
 }
 
 .mobile-nav-header h3 {
@@ -886,7 +886,7 @@
 .mobile-nav,
 .mobile-nav-content,
 .mobile-nav-header {
-    background: linear-gradient(to right, #007bff, #0056b3) !important; /* Ensure gradient applies to the full mobile nav area */
+    background: linear-gradient(to right, #007bff, #0056b3) !important;
 }
     background: rgba(220, 53, 69, 0.2);
     color: #dc3545;
@@ -1358,3 +1358,671 @@
     }
 }
 
+/* ==========================================================================
+   AGROGEST NEXT-GEN: DARK MODE & GLASSMORPHISM & BOTTOM NAV
+   ========================================================================== */
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+    --text-color: #f8fafc;
+    --text-muted: #94a3b8;
+    --primary: #38bdf8;
+    --secondary: #475569;
+    --border-color: #334155;
+    
+    /* Backgrounds */
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important;
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important;
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .card {
+    background: rgba(30, 41, 59, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .card-header {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .navbar-main {
+    background: rgba(30, 41, 59, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .navbar-main .navbar-text, 
+[data-theme="dark"] .user-name {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .text-muted {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .text-dark {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .bg-white {
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .table,
+[data-theme="dark"] .table thead,
+[data-theme="dark"] .table tr,
+[data-theme="dark"] .table th,
+[data-theme="dark"] .table td {
+    background-color: transparent !important;
+    --bs-table-bg: transparent !important;
+    --bs-table-accent-bg: transparent !important;
+    box-shadow: none !important;
+    color: #f8fafc !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .table thead.bg-light,
+[data-theme="dark"] .table thead.bg-light th {
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .table-hover > tbody > tr:hover > * {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .modal-content {
+    background: #1e293b;
+    color: #f8fafc;
+}
+
+/* Fix text and background color for inputs in dark mode */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .input-group-text,
+[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] textarea {
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .form-control::placeholder,
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: rgba(248, 250, 252, 0.5) !important;
+}
+
+/* Ocultar el placeholder en form-floating para que no se superponga con el label */
+[data-theme="dark"] .form-floating > .form-control::placeholder,
+[data-theme="dark"] .form-floating > input::placeholder,
+[data-theme="dark"] .form-floating > textarea::placeholder {
+    color: transparent !important;
+}
+
+[data-theme="dark"] .form-floating > .form-control:focus::placeholder,
+[data-theme="dark"] .form-floating > input:focus::placeholder,
+[data-theme="dark"] .form-floating > textarea:focus::placeholder {
+    color: rgba(248, 250, 252, 0.5) !important;
+}
+
+/* Arreglar el fondo blanco detrás del texto del label en form-floating */
+[data-theme="dark"] .form-floating > label {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .form-floating > label::after {
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] input:focus:not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] textarea:focus {
+    background-color: rgba(15, 23, 42, 1) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25) !important;
+    color: #ffffff !important;
+}
+
+/* Glassmorphism Classes */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .glass-effect {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Animations & Micro-interactions */
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] .card-hover:hover {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+}
+
+/* Skeleton Loaders */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+    opacity: 0.7;
+}
+
+[data-theme="dark"] .skeleton {
+    background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Bottom Navigation Bar (Mobile) */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 5px 15px 5px;
+    z-index: 1050;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+}
+
+[data-theme="dark"] .bottom-nav {
+    background: rgba(30, 41, 59, 0.9);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.bottom-nav-item i {
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+}
+
+.bottom-nav-item:hover, .bottom-nav-item.active {
+    color: #0ea5e9;
+}
+
+[data-theme="dark"] .bottom-nav-item {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .bottom-nav-item:hover, [data-theme="dark"] .bottom-nav-item.active {
+    color: #38bdf8;
+}
+
+.main-action-btn {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-top: -25px;
+    box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+    border: 4px solid #f8fafc;
+    transition: transform 0.2s;
+}
+
+[data-theme="dark"] .main-action-btn {
+    border-color: #0f172a;
+}
+
+.main-action-btn:active {
+    transform: scale(0.95);
+}
+
+/* Compensate body padding for bottom nav */
+@media (max-width: 767.98px) {
+    body {
+        padding-bottom: 80px;
+    }
+}
+
+/* ==========================================================================
+   AGROGEST NEXT-GEN: ESTILO PREMIUM (COLORES SÓLIDOS Y LIMPIOS)
+   ========================================================================== */
+
+/* Se eliminaron las clases base porque se regresó a inline styles para mayor seguridad en el tema Clásico */
+
+/* Modo Premium */
+[data-style="premium"] body {
+    background: #f4f6f9 !important; /* Fondo gris muy claro casi blanco */
+}
+
+[data-style="premium"] #sidebar {
+    background: #1a222c !important; /* Dark navy / gray sidebar */
+    color: #fff;
+    backdrop-filter: none;
+}
+
+[data-style="premium"] #sidebar .sidebar-header {
+    background: #151b23 !important; /* Aún más oscuro para el header del sidebar */
+}
+
+[data-style="premium"] #sidebar ul li a {
+    color: #c2c7d0;
+}
+
+[data-style="premium"] #sidebar ul li a:hover,
+[data-style="premium"] #sidebar ul li.active > a {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #ff7a00 !important; /* Acento Naranja */
+}
+
+/* Modificadores Premium para las tarjetas principales (Colores Sólidos sin degradado) */
+[data-style="premium"] #cardAnimales { background: #ff7f00 !important; } /* Naranja */
+[data-style="premium"] #cardPotreros { background: #4caf50 !important; } /* Verde */
+[data-style="premium"] #cardEmpleados { background: #ffb300 !important; } /* Amarillo */
+[data-style="premium"] #cardInventario { background: #343a40 !important; } /* Gris oscuro */
+[data-style="premium"] #cardParto { background: #ff7f00 !important; } /* Naranja */
+[data-style="premium"] #cardUbicacion { background: #4caf50 !important; } /* Verde */
+
+/* Anular el glass effect en el estilo premium para volver a colores sólidos */
+[data-style="premium"] .glass-effect {
+    background: #ffffff;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+[data-style="premium"] .btn-primary {
+    background: #ff7a00 !important;
+    border-color: #ff7a00 !important;
+}
+
+[data-style="premium"] .btn-primary:hover {
+    background: #e66a00 !important;
+    border-color: #e66a00 !important;
+}
+
+[data-style="premium"] .text-primary {
+    color: #ff7a00 !important;
+}
+
+[data-style="premium"] .bottom-nav .active,
+[data-style="premium"] .bottom-nav-item:hover {
+    color: #ff7a00 !important;
+}
+
+[data-style="premium"] .main-action-btn {
+    background: #ff7a00 !important;
+    box-shadow: 0 5px 15px rgba(255, 122, 0, 0.4) !important;
+}
+
+[data-style="premium"][data-theme="dark"] body {
+    background: #0f172a !important;
+}
+[data-style="premium"][data-theme="dark"] .glass-effect {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ==========================================================================
+   AGROGEST NEXT-GEN: ESTILO PRO (NEUMÓRFICO OSCURO)
+   ========================================================================== */
+[data-style="pro"] body {
+    background: #1e1e2d !important;
+    color: #e4e6eb !important;
+}
+
+[data-style="pro"] #sidebar {
+    background: #1e1e2d !important;
+    border-right: none;
+    box-shadow: 10px 0 20px rgba(0,0,0,0.2);
+}
+
+[data-style="pro"] #sidebar .sidebar-header {
+    background: transparent !important;
+}
+
+[data-style="pro"] #sidebar ul li a {
+    color: #a0a5b1;
+    border-radius: 20px;
+    margin: 5px 15px;
+    transition: all 0.3s ease;
+}
+
+[data-style="pro"] #sidebar ul li a:hover,
+[data-style="pro"] #sidebar ul li.active > a {
+    color: #00d2ff;
+    background: #1e1e2d;
+    box-shadow: inset 4px 4px 8px #14141e, inset -4px -4px 8px #28283c;
+    border-left: none !important;
+}
+
+[data-style="pro"] .card {
+    background-color: #1e1e2d !important;
+    border: none !important;
+    border-radius: 15px;
+    box-shadow: 6px 6px 14px #14141e, -6px -6px 14px #28283c !important;
+    color: #e4e6eb !important;
+}
+
+[data-style="pro"] .card-header {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+[data-style="pro"] .card-body p {
+    color: #a0a5b1 !important;
+}
+
+/* Modificadores Pro para las tarjetas del Dashboard */
+[data-style="pro"] #cardAnimales,
+[data-style="pro"] #cardPotreros,
+[data-style="pro"] #cardEmpleados,
+[data-style="pro"] #cardInventario,
+[data-style="pro"] #cardParto,
+[data-style="pro"] #cardUbicacion {
+    background: #1e1e2d !important;
+    box-shadow: 6px 6px 14px #14141e, -6px -6px 14px #28283c !important;
+    border: 1px solid transparent !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Acentos de neón para cada tarjeta */
+[data-style="pro"] #cardAnimales { border-bottom: 3px solid #00d2ff !important; }
+[data-style="pro"] #cardPotreros { border-bottom: 3px solid #00e676 !important; }
+[data-style="pro"] #cardEmpleados { border-bottom: 3px solid #ff3d00 !important; }
+[data-style="pro"] #cardInventario { border-bottom: 3px solid #ffb300 !important; }
+[data-style="pro"] #cardParto { border-bottom: 3px solid #d500f9 !important; }
+[data-style="pro"] #cardUbicacion { border-bottom: 3px solid #00e5ff !important; }
+
+/* Anular Glass Effect */
+[data-style="pro"] .glass-effect {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: #1e1e2d !important;
+    border: none !important;
+}
+
+/* Textos e Inputs en Pro */
+[data-style="pro"] .text-muted, [data-style="pro"] .opacity-75 {
+    color: #a0a5b1 !important;
+    opacity: 1 !important;
+}
+
+[data-style="pro"] h1, [data-style="pro"] h2, [data-style="pro"] h3, [data-style="pro"] h4, [data-style="pro"] h5, [data-style="pro"] h6 {
+    color: #fff !important;
+}
+
+[data-style="pro"] .table {
+    color: #e4e6eb;
+}
+[data-style="pro"] .table th, [data-style="pro"] .table td {
+    border-color: rgba(255,255,255,0.05);
+}
+
+/* Botones principales Pro */
+[data-style="pro"] .btn-primary {
+    background: #1e1e2d !important;
+    border: none !important;
+    color: #00d2ff !important;
+    box-shadow: 4px 4px 8px #14141e, -4px -4px 8px #28283c !important;
+}
+
+[data-style="pro"] .btn-primary:active {
+    box-shadow: inset 4px 4px 8px #14141e, inset -4px -4px 8px #28283c !important;
+}
+
+/* ==========================================================================
+   SOPORTE PARA MODO OSCURO EN EL MENÚ MÓVIL LATERAL
+   ========================================================================== */
+
+/* Dark Mode General */
+[data-theme="dark"] .mobile-nav,
+[data-theme="dark"] .mobile-nav-content {
+    background-color: var(--bg-primary) !important;
+}
+
+[data-theme="dark"] .mobile-nav-header {
+    background-color: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-primary) !important;
+}
+
+[data-theme="dark"] .mobile-nav-header h3,
+[data-theme="dark"] .mobile-nav-header h4 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .close-nav {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .mobile-nav-item {
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--border-primary) !important;
+}
+
+[data-theme="dark"] .mobile-nav-item:hover,
+[data-theme="dark"] .mobile-nav-item:focus {
+    background-color: var(--bg-secondary) !important;
+    color: var(--primary) !important;
+}
+
+/* Soporte específico para Estilo Premium en menú móvil */
+[data-style="premium"] .mobile-nav,
+[data-style="premium"] .mobile-nav-content {
+    background-color: #1a222c !important;
+}
+
+[data-style="premium"] .mobile-nav-header {
+    background-color: #1a222c !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+[data-style="premium"] .mobile-nav-header h3,
+[data-style="premium"] .mobile-nav-header h4 {
+    color: #ffffff !important;
+}
+
+[data-style="premium"] .close-nav {
+    color: #ffffff !important;
+}
+
+[data-style="premium"] .mobile-nav-item {
+    color: #aeb9c6 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.02) !important;
+}
+
+[data-style="premium"] .mobile-nav-item:hover,
+[data-style="premium"] .mobile-nav-item.active {
+    color: #ff7a00 !important;
+    background-color: rgba(255, 122, 0, 0.1) !important;
+}
+
+/* Soporte específico para Estilo Pro (Neumórfico) en menú móvil */
+[data-style="pro"] .mobile-nav,
+[data-style="pro"] .mobile-nav-content {
+    background-color: #1e1e2d !important;
+}
+
+[data-style="pro"] .mobile-nav-header {
+    background-color: #1e1e2d !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    box-shadow: 4px 4px 8px #14141e, -4px -4px 8px #28283c !important;
+}
+
+[data-style="pro"] .mobile-nav-item {
+    color: #a0a5b1 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.02) !important;
+}
+
+[data-style="pro"] .mobile-nav-item:hover {
+    color: #00d2ff !important;
+    background-color: #1e1e2d !important;
+    box-shadow: inset 2px 2px 5px #14141e, inset -2px -2px 5px #28283c !important;
+}
+
+/* ==========================================================================
+   DASHBOARD SUMMARY CARDS: THEME & VISUAL STYLE ADAPTATION
+   ========================================================================== */
+
+/* 1. Default (Classic / Light Style) - Vibrant Gradients */
+.dashboard-card-blue {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%) !important;
+    border: none !important;
+}
+.dashboard-card-green {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+    border: none !important;
+}
+.dashboard-card-purple {
+    background: linear-gradient(135deg, #8b5cf6 0%, #5b21b6 100%) !important;
+    border: none !important;
+}
+.dashboard-card-amber {
+    background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
+    border: none !important;
+}
+.dashboard-card-rose {
+    background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%) !important;
+    border: none !important;
+}
+.dashboard-card-teal {
+    background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%) !important;
+    border: none !important;
+}
+
+/* 2. Classic Style + Dark Theme ([data-theme="dark"]) - Premium Dark-Toned Gradients */
+[data-theme="dark"] .dashboard-card-blue {
+    background: linear-gradient(135deg, #0c4a6e 0%, #0f172a 100%) !important;
+    border: 1px solid rgba(14, 165, 233, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15) !important;
+}
+[data-theme="dark"] .dashboard-card-green {
+    background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15) !important;
+}
+[data-theme="dark"] .dashboard-card-purple {
+    background: linear-gradient(135deg, #4c1d95 0%, #0f172a 100%) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15) !important;
+}
+[data-theme="dark"] .dashboard-card-amber {
+    background: linear-gradient(135deg, #78350f 0%, #0f172a 100%) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15) !important;
+}
+[data-theme="dark"] .dashboard-card-rose {
+    background: linear-gradient(135deg, #881337 0%, #0f172a 100%) !important;
+    border: 1px solid rgba(244, 63, 94, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(244, 63, 94, 0.15) !important;
+}
+[data-theme="dark"] .dashboard-card-teal {
+    background: linear-gradient(135deg, #115e59 0%, #0f172a 100%) !important;
+    border: 1px solid rgba(20, 184, 166, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(20, 184, 166, 0.15) !important;
+}
+
+/* 3. Premium Style ([data-style="premium"]) + Light Theme - Clean Solid Colors */
+[data-style="premium"] .dashboard-card-blue { background: #ff7f00 !important; border: none !important; }
+[data-style="premium"] .dashboard-card-green { background: #4caf50 !important; border: none !important; }
+[data-style="premium"] .dashboard-card-purple { background: #ffb300 !important; border: none !important; }
+[data-style="premium"] .dashboard-card-amber { background: #343a40 !important; border: none !important; }
+[data-style="premium"] .dashboard-card-rose { background: #ff7f00 !important; border: none !important; }
+[data-style="premium"] .dashboard-card-teal { background: #4caf50 !important; border: none !important; }
+
+/* 4. Premium Style ([data-style="premium"]) + Dark Theme - Deep Solid Colors with Glow */
+[data-style="premium"][data-theme="dark"] .dashboard-card-blue {
+    background: #c26100 !important;
+    border: 1px solid rgba(255, 127, 0, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(255, 127, 0, 0.15) !important;
+}
+[data-style="premium"][data-theme="dark"] .dashboard-card-green {
+    background: #39823c !important;
+    border: 1px solid rgba(76, 175, 80, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.15) !important;
+}
+[data-style="premium"][data-theme="dark"] .dashboard-card-purple {
+    background: #c78b00 !important;
+    border: 1px solid rgba(255, 179, 0, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(255, 179, 0, 0.15) !important;
+}
+[data-style="premium"][data-theme="dark"] .dashboard-card-amber {
+    background: #1a1c1e !important;
+    border: 1px solid rgba(52, 58, 64, 0.4) !important;
+    box-shadow: 0 4px 15px rgba(52, 58, 64, 0.15) !important;
+}
+[data-style="premium"][data-theme="dark"] .dashboard-card-rose {
+    background: #c26100 !important;
+    border: 1px solid rgba(255, 127, 0, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(255, 127, 0, 0.15) !important;
+}
+[data-style="premium"][data-theme="dark"] .dashboard-card-teal {
+    background: #39823c !important;
+    border: 1px solid rgba(76, 175, 80, 0.3) !important;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.15) !important;
+}
+
+/* 5. Pro Style ([data-style="pro"]) - Dark Neumorphic Design */
+[data-style="pro"] .dashboard-card-blue,
+[data-style="pro"] .dashboard-card-green,
+[data-style="pro"] .dashboard-card-purple,
+[data-style="pro"] .dashboard-card-amber,
+[data-style="pro"] .dashboard-card-rose,
+[data-style="pro"] .dashboard-card-teal {
+    background: #1e1e2d !important;
+    box-shadow: 6px 6px 14px #14141e, -6px -6px 14px #28283c !important;
+    border: 1px solid transparent !important;
+    position: relative;
+    overflow: hidden;
+}
+[data-style="pro"] .dashboard-card-blue { border-bottom: 3px solid #00d2ff !important; }
+[data-style="pro"] .dashboard-card-green { border-bottom: 3px solid #00e676 !important; }
+[data-style="pro"] .dashboard-card-purple { border-bottom: 3px solid #ff3d00 !important; }
+[data-style="pro"] .dashboard-card-amber { border-bottom: 3px solid #ffb300 !important; }
+[data-style="pro"] .dashboard-card-rose { border-bottom: 3px solid #d500f9 !important; }
+[data-style="pro"] .dashboard-card-teal { border-bottom: 3px solid #00e5ff !important; }
+/* Analítico style removed: option was deleted from UI (templates/ajustes.html). */

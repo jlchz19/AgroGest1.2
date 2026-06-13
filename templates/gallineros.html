@@ -19,9 +19,13 @@
 </div>
 
 {% if gallineros %}
+<!-- Barra de búsqueda -->
+<div class="mb-4">
+    <input type="text" id="searchInput" class="form-control rounded-pill shadow-sm px-4 py-2" placeholder="🔍 Buscar gallinero por nombre..." onkeyup="filterCards()">
+</div>
 <div class="row">
     {% for gallinero in gallineros %}
-    <div class="col-md-6 col-lg-4 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4 filter-card">
         <div class="card h-100 border-0 shadow-sm hover-card">
             <div class="position-relative">
                 {% if gallinero.imagen %}
@@ -81,133 +85,117 @@
         </div>
     </div>
 
-    <!-- Modal Detalles del Gallinero -->
-    <div class="modal fade" id="gallineroModal{{ gallinero.id }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header py-2">
-                    <h5 class="modal-title d-flex align-items-center">
-                        <i class="fas fa-egg me-2"></i>{{ gallinero.nombre }}
-                        <span class="badge ms-2 {% if gallinero.estado == 'disponible' %}bg-success{% elif gallinero.estado == 'ocupado' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-                            {{ gallinero.estado|title }}
-                        </span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <!-- Imagen principal -->
-                    <div class="position-relative">
-                        {% if gallinero.imagen %}
-                        <img src="{{ url_for('static', filename='imagenes_ubicaciones/' + gallinero.imagen) }}" 
-                             class="img-fluid w-100" 
-                             alt="{{ gallinero.nombre }}"
-                             style="height: 160px; object-fit: cover; border-radius: 0;">
-                        {% else %}
-                        <div class="bg-light text-center py-4" style="height: 160px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                            <i class="fas fa-egg fa-3x text-muted mb-2"></i>
-                            <p class="small text-muted mb-0">Sin imagen</p>
+    <!-- Modal Detalles del Gallinero Premium v2 -->
+    <div class="modal fade" id="gallineroModal{{ gallinero.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header del Modal con Degradado Temático según Estado -->
+                <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%;">
+                            <span style="font-size: 1.5rem;">🐔</span>
                         </div>
-                        {% endif %}
-                        
-                        <!-- Estadísticas rápidas -->
-                        <div class="position-absolute bottom-0 start-0 end-0 p-2" style="background: rgba(0,0,0,0.6);">
-                            <div class="d-flex justify-content-around text-white small">
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ gallinero.capacidad }}</div>
-                                    <div>Capacidad</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ animales_por_gallinero.get(gallinero.id, 0) }}</div>
-                                    <div>Ocupadas</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ gallinero.capacidad - animales_por_gallinero.get(gallinero.id, 0) }}</div>
-                                    <div>Disponibles</div>
-                                </div>
-                                {% if gallinero.area %}
-                                <div class="text-center">
-                                    <div class="fw-bold">{{ gallinero.area }}</div>
-                                    <div>m²</div>
-                                </div>
-                                {% endif %}
-                            </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white">{{ gallinero.nombre }}</h5>
+                            <small class="text-white text-opacity-80 fw-semibold">Gallinero de Producción</small>
                         </div>
                     </div>
-                    
-                    <!-- Información detallada en pestañas -->
-                    <div class="p-3">
-                        <ul class="nav nav-tabs nav-fill mb-3" id="gallineroTabs{{ gallinero.id }}" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info{{ gallinero.id }}" type="button" role="tab">
-                                    <i class="fas fa-info-circle me-1"></i> Información
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="aves-tab" data-bs-toggle="tab" data-bs-target="#aves{{ gallinero.id }}" type="button" role="tab">
-                                    <i class="fas fa-dove me-1"></i> Aves
-                                    <span class="badge bg-primary rounded-pill ms-1">{{ animales_por_gallinero.get(gallinero.id, 0) }}</span>
-                                </button>
-                            </li>
-                        </ul>
-                        
-                        <div class="tab-content" id="gallineroTabsContent">
-                            <!-- Pestaña de Información -->
-                            <div class="tab-pane fade show active" id="info{{ gallinero.id }}" role="tabpanel">
-                                {% if gallinero.descripcion %}
-                                <div class="mb-3">
-                                    <h6 class="text-muted small text-uppercase mb-2">Descripción</h6>
-                                    <p class="mb-0 small">{{ gallinero.descripcion }}</p>
-                                </div>
-                                {% endif %}
-                                
-                                <div class="row small">
-                                    <div class="col-6">
-                                        <div class="mb-2">
-                                            <span class="text-muted">Tipo:</span>
-                                            <span class="fw-medium">Gallinero</span>
-                                        </div>
-                                        <div class="mb-2">
-                                            <span class="text-muted">Capacidad:</span>
-                                            <span class="fw-medium">{{ gallinero.capacidad }} aves</span>
-                                        </div>
-                                    </div>
-                                    {% if gallinero.area %}
-                                    <div class="col-6">
-                                        <div class="mb-2">
-                                            <span class="text-muted">Área:</span>
-                                            <span class="fw-medium">{{ gallinero.area }} m²</span>
-                                        </div>
-                                        {% if gallinero.fecha_creacion %}
-                                        <div class="mb-2">
-                                            <span class="text-muted">Creado:</span>
-                                            <span class="fw-medium">{{ gallinero.fecha_creacion.strftime('%d/%m/%Y') }}</span>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                    {% endif %}
-                                </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body p-4" style="background-color: #f8fafc;">
+                    <!-- Métrica de Tarjetas Rápidas de Alta Tecnología -->
+                    <div class="row g-3 mb-4">
+                        <!-- Estado Badge Card -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-toggle-on me-1 text-primary"></i> Estado</div>
+                                <span class="badge rounded-pill d-inline-block py-2 {% if gallinero.estado == 'disponible' %}bg-success-soft text-success{% elif gallinero.estado == 'ocupado' %}bg-warning-soft text-warning-dark{% else %}bg-danger-soft text-danger{% endif %}" style="font-size: 0.8rem; font-weight: 700; width: fit-content;">
+                                    {{ gallinero.estado|upper }}
+                                </span>
                             </div>
-                            
-                            <!-- Pestaña de Aves -->
-                            <div class="tab-pane fade" id="aves{{ gallinero.id }}" role="tabpanel">
-                                <div id="avesGallinero{{ gallinero.id }}" class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-                                    <div class="text-center py-4">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                            <span class="visually-hidden">Cargando...</span>
-                                        </div>
-                                        <p class="small text-muted mt-2">Cargando aves...</p>
-                                    </div>
+                        </div>
+                        
+                        <!-- Área -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-expand-arrows-alt me-1 text-info"></i> Superficie</div>
+                                <div class="fw-bold fs-5 text-dark">{{ gallinero.area or '0' }} <span class="small text-muted" style="font-size: 0.8rem;">m²</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Ubicación -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-home me-1 text-success"></i> Tipo</div>
+                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">Gallinero</div>
+                            </div>
+                        </div>
+
+                        <!-- Capacidad -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-chart-pie me-1 text-primary"></i> Capacidad Max</div>
+                                <div class="fw-bold fs-5 text-dark">{{ gallinero.capacidad }} <span class="small text-muted" style="font-size: 0.8rem;">aves</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Ocupados -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-dove me-1 text-warning-dark"></i> Aves Actuales</div>
+                                <div class="fw-bold fs-5 text-dark">{{ animales_por_gallinero.get(gallinero.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">aves</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Disponibles -->
+                        <div class="col-6 col-md-4">
+                            <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                                <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-check-circle me-1 text-success"></i> Cupos Libres</div>
+                                <div class="fw-bold fs-5 {% if gallinero.capacidad - animales_por_gallinero.get(gallinero.id, 0) > 0 %}text-success{% else %}text-muted{% endif %}">
+                                    {{ gallinero.capacidad - animales_por_gallinero.get(gallinero.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">vacantes</span>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {% if gallinero.descripcion %}
+                    <div class="bg-white rounded-3 p-3 shadow-xs mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            <small class="text-uppercase fw-semibold text-muted">Descripción / Notas</small>
+                        </div>
+                        <p class="mb-0 text-dark small lh-base">{{ gallinero.descripcion }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if gallinero.fecha_creacion %}
+                    <div class="mb-4 text-muted small px-2">
+                        <i class="fas fa-calendar-alt me-1"></i> <strong>Fecha de Creación:</strong> {{ gallinero.fecha_creacion.strftime('%d/%m/%Y') }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Panel de Aves Detallado -->
+                    <div class="card border-0 shadow-xs p-3" style="border-radius: 16px; background-color: #ffffff;">
+                        <h6 class="text-dark fw-bold mb-3 d-flex align-items-center">
+                            <span class="icon-circle bg-success-soft text-success me-2 d-flex align-items-center justify-content-center animate-pulse" style="width: 32px; height: 32px; border-radius: 50%;">
+                                🐔
+                            </span>
+                            Aves Asignadas en este Gallinero ({{ animales_por_gallinero.get(gallinero.id, 0) }})
+                        </h6>
+                        
+                        <div id="avesGallinero{{ gallinero.id }}" class="row g-2 overflow-auto" style="max-height: 240px; padding-bottom: 5px;">
+                            <div class="text-center w-100 py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando aves...</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-footer py-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i> Cerrar
+
+                <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-between" style="border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cerrar
                     </button>
-                    <a href="{{ url_for('editar_ubicacion', id=gallinero.id) }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-edit me-1"></i> Editar
+                    <a href="{{ url_for('editar_ubicacion', id=gallinero.id) }}" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm">
+                        <i class="fas fa-edit me-2"></i>Editar Gallinero
                     </a>
                 </div>
             </div>
@@ -215,82 +203,57 @@
     </div>
     
     <script>
-    // Cargar aves al abrir el modal
-    $('#gallineroModal{{ gallinero.id }}').on('show.bs.modal', function () {
-        const container = $('#avesGallinero{{ gallinero.id }}');
+    // Cargar aves al abrir el modal dinámicamente desde API
+    document.getElementById('gallineroModal{{ gallinero.id }}').addEventListener('show.bs.modal', function () {
+        const listContainer = document.getElementById('avesGallinero{{ gallinero.id }}');
         const gallineroId = {{ gallinero.id }};
         
-        // Mostrar spinner
-        container.html(`
-            <div class="text-center py-3 w-100">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
-                </div>
-                <p class="text-muted mt-2">Cargando aves...</p>
-            </div>
-        `);
-        
-        // Simular carga de datos (reemplazar con llamada AJAX real si es necesario)
-        setTimeout(() => {
-            const aves = [
-                {% for ave in animales %}
-                {% if ave.ubicacion_id == gallinero.id and ave.tipo|lower in ['ave', 'gallina', 'pollo', 'pavo', 'pavos', 'gallinas', 'pollos'] %}
-                {
-                    id: '{{ ave.identificacion }}',
-                    nombre: '{{ ave.nombre or "Sin nombre" }}',
-                    raza: '{{ ave.raza or "-" }}',
-                    edad: '{{ ((now - ave.fecha_nacimiento).days / 30)|round|int if ave.fecha_nacimiento else "-" }}',
-                    peso: '{{ ave.peso or "-" }}',
-                    tipo: '{{ ave.tipo or "Ave" }}'
-                }{% if not loop.last %},{% endif %}
-                {% endif %}
-                {% endfor %}
-            ];
+        if (listContainer) {
+            listContainer.innerHTML = '<div class="text-center w-100 py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando aves...</div>';
             
-            if (aves.length > 0) {
-                let html = `
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Raza</th>
-                                    <th>Edad (meses)</th>
-                                    <th>Peso (kg)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                aves.forEach(ave => {
-                    html += `
-                        <tr>
-                            <td>${ave.id}</td>
-                            <td>${ave.nombre}</td>
-                            <td>${ave.raza}</td>
-                            <td>${ave.edad}</td>
-                            <td>${ave.peso}</td>
-                        </tr>
+            fetch(`/api/animales_en_ubicacion?tipo=ubicacion&id=${gallineroId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.animales && data.animales.length > 0) {
+                        let html = '';
+                        data.animales.forEach(animal => {
+                            let animalEmoji = '🐔';
+                            if (animal.tipo === 'Pato') animalEmoji = '🦆';
+                            else if (animal.tipo === 'Pavo') animalEmoji = '🦃';
+                            
+                            html += `
+                                <div class="col-md-6 mb-2">
+                                    <div class="card border-0 bg-light p-2 d-flex flex-row align-items-center rounded-3 shadow-xs">
+                                        <div class="fs-3 me-3">${animalEmoji}</div>
+                                        <div>
+                                            <div class="fw-bold text-dark small">${animal.identificacion}</div>
+                                            <div class="text-muted" style="font-size: 11px;">${animal.nombre || 'Sin nombre'} · ${animal.tipo} ${animal.raza}</div>
+                                            <div class="badge bg-secondary-soft text-secondary mt-1" style="font-size: 9px;">${animal.peso} kg</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        listContainer.innerHTML = html;
+                    } else {
+                        listContainer.innerHTML = `
+                            <div class="text-center w-100 py-4 text-muted">
+                                <i class="fas fa-dove fa-2x mb-2 opacity-50"></i>
+                                <p class="mb-0 small">No hay aves en este gallinero.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    listContainer.innerHTML = `
+                        <div class="text-center w-100 py-4 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                            <p class="mb-0 small">Error al cargar aves.</p>
+                        </div>
                     `;
                 });
-                
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                
-                container.html(html);
-            } else {
-                container.html(`
-                    <div class="text-center py-4 w-100">
-                        <i class="fas fa-dove fa-2x text-muted mb-2"></i>
-                        <p class="text-muted mb-0">No hay aves en este gallinero</p>
-                    </div>
-                `);
-            }
-        }, 500);
+        }
     });
     </script>
 
@@ -343,6 +306,69 @@
 </div>
 
 <style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+.modal-header.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+/* Degradados Premium del Modal de Detalle */
+.bg-gradient-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+/* Colores Soft para Badges y Contenedores */
+.bg-success-soft {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+}
+.bg-warning-soft {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
+}
+.bg-danger-soft {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #ef4444 !important;
+}
+.bg-primary-soft {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    color: #3b82f6 !important;
+}
+.text-warning-dark {
+    color: #b45309 !important;
+}
+
+.shadow-xs {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+.animate-pulse {
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+/* Barra de Desplazamiento Personalizada para el Cuerpo del Modal */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
 .hover-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-radius: 10px;
@@ -450,6 +476,25 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// Filtro de búsqueda
+function filterCards() {
+    let input = document.getElementById('searchInput');
+    if (!input) return;
+    let filter = input.value.toLowerCase();
+    let cards = document.getElementsByClassName('filter-card');
+    for (let i = 0; i < cards.length; i++) {
+        let titleElement = cards[i].querySelector('.card-title');
+        if (titleElement) {
+            let title = titleElement.innerText.toLowerCase();
+            if (title.indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+}
 </script>
 {% endblock %}
 {% endblock %}

@@ -1,0 +1,1211 @@
+{% extends "base.html" %}
+
+{% block title %}Animales - AgroGest{% endblock %}
+{% block page_title %}Gestión de Animales{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Dark theme fixes for animals page */
+body.dark-theme .animal-type-icon {
+    background: rgba(79, 70, 229, 0.2) !important;
+    border: 1px solid #4f46e5 !important;
+}
+
+body.dark-theme .animal-type-icon i {
+    color: #818cf8 !important;
+}
+
+body.dark-theme .animal-image {
+    border: 2px solid #2d2e3f !important;
+}
+
+body.dark-theme .animal-details .fw-semibold {
+    color: #ffffff !important;
+}
+
+body.dark-theme .animal-details .text-muted {
+    color: #9ca3af !important;
+}
+
+body.dark-theme .stats-card {
+    background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%) !important;
+    border: 1px solid #2d2e3f !important;
+}
+
+body.dark-theme .stats-card .stats-number {
+    color: #ffffff !important;
+}
+
+body.dark-theme .stats-card .stats-label {
+    color: #e5e7eb !important;
+}
+
+body.dark-theme .stats-icon {
+    background: rgba(79, 70, 229, 0.2) !important;
+}
+
+body.dark-theme .stats-icon i {
+    color: #818cf8 !important;
+}
+
+body.dark-theme .filter-select {
+    background: #0f0f23 !important;
+    border-color: #2d2e3f !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .filter-select option {
+    background: #1a1b26 !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .animal-card-modern {
+    background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%) !important;
+    border: 1px solid #2d2e3f !important;
+}
+
+body.dark-theme .animal-card-modern .card-header-stripe {
+    background: linear-gradient(135deg, #24283b 0%, #2d2e3f 100%) !important;
+    border-bottom: 1px solid #2d2e3f !important;
+}
+
+body.dark-theme .info-card {
+    background: rgba(15, 15, 35, 0.5) !important;
+    border: 1px solid #2d2e3f !important;
+}
+
+body.dark-theme .info-card strong {
+    color: #ffffff !important;
+}
+
+body.dark-theme .info-card .text-muted {
+    color: #9ca3af !important;
+}
+
+body.dark-theme .animal-profile-image {
+    border: 3px solid #2d2e3f !important;
+}
+
+body.dark-theme .animal-profile-placeholder {
+    background: rgba(79, 70, 229, 0.2) !important;
+    border: 1px solid #4f46e5 !important;
+}
+
+body.dark-theme .animal-profile-placeholder i {
+    color: #818cf8 !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Estadísticas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-card-primary">
+            <div class="stats-icon">
+                <i class="fas fa-paw"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ animales|length }}</div>
+                <div class="stats-label">Total Animales</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-card-success">
+            <div class="stats-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ animales|selectattr('estado', 'equalto', 'activo')|list|length }}</div>
+                <div class="stats-label">Activos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-card-info">
+            <div class="stats-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ animales|map(attribute='tipo')|unique|list|length }}</div>
+                <div class="stats-label">Tipos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stats-card stats-card-warning">
+            <div class="stats-icon">
+                <i class="fas fa-dna"></i>
+            </div>
+            <div class="stats-content">
+                <div class="stats-number">{{ animales|map(attribute='raza')|unique|list|length }}</div>
+                <div class="stats-label">Razas</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4 border-0 shadow-sm modern-card">
+    <div class="card-header bg-white border-0 py-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div class="d-flex align-items-center mb-2 mb-md-0">
+                <div class="header-icon me-3">
+                    <i class="fas fa-horse-head"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold text-dark">Gestión de Animales</h4>
+                    <p class="mb-0 text-muted small">Administra tu inventario ganadero</p>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mb-2 mb-md-0">
+                <a href="{{ url_for('nuevo_animal') }}" class="btn btn-primary btn-modern" id="addAnimalBtn">
+                    <i class="fas fa-plus me-2"></i>Nuevo Animal
+                </a>
+                <a href="{{ url_for('reporte_animales_pdf') }}" class="btn btn-danger btn-modern" id="pdfReportBtn" title="Descargar Reporte PDF">
+                    <i class="fas fa-file-pdf me-2"></i>Reporte PDF
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-4 g-3">
+            <div class="col-md-6">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="form-control search-input" id="searchInput" placeholder="Buscar por ID, nombre o raza...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select filter-select" id="typeFilter">
+                    <option value="">🐾 Todos los tipos</option>
+                    {% set tipos = animales|map(attribute='tipo')|unique|list %}
+                    {% for tipo in tipos %}
+                        <option value="{{ tipo }}">{{ tipo|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select filter-select" id="estadoFilter">
+                    <option value="">📊 Todos los estados</option>
+                    {% set estados = animales|map(attribute='estado')|unique|list %}
+                    {% for estado in estados %}
+                        <option value="{{ estado|lower }}">
+                            {% if estado|lower == 'activo' %}✅ Activo{% elif estado|lower == 'vendido' %}💰 Vendido{% elif estado|lower == 'muerto' or estado|lower == 'fallecido' %}💀 Fallecido{% else %}📝 {{ estado|title }}{% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row g-4" id="animalesContainer">
+            {% for animal in animales %}
+            <div class="col-lg-4 col-md-6 animal-card" data-tipo="{{ animal.tipo|lower }}" data-estado="{{ animal.estado|lower }}" data-search="{{ animal.identificacion|lower }} {{ (animal.nombre or '')|lower }} {{ animal.raza|lower }}">
+                <div class="card h-100 border-0 shadow-sm animal-card-modern">
+                    <div class="card-header-stripe">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="animal-type-icon">
+                                {% if animal.imagen %}
+                                    <img src="{{ url_for('static', filename='animales/' + animal.imagen) }}" alt="{{ animal.tipo }}" class="animal-image">
+                                {% elif animal.tipo == 'vaca' %}
+                                    <i class="fas fa-cow"></i>
+                                {% elif animal.tipo == 'cerdo' %}
+                                    <i class="fas fa-piggy-bank"></i>
+                                {% elif animal.tipo == 'pollo' %}
+                                    <i class="fas fa-egg"></i>
+                                {% elif animal.tipo == 'caballo' %}
+                                    <i class="fas fa-horse"></i>
+                                {% else %}
+                                    <i class="fas fa-paw"></i>
+                                {% endif %}
+                            </span>
+                            <span class="badge-modern badge-{{ 'success' if animal.estado == 'activo' else 'secondary' }}">
+                                <i class="fas fa-circle me-1" style="font-size: 6px;"></i>{{ animal.estado|title }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="animal-info mb-4">
+                            <h5 class="mb-2 text-dark fw-bold">{{ animal.identificacion }}</h5>
+                            <p class="mb-0 text-muted">{{ animal.nombre or 'Sin nombre' }}</p>
+                        </div>
+                        
+                        <div class="animal-details mb-4">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Tipo</small>
+                                    <span class="fw-semibold">{{ animal.tipo|title }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Raza</small>
+                                    <span class="fw-semibold">{{ animal.raza }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Edad</small>
+                                    {% set edad_dias = (today - animal.fecha_nacimiento).days %}
+                                    {% set años = edad_dias // 365 %}
+                                    {% set meses = (edad_dias % 365) // 30 %}
+                                    <span class="fw-semibold">
+                                        {% if años > 0 %}
+                                            {{ años }}a {{ meses }}m
+                                        {% else %}
+                                            {{ meses }}m
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Peso</small>
+                                    <span class="fw-semibold">{{ animal.peso }} kg</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="animal-location mb-4">
+                            <small class="text-muted d-block">Ubicación</small>
+                            {% if animal.estado == 'vendido' %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-times-circle me-1"></i>Animal Vendido
+                                </span>
+                            {% elif animal.estado in ['muerto', 'fallecido'] %}
+                                <span class="badge bg-dark">
+                                    <i class="fas fa-cross me-1"></i>Animal Fallecido
+                                </span>
+                            {% elif animal.potrero %}
+                                <span class="location-badge">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ animal.potrero.nombre }}
+                                </span>
+                            {% elif animal.ubicacion_asignada %}
+                                <span class="location-badge">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ animal.ubicacion_asignada.nombre }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">Sin asignar</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="animal-actions">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#animalModal{{ animal.id }}" title="Ver Detalles">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{{ url_for('generar_qr_animal', animal_id=animal.id) }}" class="btn btn-outline-success btn-sm" title="Generar QR" target="_blank">
+                                    <i class="fas fa-qrcode"></i>
+                                </a>
+                                <a href="{{ url_for('historial_animal', animal_id=animal.id) }}" class="btn btn-outline-primary btn-sm" title="Historial">
+                                    <i class="fas fa-history"></i>
+                                </a>
+                                <a href="{{ url_for('editar_animal', id=animal.id) }}" class="btn btn-outline-warning btn-sm" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ animal.id }}" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                                
+                                <!-- Modal de confirmación de eliminación -->
+                                <div class="modal fade" id="eliminarModal{{ animal.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Confirmar Eliminación</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>¿Estás seguro que deseas eliminar este animal?</p>
+                                                <p><strong>Identificación:</strong> {{ animal.identificacion }}</p>
+                                                <p><strong>Nombre:</strong> {{ animal.nombre or 'Sin nombre' }}</p>
+                                                <p><strong>Tipo:</strong> {{ animal.tipo|title }}</p>
+                                                <div class="alert alert-warning">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <form action="{{ url_for('eliminar_animal', animal_id=animal.id) }}" method="POST" style="display: inline;">
+                                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                    
+                    <!-- Modal Detalles del Animal Premium v2 -->
+                    <div class="modal fade" id="animalModal{{ animal.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                            <div class="modal-content border-0 shadow-lg" style="border-radius:22px; overflow:hidden;">
+
+                                <!-- Header del Modal con Degradado Azul Premium -->
+                                <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden;">
+                                            {% if animal.imagen %}
+                                                <img src="{{ url_for('static', filename='animales/' + animal.imagen) }}" alt="{{ animal.nombre or animal.identificacion }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% elif animal.tipo == 'vaca' %}
+                                                <span style="font-size: 1.5rem;">🐄</span>
+                                            {% elif animal.tipo == 'cerdo' %}
+                                                <span style="font-size: 1.5rem;">🐷</span>
+                                            {% elif animal.tipo == 'pollo' %}
+                                                <span style="font-size: 1.5rem;">🐔</span>
+                                            {% elif animal.tipo == 'caballo' %}
+                                                <span style="font-size: 1.5rem;">🐴</span>
+                                            {% else %}
+                                                <span style="font-size: 1.5rem;">🐾</span>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <h5 class="modal-title fw-bold mb-0 text-white">{% if animal.nombre %}{{ animal.nombre }}{% else %}Animal {{ animal.identificacion }}{% endif %}</h5>
+                                            <small class="text-white text-opacity-80 fw-semibold">{{ animal.identificacion }} - {{ animal.estado|title }}</small>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <!-- Body con fondo suave -->
+                                <div class="modal-body p-4" style="background:#f8fafc;">
+
+                                    <!-- Grid de stats -->
+                                    <div class="row g-3 mb-4">
+                                        <!-- Tipo -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="bg-white rounded-3 p-3 text-center shadow-xs h-100 border border-light">
+                                                <div class="mb-2" style="font-size:1.6rem;">
+                                                    {% if animal.tipo == 'vaca' %}🐄
+                                                    {% elif animal.tipo == 'cerdo' %}🐷
+                                                    {% elif animal.tipo == 'pollo' %}🐔
+                                                    {% elif animal.tipo == 'caballo' %}🐴
+                                                    {% else %}🐾{% endif %}
+                                                </div>
+                                                <div class="fw-bold text-dark mb-1" style="font-size:.9rem;">{{ animal.tipo|title }}</div>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:.75rem;">Tipo</small>
+                                            </div>
+                                        </div>
+                                        <!-- Raza -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="bg-white rounded-3 p-3 text-center shadow-xs h-100 border border-light">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-dna text-primary" style="font-size:1.6rem;"></i>
+                                                </div>
+                                                <div class="fw-bold text-dark mb-1" style="font-size:.9rem;">{{ animal.raza or 'N/D' }}</div>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:.75rem;">Raza</small>
+                                            </div>
+                                        </div>
+                                        <!-- Peso -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="bg-white rounded-3 p-3 text-center shadow-xs h-100 border border-light">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-weight-hanging text-info" style="font-size:1.6rem;"></i>
+                                                </div>
+                                                <div class="fw-bold text-dark mb-1" style="font-size:.9rem;">{{ animal.peso }} kg</div>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:.75rem;">Peso Actual</small>
+                                            </div>
+                                        </div>
+                                        <!-- Edad -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="bg-white rounded-3 p-3 text-center shadow-xs h-100 border border-light">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-birthday-cake text-warning" style="font-size:1.6rem;"></i>
+                                                </div>
+                                                {% set edad_dias = (today - animal.fecha_nacimiento).days %}
+                                                {% set años = edad_dias // 365 %}
+                                                {% set meses = (edad_dias % 365) // 30 %}
+                                                <div class="fw-bold text-dark mb-1" style="font-size:.9rem;">
+                                                    {% if años > 0 %}{{ años }}a {{ meses }}m{% else %}{{ meses }} meses{% endif %}
+                                                </div>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:.75rem;">Edad</small>
+                                            </div>
+                                        </div>
+                                        <!-- Nacimiento -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="bg-white rounded-3 p-3 text-center shadow-xs h-100 border border-light">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-calendar-alt text-success" style="font-size:1.6rem;"></i>
+                                                </div>
+                                                <div class="fw-bold text-dark mb-1" style="font-size:.9rem;">{{ animal.fecha_nacimiento.strftime('%d/%m/%Y') }}</div>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:.75rem;">Nacimiento</small>
+                                            </div>
+                                        </div>
+                                        <!-- Ubicación -->
+                                        <div class="col-6 col-md-4">
+                                            <div class="bg-white rounded-3 p-3 text-center shadow-xs h-100 border border-light">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-map-marker-alt text-danger" style="font-size:1.6rem;"></i>
+                                                </div>
+                                                <div class="fw-bold text-dark mb-1" style="font-size:.85rem; word-break:break-word;">
+                                                    {% if animal.estado == 'vendido' %}Vendido
+                                                    {% elif animal.estado in ['muerto','fallecido'] %}Fallecido
+                                                    {% elif animal.potrero %}{{ animal.potrero.nombre }}
+                                                    {% elif animal.ubicacion_asignada %}{{ animal.ubicacion_asignada.nombre }}
+                                                    {% else %}Sin asignar{% endif %}
+                                                </div>
+                                                <small class="text-muted text-uppercase fw-semibold" style="font-size:.75rem;">Ubicación</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Datos adicionales (color/señas, peso nacimiento, ingreso) -->
+                                    {% if animal.color_señas or animal.peso_nacimiento or animal.fecha_ingreso %}
+                                    <div class="bg-white rounded-3 p-3 shadow-xs border border-light mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-list-alt text-primary me-2"></i>
+                                            <small class="text-uppercase fw-semibold text-muted" style="font-size: 0.75rem;">Datos adicionales</small>
+                                        </div>
+                                        <div class="row g-2">
+                                            {% if animal.color_señas %}
+                                            <div class="col-6 col-md-4">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Color / Señas</small>
+                                                <span class="fw-semibold text-dark small">{{ animal.color_señas }}</span>
+                                            </div>
+                                            {% endif %}
+                                            {% if animal.peso_nacimiento %}
+                                            <div class="col-6 col-md-4">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Peso al Nacer</small>
+                                                <span class="fw-semibold text-dark small">{{ animal.peso_nacimiento }} kg</span>
+                                            </div>
+                                            {% endif %}
+                                            {% if animal.fecha_ingreso %}
+                                            <div class="col-6 col-md-4">
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">Fecha de Ingreso</small>
+                                                <span class="fw-semibold text-dark small">{{ animal.fecha_ingreso.strftime('%d/%m/%Y') }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Observaciones -->
+                                    {% if animal.observaciones %}
+                                    <div class="bg-white rounded-3 p-3 shadow-xs border border-light mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-sticky-note text-warning me-2"></i>
+                                            <small class="text-uppercase fw-semibold text-muted" style="font-size: 0.75rem;">Observaciones</small>
+                                        </div>
+                                        <p class="mb-0 text-dark small lh-base">{{ animal.observaciones }}</p>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Acciones rápidas -->
+                                    <div class="d-flex gap-2 flex-wrap mt-3">
+                                        <a href="{{ url_for('historial_animal', animal_id=animal.id) }}"
+                                           class="btn btn-outline-primary btn-sm rounded-pill flex-fill fw-semibold py-2">
+                                            <i class="fas fa-history me-1"></i>Ver Historial
+                                        </a>
+                                        <a href="{{ url_for('generar_qr_animal', animal_id=animal.id) }}"
+                                           class="btn btn-outline-success btn-sm rounded-pill flex-fill fw-semibold py-2" target="_blank">
+                                            <i class="fas fa-qrcode me-1"></i>Código QR
+                                        </a>
+                                        <a href="{{ url_for('editar_animal', id=animal.id) }}"
+                                           class="btn btn-outline-warning btn-sm rounded-pill flex-fill fw-semibold py-2">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer border-0 py-3 px-4 d-flex justify-content-end" style="background:#f1f5f9; border-radius:0 0 22px 22px;">
+                                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-2"></i>Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+        <div id="noResults" class="text-center py-5" style="display: none;">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No se encontraron animales</h5>
+            <p class="text-muted">Intenta con otros filtros o términos de búsqueda.</p>
+        </div>
+    </div>
+</div>
+
+
+<style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+/* Barra de Desplazamiento Personalizada para el Cuerpo del Modal */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Tarjetas de animales */
+.animal-card-modern {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden;
+    background: white;
+    min-height: 400px;
+}
+
+.animal-card-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    border-color: #3b82f6;
+}
+
+.card-header-stripe {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    padding: 20px 24px;
+    border-bottom: none;
+}
+
+.animal-type-icon {
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.animal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.animal-info h5 {
+    font-size: 18px;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.animal-info p {
+    font-size: 14px;
+    margin-bottom: 0;
+}
+
+.animal-details .row {
+    font-size: 15px;
+}
+
+.animal-details small {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.animal-details .fw-semibold {
+    color: #374151;
+    font-size: 14px;
+}
+
+.location-badge {
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+}
+
+.animal-actions .btn-group {
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.animal-actions .btn {
+    border-radius: 0;
+    border: none;
+    padding: 10px 12px;
+    font-size: 13px;
+    background: #f8fafc;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.animal-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.animal-actions .btn:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.animal-actions .btn:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+/* Responsive improvements for mobile */
+@media (max-width: 768px) {
+    .animal-card-modern {
+        min-height: auto;
+    }
+    
+    .card-header-stripe {
+        padding: 16px 20px;
+    }
+    
+    .animal-type-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .card-body {
+        padding: 20px !important;
+    }
+    
+    .animal-info h5 {
+        font-size: 16px;
+    }
+    
+    .animal-info p {
+        font-size: 13px;
+    }
+    
+    .animal-details .row {
+        font-size: 14px;
+    }
+    
+    .animal-details small {
+        font-size: 11px;
+    }
+    
+    .animal-details .fw-semibold {
+        font-size: 13px;
+    }
+    
+    .animal-actions .btn-group {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        border-radius: 8px;
+        overflow: visible;
+    }
+    
+    .animal-actions .btn {
+        border-radius: 6px !important;
+        padding: 12px 8px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+    }
+    
+    .animal-actions .btn i {
+        font-size: 14px;
+    }
+    
+    .location-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+/* Estilos para el modal de perfil de animal */
+.animal-profile-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    border-bottom: 1px solid #1d4ed8;
+    color: white;
+}
+
+.animal-profile-header h4 {
+    color: white !important;
+}
+
+.animal-profile-header .text-muted {
+    color: #e0e7ff !important;
+}
+
+.animal-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.animal-profile-image {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border: 4px solid white;
+}
+
+.animal-profile-placeholder {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 48px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    border: 4px solid white;
+}
+
+.animal-quick-info {
+    background: #eff6ff;
+}
+
+.info-card {
+    background: white;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.info-card:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59,130,246,0.2);
+}
+
+.info-card small {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.info-card strong {
+    font-size: 14px;
+    color: #1e293b;
+    display: block;
+    margin-top: 4px;
+}
+
+.info-list {
+    background: #eff6ff;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #bfdbfe;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #bfdbfe;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item .label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.info-item .value {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.badge-lg {
+    font-size: 14px;
+    padding: 8px 16px;
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+    .animal-profile-image,
+    .animal-profile-placeholder {
+        width: 150px;
+        height: 150px;
+        font-size: 36px;
+    }
+    
+    .animal-quick-info .row.g-3 > div {
+        margin-bottom: 12px;
+    }
+    
+    .info-card {
+        padding: 10px;
+    }
+    
+    .info-card strong {
+        font-size: 13px;
+    }
+}
+
+.animal-actions .btn-outline-info:hover {
+    background: #0ea5e9;
+    color: white;
+}
+
+.animal-actions .btn-outline-success:hover {
+    background: #10b981;
+    color: white;
+}
+
+.animal-actions .btn-outline-primary:hover {
+    background: #3b82f6;
+    color: white;
+}
+
+.animal-actions .btn-outline-warning:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.animal-actions .btn-outline-danger:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Tarjetas de estadísticas */
+.stats-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+.stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+}
+
+.stats-card-primary .stats-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stats-card-success .stats-icon {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stats-card-info .stats-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.stats-card-warning .stats-icon {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.stats-content {
+    flex: 1;
+}
+
+.stats-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stats-label {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Tarjeta moderna */
+.modern-card {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.header-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+}
+
+.btn-modern {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(13, 110, 253, 0.3);
+}
+
+/* Búsqueda moderna */
+.search-box {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 16px;
+    z-index: 1;
+}
+
+.search-input {
+    padding-left: 46px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.filter-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Tabla moderna */
+.table-modern {
+    margin-bottom: 0;
+}
+
+.table-modern thead th {
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 12px;
+}
+
+.table-modern tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.table-modern tbody tr:hover {
+    background: #f8fafc;
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.table-modern tbody td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    color: #334155;
+    font-weight: 500;
+}
+
+/* Badges modernos */
+.badge-modern {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: #065f46;
+}
+
+.badge-secondary {
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    color: #374151;
+}
+
+/* Botones de acción */
+.btn-group-modern {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.action-btn-info {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.action-btn-info:hover {
+    background: #0284c7;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+}
+
+.action-btn-primary {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.action-btn-primary:hover {
+    background: #1d4ed8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+.action-btn-warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.action-btn-warning:hover {
+    background: #d97706;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+}
+
+.action-btn-danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.action-btn-danger:hover {
+    background: #dc2626;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-card {
+        padding: 16px;
+    }
+    
+    .stats-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+    
+    .stats-number {
+        font-size: 24px;
+    }
+    
+    .btn-group-modern {
+        flex-wrap: wrap;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const estadoFilter = document.getElementById('estadoFilter');
+    const animalCards = document.querySelectorAll('.animal-card');
+    const noResults = document.getElementById('noResults');
+
+    function filterAnimals() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedType = typeFilter.value.toLowerCase();
+        const selectedEstado = estadoFilter.value.toLowerCase();
+        let visibleCards = 0;
+
+        animalCards.forEach(card => {
+            const tipo = card.dataset.tipo;
+            const estado = card.dataset.estado;
+            const searchData = card.dataset.search;
+            
+            const typeMatch = selectedType === '' || tipo === selectedType;
+            const estadoMatch = selectedEstado === '' || estado === selectedEstado;
+            const searchMatch = searchTerm === '' || searchData.includes(searchTerm);
+            
+            if (typeMatch && estadoMatch && searchMatch) {
+                card.style.display = '';
+                visibleCards++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        noResults.style.display = visibleCards > 0 ? 'none' : 'block';
+    }
+
+    searchInput.addEventListener('input', filterAnimals);
+    typeFilter.addEventListener('change', filterAnimals);
+    estadoFilter.addEventListener('change', filterAnimals);
+});
+
+</script>
+{% endblock %}

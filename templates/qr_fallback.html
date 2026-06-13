@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Alternativo - AgroGest</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .wrapper {
+            max-width: 760px;
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 24px 90px rgba(15, 23, 42, 0.08);
+            padding: 32px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .header .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: #2563eb;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        .description {
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .qr-box {
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto 20px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 24px;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(37, 99, 235, 0.12);
+        }
+
+        .instructions {
+            display: grid;
+            gap: 12px;
+        }
+
+        .instructions strong {
+            color: #0f172a;
+        }
+
+        .link-box {
+            margin-top: 22px;
+            text-align: center;
+        }
+
+        .link-box a {
+            display: inline-block;
+            text-decoration: none;
+            color: #ffffff;
+            background: #2563eb;
+            padding: 0.85rem 1.4rem;
+            border-radius: 999px;
+            font-weight: 600;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .link-box a:hover {
+            transform: translateY(-1px);
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <div class="icon"><i class="fas fa-qrcode"></i></div>
+            <div>
+                <h1>QR generado en el navegador</h1>
+                <p class="description">El servidor no pudo generar el código QR automáticamente, pero puedes ver y usar el QR aquí mismo.</p>
+            </div>
+        </div>
+
+        <div class="qr-box">
+            <canvas id="qrCanvas"></canvas>
+        </div>
+
+        <div class="instructions">
+            <p><strong>Animal:</strong> {{ animal.identificacion }} - {{ animal.nombre or 'Sin nombre' }}</p>
+            <p><strong>Verificación:</strong> escanea el código QR para ver los detalles del animal.</p>
+        </div>
+
+        <div class="link-box">
+            <a href="{{ verification_url }}" target="_blank">Abrir detalles del animal</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script>
+        QRCode.toCanvas(document.getElementById('qrCanvas'), '{{ verification_url }}', {
+            width: 280,
+            margin: 1,
+        });
+    </script>
+</body>
+</html>

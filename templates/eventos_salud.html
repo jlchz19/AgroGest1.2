@@ -7,82 +7,82 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
-                <h2><i class="fas fa-heartbeat me-2"></i>Eventos de Salud</h2>
+                <h2><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">❤️‍🩹</span>Eventos de Salud</h2>
                 <div class="btn-group">
                     <a href="{{ url_for('eventos_salud_nuevo') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Nuevo Evento
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">➕</span>Nuevo Evento
                     </a>
                     <a href="{{ url_for('reporte_eventos_salud_pdf') }}" class="btn btn-success">
-                        <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📄</span>Descargar PDF
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Tarjetas de Estadísticas -->
-    <div class="row mb-4">
+    <!-- Tarjetas de Estadísticas Mejoradas -->
+    <div class="row mb-4 g-3">
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 16px; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                    <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
                         <div>
-                            <h4 class="card-title">{{ total_eventos }}</h4>
-                            <p class="card-text">Total Eventos</p>
+                            <p class="text-uppercase fw-bold mb-1" style="color: #0284c7; font-size: 0.8rem; letter-spacing: 0.5px;">Total Eventos</p>
+                            <h3 class="fw-bold mb-0" style="color: #0369a1; font-size: 2.2rem;">{{ total_eventos }}</h3>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-calendar-check fa-2x"></i>
+                        <div class="text-center">
+                            <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">🗓️</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-danger text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-radius: 16px; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                    <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
                         <div>
-                            <h4 class="card-title">{{ eventos_enfermedad }}</h4>
-                            <p class="card-text">Enfermedades</p>
+                            <p class="text-uppercase fw-bold mb-1" style="color: #e11d48; font-size: 0.8rem; letter-spacing: 0.5px;">Enfermedades</p>
+                            <h3 class="fw-bold mb-0" style="color: #be123c; font-size: 2.2rem;">{{ eventos_enfermedad }}</h3>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-virus fa-2x"></i>
+                        <div class="text-center">
+                            <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">🦠</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 16px; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                    <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
                         <div>
-                            <h4 class="card-title">{{ eventos_partos }}</h4>
-                            <p class="card-text">Partos</p>
+                            <p class="text-uppercase fw-bold mb-1" style="color: #16a34a; font-size: 0.8rem; letter-spacing: 0.5px;">Partos</p>
+                            <h3 class="fw-bold mb-0" style="color: #15803d; font-size: 2.2rem;">{{ eventos_partos }}</h3>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-baby fa-2x"></i>
+                        <div class="text-center">
+                            <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">🍼</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
+            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-radius: 16px; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                <div class="card-body p-4 position-relative overflow-hidden d-flex flex-column justify-content-center">
+                    <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
                         <div>
-                            <h4 class="card-title">{{ total_notas or 0 }}</h4>
-                            <p class="card-text">Notas</p>
-                            <small>
-                                <a href="{{ url_for('eventos_salud_nuevo') }}" class="text-white text-decoration-none">
-                                    <i class="fas fa-plus me-1"></i>Registrar Nota
-                                </a>
-                            </small>
+                            <p class="text-uppercase fw-bold mb-1" style="color: #d97706; font-size: 0.8rem; letter-spacing: 0.5px;">Notas</p>
+                            <h3 class="fw-bold mb-0" style="color: #b45309; font-size: 2.2rem;">{{ total_notas or 0 }}</h3>
                         </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-sticky-note fa-2x"></i>
+                        <div class="text-center">
+                            <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">📝</span>
                         </div>
+                    </div>
+                    <div class="mt-2 text-start position-relative z-1">
+                        <a href="{{ url_for('eventos_salud_nuevo') }}" class="text-decoration-none d-inline-flex align-items-center fw-semibold px-3 py-1 rounded-pill" style="color: #d97706; background: rgba(217, 119, 6, 0.1); font-size: 0.8rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(217, 119, 6, 0.15)'" onmouseout="this.style.background='rgba(217, 119, 6, 0.1)'">
+                            <span style="font-size: 1rem; margin-right: 0.2rem;">➕</span>Registrar Nota
+                        </a>
                     </div>
                 </div>
             </div>
@@ -94,7 +94,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-filter me-2"></i>Filtros</h5>
+                    <h5><span style="font-size: 1.2rem; margin-right: 0.5rem;">🎛️</span>Filtros</h5>
                 </div>
                 <div class="card-body">
                     <form method="GET" class="row g-3">
@@ -130,10 +130,10 @@
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search me-2"></i>Buscar
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">🔍</span>Buscar
                             </button>
                             <a href="{{ url_for('eventos_salud') }}" class="btn btn-secondary">
-                                <i class="fas fa-times me-2"></i>Limpiar
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">❌</span>Limpiar
                             </a>
                         </div>
                     </form>
@@ -147,21 +147,21 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5><i class="fas fa-list me-2"></i>Lista de Eventos de Salud</h5>
+                    <h5><span style="font-size: 1.2rem; margin-right: 0.5rem;">📋</span>Lista de Eventos de Salud</h5>
                 </div>
                 <div class="card-body">
                     {% if eventos_salud %}
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">
-                            <thead class="table-dark">
+                            <thead class="border-bottom">
                                 <tr>
-                                    <th>Animal</th>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Título</th>
-                                    <th>Veterinario</th>
-                                    <th>Origen</th>
-                                    <th>Acciones</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Animal</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Fecha</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Tipo</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Título</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Veterinario</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Origen</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -177,15 +177,15 @@
                                                 {% else %}
                                                     <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                                         {% if evento_data.animal.tipo == 'vaca' %}
-                                                            <i class="fas fa-cow"></i>
+                                                            <span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐄</span>
                                                         {% elif evento_data.animal.tipo == 'cerdo' %}
-                                                            <i class="fas fa-piggy-bank"></i>
+                                                            <span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐷</span>
                                                         {% elif evento_data.animal.tipo == 'pollo' %}
-                                                            <i class="fas fa-egg"></i>
+                                                            <span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐔</span>
                                                         {% elif evento_data.animal.tipo == 'caballo' %}
-                                                            <i class="fas fa-horse"></i>
+                                                            <span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐴</span>
                                                         {% else %}
-                                                            <i class="fas fa-paw"></i>
+                                                            <span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐾</span>
                                                         {% endif %}
                                                     </div>
                                                 {% endif %}
@@ -224,16 +224,16 @@
                                         <div class="btn-group btn-group-sm">
                                             {% if evento_data.tipo == 'nuevo' %}
                                             <a href="{{ url_for('eventos_salud_ver', evento_id=evento_data.evento.id) }}" class="btn btn-info" title="Ver">
-                                                <i class="fas fa-eye"></i>
+                                                <span style="font-size: 1rem;">👁️</span>
                                             </a>
                                             <a href="{{ url_for('eventos_salud_editar', evento_id=evento_data.evento.id) }}" class="btn btn-warning" title="Editar">
-                                                <i class="fas fa-edit"></i>
+                                                <span style="font-size: 1rem;">✏️</span>
                                             </a>
                                             <a href="{{ url_for('eventos_salud_imagenes', evento_id=evento_data.evento.id) }}" class="btn btn-success" title="Imágenes">
-                                                <i class="fas fa-images"></i>
+                                                <span style="font-size: 1rem;">🖼️</span>
                                             </a>
                                             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ evento_data.evento.id }}" title="Eliminar">
-                                                <i class="fas fa-trash"></i>
+                                                <span style="font-size: 1rem;">🗑️</span>
                                             </button>
                                             
                                             <!-- Modal de confirmación de eliminación -->
@@ -251,7 +251,7 @@
                                                             <p><strong>Título:</strong> {{ evento_data.titulo }}</p>
                                                             <p><strong>Fecha:</strong> {{ evento_data.fecha.strftime('%d/%m/%Y') }}</p>
                                                             <div class="alert alert-warning">
-                                                                <i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
+                                                                <span style="font-size: 1rem; margin-right: 0.2rem;">⚠️</span>Esta acción no se puede deshacer.
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
@@ -275,11 +275,11 @@
                     </div>
                     {% else %}
                     <div class="text-center py-5">
-                        <i class="fas fa-heartbeat fa-4x text-muted mb-3"></i>
+                        <span style="font-size: 4rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); margin-bottom: 1rem; display: block; opacity: 0.5;">❤️‍🩹</span>
                         <h5 class="text-muted">No se encontraron eventos de salud registrados</h5>
                         <p class="text-muted">Comienza registrando un nuevo evento de salud.</p>
                         <a href="{{ url_for('eventos_salud_nuevo') }}" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Nuevo Evento
+                            <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">➕</span>Nuevo Evento
                         </a>
                     </div>
                     {% endif %}

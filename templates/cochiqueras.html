@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Cochiqueras - AgroGest{% endblock %}
-{% block page_title %}Gestión de Cochiqueras{% endblock %}
+{% block title %}Cochineras - AgroGest{% endblock %}
+{% block page_title %}Gestión de Cochineras{% endblock %}
 
 {% block content %}
 <div class="card mb-4 border-0 shadow-sm">
@@ -10,18 +10,22 @@
             <div class="icon-circle me-3">
                 <i class="fas fa-piggy-bank text-white"></i>
             </div>
-            <h5 class="mb-0 fw-semibold">Gestión de Cochiqueras</h5>
+            <h5 class="mb-0 fw-semibold">Gestión de Cochineras</h5>
         </div>
         <a href="{{ url_for('nueva_ubicacion') }}?tipo=cochiquera" class="btn btn-light btn-sm shadow-sm">
-            <i class="fas fa-plus me-1"></i> Nueva Cochiquera
+            <i class="fas fa-plus me-1"></i> Nueva Cochinera
         </a>
     </div>
 </div>
 
 {% if cochiqueras %}
+<!-- Barra de búsqueda -->
+<div class="mb-4">
+    <input type="text" id="searchInput" class="form-control rounded-pill shadow-sm px-4 py-2" placeholder="🔍 Buscar cochinera por nombre..." onkeyup="filterCards()">
+</div>
 <div class="row">
     {% for cochiquera in cochiqueras %}
-    <div class="col-md-6 col-lg-4 mb-4">
+    <div class="col-md-6 col-lg-4 mb-4 filter-card">
         <div class="card h-100 border-0 shadow-sm hover-card">
             <div class="position-relative">
                 {% if cochiquera.imagen %}
@@ -46,7 +50,7 @@
             <div class="card-body">
                 <h5 class="card-title fw-semibold mb-2">{{ cochiquera.nombre }}</h5>
                 <p class="text-muted small mb-3">
-                    <i class="fas fa-info-circle me-1"></i> {{ cochiquera.descripcion or 'Cochiquera de cerdos' }}
+                    <i class="fas fa-info-circle me-1"></i> {{ cochiquera.descripcion or 'Cochinera de cerdos' }}
                 </p>
                 
                 <div class="row text-center g-3 mb-3">
@@ -93,144 +97,128 @@
     <div class="col-12">
         <div class="text-center py-5">
             <i class="fas fa-piggy-bank fa-4x text-muted mb-3"></i>
-            <h5 class="text-muted">No hay cochiqueras registradas</h5>
-            <p class="text-muted">Comienza registrando tu primera cochiquera</p>
+            <h5 class="text-muted">No hay cochineras registradas</h5>
+            <p class="text-muted">Comienza registrando tu primera cochinera</p>
             <a href="{{ url_for('nueva_ubicacion') }}?tipo=cochiquera" class="btn btn-primary mt-2">
-                <i class="fas fa-plus me-2"></i>Crear Primera Cochiquera
+                <i class="fas fa-plus me-2"></i>Crear Primera Cochinera
             </a>
         </div>
     </div>
 </div>
 {% endif %}
 
-<!-- Modal Detalles de la Cochiquera -->
+<!-- Modal Detalles de la Cochiquera Premium v2 -->
 {% for cochiquera in cochiqueras %}
-<div class="modal fade" id="cochiqueraModal{{ cochiquera.id }}" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header py-2">
-                <h5 class="modal-title d-flex align-items-center">
-                    <i class="fas fa-piggy-bank me-2"></i>{{ cochiquera.nombre }}
-                    <span class="badge ms-2 {% if cochiquera.estado == 'disponible' %}bg-success{% elif cochiquera.estado == 'ocupado' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
-                        {{ cochiquera.estado|title }}
-                    </span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <!-- Imagen principal -->
-                <div class="position-relative">
-                    {% if cochiquera.imagen %}
-                    <img src="{{ url_for('static', filename='imagenes_ubicaciones/' + cochiquera.imagen) }}" 
-                         class="img-fluid w-100" 
-                         alt="{{ cochiquera.nombre }}"
-                         style="height: 180px; object-fit: cover; border-radius: 0;">
-                    {% else %}
-                    <div class="bg-light text-center py-4" style="height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <i class="fas fa-image fa-2x text-muted mb-2"></i>
-                        <p class="small text-muted mb-0">Sin imagen</p>
+<div class="modal fade" id="cochiqueraModal{{ cochiquera.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <!-- Header del Modal con Degradado Temático según Estado -->
+            <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                <div class="d-flex align-items-center">
+                    <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%;">
+                        <span style="font-size: 1.5rem;">🐷</span>
                     </div>
-                    {% endif %}
-                    
-                    <!-- Estadísticas rápidas -->
-                    <div class="position-absolute bottom-0 start-0 end-0 p-2" style="background: rgba(0,0,0,0.6);">
-                        <div class="d-flex justify-content-around text-white small">
-                            <div class="text-center">
-                                <div class="fw-bold">{{ cochiquera.capacidad }}</div>
-                                <div>Capacidad</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="fw-bold">{{ animales_por_cochiquera.get(cochiquera.id, 0) }}</div>
-                                <div>Ocupados</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="fw-bold">{{ cochiquera.capacidad - animales_por_cochiquera.get(cochiquera.id, 0) }}</div>
-                                <div>Disponibles</div>
-                            </div>
-                            {% if cochiquera.area %}
-                            <div class="text-center">
-                                <div class="fw-bold">{{ cochiquera.area }}</div>
-                                <div>m²</div>
-                            </div>
-                            {% endif %}
-                        </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0 text-white">{{ cochiquera.nombre }}</h5>
+                        <small class="text-white text-opacity-80 fw-semibold">Cochinera de Engorde</small>
                     </div>
                 </div>
-                
-                <!-- Información detallada en pestañas -->
-                <div class="p-3">
-                    <ul class="nav nav-tabs nav-fill mb-3" id="cochiqueraTabs{{ cochiquera.id }}" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info{{ cochiquera.id }}" type="button" role="tab">
-                                <i class="fas fa-info-circle me-1"></i> Información
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="animales-tab" data-bs-toggle="tab" data-bs-target="#animales{{ cochiquera.id }}" type="button" role="tab">
-                                <i class="fas fa-piggy-bank me-1"></i> Cerdos
-                                <span class="badge bg-primary rounded-pill ms-1">{{ animales_por_cochiquera.get(cochiquera.id, 0) }}</span>
-                            </button>
-                        </li>
-                    </ul>
-                    
-                    <div class="tab-content" id="cochiqueraTabsContent">
-                        <!-- Pestaña de Información -->
-                        <div class="tab-pane fade show active" id="info{{ cochiquera.id }}" role="tabpanel">
-                            {% if cochiquera.descripcion %}
-                            <div class="mb-3">
-                                <h6 class="text-muted small text-uppercase mb-2">Descripción</h6>
-                                <p class="mb-0">{{ cochiquera.descripcion }}</p>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="row small">
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <span class="text-muted">Tipo:</span>
-                                        <span class="fw-medium">Cochiquera</span>
-                                    </div>
-                                    <div class="mb-2">
-                                        <span class="text-muted">Capacidad:</span>
-                                        <span class="fw-medium">{{ cochiquera.capacidad }} cerdos</span>
-                                    </div>
-                                </div>
-                                {% if cochiquera.area %}
-                                <div class="col-6">
-                                    <div class="mb-2">
-                                        <span class="text-muted">Área:</span>
-                                        <span class="fw-medium">{{ cochiquera.area }} m²</span>
-                                    </div>
-                                    <div class="mb-2">
-                                        <span class="text-muted">Estado:</span>
-                                        <span class="badge {% if cochiquera.estado == 'disponible' %}bg-success{% elif cochiquera.estado == 'ocupado' %}bg-warning text-dark{% else %}bg-danger{% endif %} bg-opacity-25 text-{% if cochiquera.estado == 'disponible' %}success{% elif cochiquera.estado == 'ocupado' %}warning{% else %}danger{% endif %}">
-                                            {{ cochiquera.estado|title }}
-                                        </span>
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4" style="background-color: #f8fafc;">
+                <!-- Métrica de Tarjetas Rápidas de Alta Tecnología -->
+                <div class="row g-3 mb-4">
+                    <!-- Estado Badge Card -->
+                    <div class="col-6 col-md-4">
+                        <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                            <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-toggle-on me-1 text-primary"></i> Estado</div>
+                            <span class="badge rounded-pill d-inline-block py-2 {% if cochiquera.estado == 'disponible' %}bg-success-soft text-success{% elif cochiquera.estado == 'ocupado' %}bg-warning-soft text-warning-dark{% else %}bg-danger-soft text-danger{% endif %}" style="font-size: 0.8rem; font-weight: 700; width: fit-content;">
+                                {{ cochiquera.estado|upper }}
+                            </span>
                         </div>
-                        
-                        <!-- Pestaña de Cerdos -->
-                        <div class="tab-pane fade" id="animales{{ cochiquera.id }}" role="tabpanel">
-                            <div id="cerdosCochiquera{{ cochiquera.id }}" class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-                                <div class="text-center py-4">
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                        <span class="visually-hidden">Cargando...</span>
-                                    </div>
-                                    <p class="small text-muted mt-2">Cargando cerdos...</p>
-                                </div>
+                    </div>
+                    
+                    <!-- Área -->
+                    <div class="col-6 col-md-4">
+                        <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                            <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-expand-arrows-alt me-1 text-info"></i> Superficie</div>
+                            <div class="fw-bold fs-5 text-dark">{{ cochiquera.area or '0' }} <span class="small text-muted" style="font-size: 0.8rem;">m²</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Ubicación -->
+                    <div class="col-6 col-md-4">
+                        <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                            <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-home me-1 text-success"></i> Tipo</div>
+                            <div class="fw-bold text-dark" style="font-size: 0.95rem;">Cochinera</div>
+                        </div>
+                    </div>
+
+                    <!-- Capacidad -->
+                    <div class="col-6 col-md-4">
+                        <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                            <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-chart-pie me-1 text-primary"></i> Capacidad Max</div>
+                            <div class="fw-bold fs-5 text-dark">{{ cochiquera.capacidad }} <span class="small text-muted" style="font-size: 0.8rem;">cerdos</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Ocupados -->
+                    <div class="col-6 col-md-4">
+                        <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                            <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-piggy-bank me-1 text-warning-dark"></i> Cerdos Actuales</div>
+                            <div class="fw-bold fs-5 text-dark">{{ animales_por_cochiquera.get(cochiquera.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">cerdos</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Disponibles -->
+                    <div class="col-6 col-md-4">
+                        <div class="card border-0 p-3 shadow-xs h-100" style="border-radius: 12px; background-color: #ffffff;">
+                            <div class="text-muted small fw-bold mb-2 uppercase tracking-wider" style="font-size: 10px;"><i class="fas fa-check-circle me-1 text-success"></i> Cupos Libres</div>
+                            <div class="fw-bold fs-5 {% if cochiquera.capacidad - animales_por_cochiquera.get(cochiquera.id, 0) > 0 %}text-success{% else %}text-muted{% endif %}">
+                                {{ cochiquera.capacidad - animales_por_cochiquera.get(cochiquera.id, 0) }} <span class="small text-muted" style="font-size: 0.8rem;">vacantes</span>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {% if cochiquera.descripcion %}
+                <div class="bg-white rounded-3 p-3 shadow-xs mb-4">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        <small class="text-uppercase fw-semibold text-muted">Descripción / Notas</small>
+                    </div>
+                    <p class="mb-0 text-dark small lh-base">{{ cochiquera.descripcion }}</p>
+                </div>
+                {% endif %}
+
+                {% if cochiquera.fecha_creacion %}
+                <div class="mb-4 text-muted small px-2">
+                    <i class="fas fa-calendar-alt me-1"></i> <strong>Fecha de Creación:</strong> {{ cochiquera.fecha_creacion.strftime('%d/%m/%Y') }}
+                </div>
+                {% endif %}
+
+                <!-- Panel de Cerdos Detallado -->
+                <div class="card border-0 shadow-xs p-3" style="border-radius: 16px; background-color: #ffffff;">
+                    <h6 class="text-dark fw-bold mb-3 d-flex align-items-center">
+                        <span class="icon-circle bg-success-soft text-success me-2 d-flex align-items-center justify-content-center animate-pulse" style="width: 32px; height: 32px; border-radius: 50%;">
+                            🐷
+                        </span>
+                        Cerdos Asignados en esta Cochinera ({{ animales_por_cochiquera.get(cochiquera.id, 0) }})
+                    </h6>
+                    
+                    <div id="cerdosCochiquera{{ cochiquera.id }}" class="row g-2 overflow-auto" style="max-height: 240px; padding-bottom: 5px;">
+                        <div class="text-center w-100 py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando cerdos...</div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer py-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i> Cerrar
+
+            <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-between" style="border-radius: 0 0 20px 20px;">
+                <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cerrar
                 </button>
-                <a href="{{ url_for('editar_ubicacion', id=cochiquera.id) }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-edit me-1"></i> Editar
+                <a href="{{ url_for('editar_ubicacion', id=cochiquera.id) }}" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm">
+                    <i class="fas fa-edit me-2"></i>Editar Cochinera
                 </a>
             </div>
         </div>
@@ -238,80 +226,75 @@
 </div>
 
 <script>
-// Cargar cerdos al abrir el modal
-$('#cochiqueraModal{{ cochiquera.id }}').on('show.bs.modal', function () {
-    const container = $('#cerdosCochiquera{{ cochiquera.id }}');
+// Cargar cerdos al abrir el modal dinámicamente desde API
+document.getElementById('cochiqueraModal{{ cochiquera.id }}').addEventListener('show.bs.modal', function () {
+    const listContainer = document.getElementById('cerdosCochiquera{{ cochiquera.id }}');
     const cochiqueraId = {{ cochiquera.id }};
     
-    // Mostrar spinner
-    container.html(`
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-        </div>
-    `);
-    
-    // Simular carga de datos (reemplazar con llamada AJAX real si es necesario)
-    setTimeout(() => {
-        const cerdos = [
-            {% for cerdo in animales %}
-            {% if cerdo.ubicacion_id == cochiquera.id %}
-            {
-                id: '{{ cerdo.identificacion }}',
-                nombre: '{{ cerdo.nombre or "Sin nombre" }}',
-                raza: '{{ cerdo.raza or "-" }}',
-                edad: '{{ ((now - cerdo.fecha_nacimiento).days / 30)|round|int if cerdo.fecha_nacimiento else "-" }}',
-                peso: '{{ cerdo.peso or "-" }}',
-                imagen: '{{ cerdo.imagen or "" }}'
-            }{% if not loop.last %},{% endif %}
-            {% endif %}
-            {% endfor %}
-        ];
+    if (listContainer) {
+        listContainer.innerHTML = '<div class="text-center w-100 py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando cerdos...</div>';
         
-        if (cerdos.length > 0) {
-            let html = `
-                <table class="table table-sm table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Raza</th>
-                            <th>Edad</th>
-                            <th>Peso</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            cerdos.forEach(cerdo => {
-                html += `
-                    <tr>
-                        <td>${cerdo.id}</td>
-                        <td>${cerdo.nombre}</td>
-                        <td>${cerdo.raza}</td>
-                        <td>${cerdo.edad} ${cerdo.edad !== '-' ? 'meses' : ''}</td>
-                        <td>${cerdo.peso} ${cerdo.peso !== '-' ? 'kg' : ''}</td>
-                    </tr>
+        fetch(`/api/animales_en_ubicacion?tipo=ubicacion&id=${cochiqueraId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.animales && data.animales.length > 0) {
+                    let html = '';
+                    data.animales.forEach(animal => {
+                        let animalEmoji = '🐷';
+                        
+                        html += `
+                            <div class="col-md-6 mb-2">
+                                <div class="card border-0 bg-light p-2 d-flex flex-row align-items-center rounded-3 shadow-xs">
+                                    <div class="fs-3 me-3">${animalEmoji}</div>
+                                    <div>
+                                        <div class="fw-bold text-dark small">${animal.identificacion}</div>
+                                        <div class="text-muted" style="font-size: 11px;">${animal.nombre || 'Sin nombre'} · ${animal.tipo} ${animal.raza}</div>
+                                        <div class="badge bg-secondary-soft text-secondary mt-1" style="font-size: 9px;">${animal.peso} kg</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    listContainer.innerHTML = html;
+                } else {
+                    listContainer.innerHTML = `
+                        <div class="text-center w-100 py-4 text-muted">
+                            <i class="fas fa-piggy-bank fa-2x mb-2 opacity-50"></i>
+                            <p class="mb-0 small">No hay cerdos en esta cochinera.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                listContainer.innerHTML = `
+                    <div class="text-center w-100 py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <p class="mb-0 small">Error al cargar cerdos.</p>
+                    </div>
                 `;
             });
-            
-            html += `
-                    </tbody>
-                </table>
-            `;
-            
-            container.html(html);
-        } else {
-            container.html(`
-                <div class="text-center py-4">
-                    <i class="fas fa-info-circle fa-2x text-muted mb-2"></i>
-                    <p class="text-muted mb-0">No hay cerdos en esta cochiquera</p>
-                </div>
-            `);
-        }
-    }, 500);
+    }
 });
+
+// Filtro de búsqueda
+function filterCards() {
+    let input = document.getElementById('searchInput');
+    if (!input) return;
+    let filter = input.value.toLowerCase();
+    let cards = document.getElementsByClassName('filter-card');
+    for (let i = 0; i < cards.length; i++) {
+        let titleElement = cards[i].querySelector('.card-title');
+        if (titleElement) {
+            let title = titleElement.innerText.toLowerCase();
+            if (title.indexOf(filter) > -1) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+}
 </script>
 
 <!-- Modal de Confirmación de Eliminación -->
@@ -325,13 +308,13 @@ $('#cochiqueraModal{{ cochiquera.id }}').on('show.bs.modal', function () {
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                <p>¿Estás seguro que deseas eliminar la cochiquera <strong>{{ cochiquera.nombre }}</strong>?</p>
+                <p>¿Estás seguro que deseas eliminar la cochinera <strong>{{ cochiquera.nombre }}</strong>?</p>
                 <p class="text-danger mb-0"><i class="fas fa-exclamation-circle me-1"></i>Esta acción no se puede deshacer.</p>
                 {% set cerdos_en_cochiquera = animales_por_cochiquera.get(cochiquera.id, 0) %}
                 {% if cerdos_en_cochiquera > 0 %}
                 <div class="alert alert-warning mt-3">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    ¡Atención! Esta cochiquera tiene {{ cerdos_en_cochiquera }} cerdo(s) registrado(s). Al eliminarla, los cerdos quedarán sin ubicación asignada.
+                    ¡Atención! Esta cochinera tiene {{ cerdos_en_cochiquera }} cerdo(s) registrado(s). Al eliminarla, los cerdos quedarán sin ubicación asignada.
                 </div>
                 {% endif %}
             </div>
@@ -351,11 +334,79 @@ $('#cochiqueraModal{{ cochiquera.id }}').on('show.bs.modal', function () {
 </div>
 {% endfor %}
 
-{% endblock %}
-
-{% block styles %}
-{{ super() }}
 <style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+.modal-header.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+/* Degradados Premium del Modal de Detalle */
+.modal-header.bg-gradient-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.modal-header.bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.modal-header.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+.bg-gradient-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+}
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+/* Colores Soft para Badges y Contenedores */
+.bg-success-soft {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+}
+.bg-warning-soft {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
+}
+.bg-danger-soft {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #ef4444 !important;
+}
+.bg-primary-soft {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    color: #3b82f6 !important;
+}
+.text-warning-dark {
+    color: #b45309 !important;
+}
+
+.shadow-xs {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Animaciones */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+.animate-pulse {
+    animation: pulse 2.5s infinite ease-in-out;
+}
+
+/* Barra de Desplazamiento Personalizada para el Cuerpo del Modal */
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+.modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
 .hover-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-radius: 10px;
@@ -441,6 +492,7 @@ $('#cochiqueraModal{{ cochiquera.id }}').on('show.bs.modal', function () {
     }
 }
 </style>
+
 {% endblock %}
 
 {% block scripts %}

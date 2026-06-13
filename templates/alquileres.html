@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Alquileres - AgroGest{% endblock %}
+{% block page_title %}Gestión de Alquileres de Potreros{% endblock %}
+
+{% block content %}
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-primary text-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 py-3" style="border-radius: 10px;">
+        <div class="d-flex align-items-center">
+            <div class="icon-circle me-3">
+                <span style="font-size: 1.2rem;">🤝</span>
+            </div>
+            <h5 class="mb-0 fw-semibold">Gestión de Alquileres</h5>
+        </div>
+        
+        <a href="{{ url_for('nuevo_alquiler') }}" class="btn btn-light btn-sm shadow-sm px-3 rounded-pill fw-semibold text-decoration-none">
+            <span style="font-size: 0.95rem; margin-right: 4px;">➕</span> Nueva Transacción
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    {% for alquiler in alquileres %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm hover-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title fw-semibold mb-0 text-primary">
+                        <i class="fas fa-handshake me-2"></i>Alquiler #{{ alquiler.id }}
+                    </h5>
+                    <span class="badge rounded-pill bg-success-soft text-success">Activo</span>
+                </div>
+                
+                <div class="mb-3">
+                    <p class="mb-1"><strong><i class="fas fa-map-marked-alt text-muted me-2"></i>Potrero:</strong> {{ alquiler.potrero.nombre if alquiler.potrero else 'Desconocido' }}</p>
+                    <p class="mb-1"><strong><i class="fas fa-calendar-alt text-muted me-2"></i>Inicio:</strong> {{ alquiler.fecha_inicio.strftime('%d/%m/%Y') }}</p>
+                    <p class="mb-1"><strong><i class="fas fa-calendar-check text-muted me-2"></i>Fin:</strong> {{ alquiler.fecha_fin.strftime('%d/%m/%Y') if alquiler.fecha_fin else 'Indefinido' }}</p>
+                    <p class="mb-1"><strong><i class="fas fa-dollar-sign text-muted me-2"></i>Precio:</strong> ${{ alquiler.precio }}</p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('alquiler_factura', id=alquiler.id) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-eye me-2"></i>Ver
+                    </a>
+                    <a href="{{ url_for('descargar_comprobante_alquiler', alquiler_id=alquiler.id) }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <i class="fas fa-handshake-slash fa-4x text-muted mb-3"></i>
+        <h5 class="text-muted mb-3">No hay alquileres registrados</h5>
+        <p>Registra tu primer alquiler de potrero haciendo clic en "Nuevo Alquiler".</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if request.args.get('download_receipt_id') %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var downloadUrl = "{{ url_for('descargar_comprobante_alquiler', alquiler_id=request.args.get('download_receipt_id')) }}";
+        // Create an invisible iframe to trigger the download without opening a new tab that stays blank
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = downloadUrl;
+        document.body.appendChild(iframe);
+    });
+</script>
+{% endif %}
+
+<style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+.hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+}
+.bg-success-soft {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+}
+</style>
+{% endblock %}

@@ -4,6 +4,145 @@
 
 {% block content %}
 <div class="container-fluid">
+    <style>
+        /* Diseño Moderno y Compacto */
+        .dashboard-card {
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+            transition: all 0.2s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05) !important;
+        }
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+        }
+        .glass-effect {
+            background: #ffffff !important;
+            border: 1px solid rgba(0,0,0,0.05) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02) !important;
+        }
+
+        /* OVERRIDE DEFINITIVO E INCACHEABLE PARA TABLAS MODO OSCURO */
+        html[data-theme="dark"] .table thead,
+        html[data-theme="dark"] .table thead tr,
+        html[data-theme="dark"] .table thead th,
+        [data-theme="dark"] .table thead,
+        [data-theme="dark"] .table thead tr,
+        [data-theme="dark"] .table thead th {
+            background-color: #1e293b !important;
+            --bs-table-bg: transparent !important;
+            --bs-table-accent-bg: transparent !important;
+            box-shadow: none !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+        }
+        .weather-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            transition: all 0.5s ease;
+            overflow: hidden;
+            border-radius: 20px !important;
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3) !important;
+        }
+        .weather-effects {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+        }
+        .weather-rain {
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAQCAYAAAA+jZqIAAAAL0lEQVQYV2NkgII/QAAkAhIEQyAFIASygIogCmACEEVAASQBEEAUBQk4AShAFAUJAD23BgV/y5hRAAAAAElFTkSuQmCC');
+            animation: rainAnim 0.4s linear infinite;
+        }
+        .weather-sun {
+            background: radial-gradient(circle at 85% 15%, rgba(255, 215, 0, 0.4) 0%, transparent 50%);
+            animation: pulseSun 4s infinite alternate;
+        }
+        @keyframes rainAnim {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 100px; }
+        }
+        @keyframes pulseSun {
+            0% { opacity: 0.6; transform: scale(1); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+        /* Tablas modernas */
+        .table-modern th {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        .table-modern td {
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* ESTILOS PARA TARJETA DE ESTACIÓN AGRÍCOLA */
+        .season-card {
+            transition: all 0.5s ease;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05) !important;
+        }
+        .season-card .card-body {
+            transition: opacity 0.3s ease;
+        }
+        .season-effects {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none;
+        }
+        
+        /* Efecto de bruma húmeda para lluvias */
+        .season-rain-effect {
+            background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.04) 0%, transparent 40%);
+            animation: pulseRainEffect 6s infinite alternate;
+        }
+        /* Efecto de brillo de verano */
+        .season-sun-effect {
+            background: radial-gradient(circle at 90% 10%, rgba(255, 235, 59, 0.2) 0%, transparent 60%);
+            animation: pulseSunEffect 5s infinite alternate;
+        }
+        
+        @keyframes pulseRainEffect {
+            0% { opacity: 0.5; transform: scale(1); }
+            100% { opacity: 0.9; transform: scale(1.08); }
+        }
+        @keyframes pulseSunEffect {
+            0% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+            100% { opacity: 0.8; transform: scale(1.15) rotate(15deg); }
+        }
+        
+        /* Botón ultra-legible para Temporada */
+        .btn-season {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #ffffff !important;
+            border-radius: 30px !important;
+            padding: 5px 12px !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            transition: all 0.2s ease-in-out !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+        }
+        .btn-season:hover {
+            background-color: #f8fafc !important;
+            color: #1e293b !important;
+            transform: translateY(-1px) scale(1.03) !important;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        .btn-season:active {
+            transform: translateY(0) scale(1) !important;
+        }
+    </style>
+
     {# ================================================================== #}
     {# VISTA GLOBAL (CUANDO NO HAY FINCA SELECCIONADA)                    #}
     {# ================================================================== #}
@@ -21,44 +160,56 @@
     <div class="row g-4 mt-2">
         <!-- Resumen Global -->
         <div class="col-12">
-             <div class="card shadow-sm">
-                <div class="card-header"><h6 class="mb-0">Resumen Global</h6></div>
-                <div class="card-body">
-                     <div class="row g-4">
-                        <div class="col-sm-6 col-xl-3">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-home text-primary" style="font-size: 2rem; margin-right: 1rem;"></i>
-                                <div>
-                                    <p class="mb-1 text-muted">Total Fincas</p>
-                                    <h5 class="mb-0">{{ total_fincas }}</h5>
-                                </div>
+            <h5 class="fw-bold mb-3"><i class="fas fa-globe text-primary me-2"></i>Resumen de todas tus Fincas</h5>
+            <div class="row g-3">
+                <div class="col-sm-6 col-md-3">
+                    <div class="card dashboard-card h-100 text-white dashboard-card-blue">
+                        <div class="card-body p-3 d-flex align-items-center">
+                            <div class="icon-box bg-white bg-opacity-25 text-white me-3">
+                                <i class="fas fa-tractor"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small fw-semibold opacity-75">Fincas</p>
+                                <h4 class="mb-0 fw-bold">{{ total_fincas }}</h4>
                             </div>
                         </div>
-                        <div class="col-sm-6 col-xl-3">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-cow text-info" style="font-size: 2rem; margin-right: 1rem;"></i>
-                                <div>
-                                    <p class="mb-1 text-muted">Total Animales</p>
-                                    <h5 class="mb-0">{{ total_animales }}</h5>
-                                </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card dashboard-card h-100 text-white dashboard-card-green">
+                        <div class="card-body p-3 d-flex align-items-center">
+                            <div class="icon-box bg-white bg-opacity-25 text-white me-3">
+                                <i class="fas fa-cow"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small fw-semibold opacity-75">Animales</p>
+                                <h4 class="mb-0 fw-bold">{{ total_animales }}</h4>
                             </div>
                         </div>
-                        <div class="col-sm-6 col-xl-3">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-users text-success" style="font-size: 2rem; margin-right: 1rem;"></i>
-                                <div>
-                                    <p class="mb-1 text-muted">Total Empleados</p>
-                                    <h5 class="mb-0">{{ total_empleados }}</h5>
-                                </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card dashboard-card h-100 text-white dashboard-card-purple">
+                        <div class="card-body p-3 d-flex align-items-center">
+                            <div class="icon-box bg-white bg-opacity-25 text-white me-3">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small fw-semibold opacity-75">Empleados</p>
+                                <h4 class="mb-0 fw-bold">{{ total_empleados }}</h4>
                             </div>
                         </div>
-                        <div class="col-sm-6 col-xl-3">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-seedling text-success" style="font-size: 2rem; margin-right: 1rem;"></i>
-                                <div>
-                                    <p class="mb-1 text-muted">Total Potreros</p>
-                                    <h5 class="mb-0">{{ total_potreros }}</h5>
-                                </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="card dashboard-card h-100 text-white dashboard-card-amber">
+                        <div class="card-body p-3 d-flex align-items-center">
+                            <div class="icon-box bg-white bg-opacity-25 text-white me-3">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 small fw-semibold opacity-75">Potreros</p>
+                                <h4 class="mb-0 fw-bold">{{ total_potreros }}</h4>
                             </div>
                         </div>
                     </div>
@@ -67,39 +218,49 @@
         </div>
         <!-- Gráfico Global -->
         <div class="col-md-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header"><h6 class="mb-0">Distribución de Animales por Finca</h6></div>
-                <div class="card-body d-flex align-items-center justify-content-center">
+            <div class="card dashboard-card shadow-sm h-100 border-0">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-2">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-chart-pie text-primary me-2"></i>Distribución de Animales por Finca</h6>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center p-4">
                     {% if finca_labels and finca_data %}
                         <canvas id="finca-chart"></canvas>
                     {% else %}
-                        <p class="text-muted text-center py-4">No hay datos de animales para mostrar.</p>
+                        <div class="text-center w-100">
+                            <i class="fas fa-chart-bar fa-3x text-muted mb-3 opacity-25"></i>
+                            <p class="text-muted mb-0">No hay datos de animales para mostrar.</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
         <!-- Actividad Reciente Global -->
         <div class="col-md-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header"><h6 class="mb-0">Actividad Reciente</h6></div>
+            <div class="card dashboard-card shadow-sm h-100 border-0">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-2">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-clock text-warning me-2"></i>Actividad Reciente</h6>
+                </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <tbody>
-                                {% for animal in animales_recientes %}
-                                <tr>
-                                    <td>
-                                        <i class="fas fa-cow text-info me-2"></i>
-                                        <strong>{{ animal.identificacion }}</strong>
-                                        <small class="d-block text-muted">{{ animal.finca.nombre }}</small>
-                                    </td>
-                                    <td class="text-end text-muted">{{ (today - animal.fecha_ingreso.date()).days }}d atrás</td>
-                                </tr>
-                                {% else %}
-                                <tr><td class="p-4 text-muted text-center">No hay actividad reciente.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="list-group list-group-flush">
+                        {% for animal in animales_recientes %}
+                        <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-3 hover-bg-light transition-all border-bottom border-light">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
+                                    <i class="fas fa-cow text-primary" style="font-size: 0.9rem;"></i>
+                                </div>
+                                <div>
+                                    <strong class="text-dark d-block" style="font-size: 0.9rem;">{{ animal.identificacion }}</strong>
+                                    <small class="text-muted">{{ animal.finca.nombre }}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-light text-muted border rounded-pill">{{ (today - animal.fecha_ingreso.date()).days }}d atrás</span>
+                        </div>
+                        {% else %}
+                        <div class="text-center p-5 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-3 opacity-25"></i>
+                            <p class="mb-0 small">No hay actividad reciente.</p>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -110,149 +271,251 @@
     {# VISTA DE FINCA (CUANDO HAY UNA FINCA SELECCIONADA)                 #}
     {# ================================================================== #}
     {% else %}
-    <div class="row g-4">
+    <!-- Encabezado Limpio -->
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+        <h4 class="mb-0 fw-bold text-dark" style="font-size: 1.5rem;">Resumen: {{ session.get('finca_nombre', 'tu Finca') }}</h4>
+    </div>
+
+    <div class="row g-3">
         <!-- COLUMNA PRINCIPAL (IZQUIERDA) -->
         <div class="col-xl-8">
-            <!-- Stats Cards Mejoradas -->
-            <div class="row g-4">
-                <div class="col-sm-6 col-xl-6">
-                    <div class="card shadow-sm border-0 card-hover" id="cardAnimales" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%); cursor: pointer;">
-                        <div class="card-body d-flex align-items-center text-white">
-                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
-                                <span style="font-size: 2rem;">🐄</span>
-                            </div>
-                            <div>
-                                <p class="mb-1 opacity-75">Animales</p>
-                                <h3 class="mb-0 fw-bold">{{ total_animales }}</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-6">
-                     <div class="card shadow-sm border-0 card-hover" id="cardPotreros" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); cursor: pointer;">
-                        <div class="card-body d-flex align-items-center text-white">
-                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
-                                <span style="font-size: 2rem;">🌿</span>
-                            </div>
-                            <div>
-                                <p class="mb-1 opacity-75">Potreros</p>
-                                <h3 class="mb-0 fw-bold">{{ total_potreros }}</h3>
+            <!-- Stats Cards Compactas -->
+            <div class="row g-3">
+                <div class="col-sm-6 col-md-4">
+                    <div class="card border-0 shadow-sm h-100" id="cardAnimales" style="background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%); border-radius: 16px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                        <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                            <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
+                                <div>
+                                    <p class="text-uppercase fw-bold mb-1" style="color: #0284c7; font-size: 0.8rem; letter-spacing: 0.5px;">Animales</p>
+                                    <h3 class="fw-bold mb-0" style="color: #0369a1; font-size: 2.2rem;">{{ total_animales }}</h3>
+                                </div>
+                                <div class="text-center">
+                                    <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">🐄</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-xl-6">
-                     <div class="card shadow-sm border-0 card-hover" id="cardEmpleados" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); cursor: pointer;">
-                        <div class="card-body d-flex align-items-center text-white">
-                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
-                                <span style="font-size: 2rem;">👷</span>
-                            </div>
-                            <div>
-                                <p class="mb-1 opacity-75">Empleados</p>
-                                <h3 class="mb-0 fw-bold">{{ total_empleados }}</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                 <div class="col-sm-6 col-xl-6">
-                     <div class="card shadow-sm border-0 card-hover" id="cardInventario" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); cursor: pointer;">
-                        <div class="card-body d-flex align-items-center text-white">
-                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
-                                <span style="font-size: 2rem;">📦</span>
-                            </div>
-                            <div>
-                                <p class="mb-1 opacity-75">Valor Inventario</p>
-                                <h3 class="mb-0 fw-bold">${{ "{:,.0f}".format(valor_total_inventario) }}</h3>
+                <div class="col-sm-6 col-md-4">
+                     <div class="card border-0 shadow-sm h-100" id="cardPotreros" style="background: linear-gradient(135deg, #86efac 0%, #4ade80 100%); border-radius: 16px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                        <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                            <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
+                                <div>
+                                    <p class="text-uppercase fw-bold mb-1" style="color: #16a34a; font-size: 0.8rem; letter-spacing: 0.5px;">Potreros</p>
+                                    <h3 class="fw-bold mb-0" style="color: #15803d; font-size: 2.2rem;">{{ total_potreros }}</h3>
+                                </div>
+                                <div class="text-center">
+                                    <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">🌱</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-xl-6">
-                    <div class="card shadow-sm border-0 card-hover" id="cardParto" style="background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); cursor: pointer;">
-                        <div class="card-body d-flex align-items-center text-white">
-                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-horse" style="font-size: 2rem;"></i>
-                            </div>
-                            <div>
-                                <p class="mb-1 opacity-75">Parto</p>
-                                <h3 class="mb-0 fw-bold">{{ total_partos }}</h3>
+                <div class="col-sm-6 col-md-4">
+                     <div class="card border-0 shadow-sm h-100" id="cardEmpleados" style="background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); border-radius: 16px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                        <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                            <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
+                                <div>
+                                    <p class="text-uppercase fw-bold mb-1" style="color: #7c3aed; font-size: 0.8rem; letter-spacing: 0.5px;">Empleados</p>
+                                    <h3 class="fw-bold mb-0" style="color: #6d28d9; font-size: 2.2rem;">{{ total_empleados }}</h3>
+                                </div>
+                                <div class="text-center">
+                                    <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">👥</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-xl-6">
-                    <div class="card shadow-sm border-0 card-hover" id="cardUbicacion" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); cursor: pointer;">
-                        <div class="card-body d-flex align-items-center text-white">
-                            <div class="rounded-circle p-3 me-4" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-map-marker-alt" style="font-size: 2rem;"></i>
+                 <div class="col-sm-6 col-md-4">
+                     <div class="card border-0 shadow-sm h-100" id="cardInventario" style="background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%); border-radius: 16px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                        <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                            <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
+                                <div>
+                                    <p class="text-uppercase fw-bold mb-1" style="color: #d97706; font-size: 0.8rem; letter-spacing: 0.5px;">Inventario</p>
+                                    <h3 class="fw-bold mb-0" style="color: #b45309; font-size: 2.2rem;">${{ "{:,.0f}".format(valor_total_inventario) }}</h3>
+                                </div>
+                                <div class="text-center">
+                                    <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">📦</span>
+                                </div>
                             </div>
-                            <div>
-                                <p class="mb-1 opacity-75">Ubicación</p>
-                                <h3 class="mb-0 fw-bold">{{ total_ubicaciones }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="card border-0 shadow-sm h-100" id="cardParto" style="background: linear-gradient(135deg, #fda4af 0%, #fb7185 100%); border-radius: 16px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                        <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                            <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
+                                <div>
+                                    <p class="text-uppercase fw-bold mb-1" style="color: #e11d48; font-size: 0.8rem; letter-spacing: 0.5px;">Partos</p>
+                                    <h3 class="fw-bold mb-0" style="color: #be123c; font-size: 2.2rem;">{{ total_partos }}</h3>
+                                </div>
+                                <div class="text-center">
+                                    <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">🐮</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4">
+                    <div class="card border-0 shadow-sm h-100" id="cardUbicacion" style="background: linear-gradient(135deg, #5eead4 0%, #2dd4bf 100%); border-radius: 16px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 20px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 0.125rem 0.25rem rgba(0,0,0,0.075)';">
+                        <div class="card-body p-4 position-relative overflow-hidden d-flex align-items-center">
+                            <div class="d-flex justify-content-between align-items-center w-100 position-relative z-1">
+                                <div>
+                                    <p class="text-uppercase fw-bold mb-1" style="color: #0d9488; font-size: 0.8rem; letter-spacing: 0.5px;">Ubicaciones</p>
+                                    <h3 class="fw-bold mb-0" style="color: #0f766e; font-size: 2.2rem;">{{ total_ubicaciones }}</h3>
+                                </div>
+                                <div class="text-center">
+                                    <span style="font-size: 3.5rem; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15));">📍</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-                         <!-- KPIs -->
-             <div class="row g-4 mt-1">
+             <!-- KPIs Inferiores Refinados -->
+             <div class="row g-3 mt-1">
                  <div class="col-md-6">
-                     <div class="card shadow-sm">
-                         <div class="card-body text-center">
-                             <h6 class="text-muted mb-1">Vaca con Más Leche (Mes)</h6>
-                             <h4 class="mb-0">{% if vaca_top_produccion %}{{ vaca_top_produccion.nombre or vaca_top_produccion.identificacion }}: {{ "{:,.1f}".format(vaca_top_leche) }} L{% else %}Sin producción este mes{% endif %}</h4>
+                     <div class="card dashboard-card h-100 border-0 shadow-sm" style="border-left: 4px solid #0284c7 !important;">
+                         <div class="card-body p-3 d-flex align-items-center">
+                             <div class="icon-box bg-info-subtle text-info me-3 rounded-circle" style="width: 42px; height: 42px;">
+                                 <i class="fas fa-trophy fs-5"></i>
+                             </div>
+                             <div>
+                                 <p class="text-muted mb-0 small fw-semibold text-uppercase tracking-wider" style="font-size: 0.7rem;">Top Producción</p>
+                                 <h5 class="mb-0 fw-bold text-dark">
+                                     {% if vaca_top_produccion %}
+                                         {{ vaca_top_produccion.nombre or vaca_top_produccion.identificacion }}: <span class="text-primary">{{ "{:,.1f}".format(vaca_top_leche) }} L</span>
+                                     {% else %}
+                                         <span class="fs-6 text-muted fw-normal">Sin producción</span>
+                                     {% endif %}
+                                 </h5>
+                             </div>
                          </div>
                      </div>
                  </div>
                  <div class="col-md-6">
-                     <div class="card shadow-sm">
-                         <div class="card-body text-center">
-                             <h6 class="text-muted mb-1">Alertas del Mes</h6>
-                             <h4 class="mb-0">{% if alertas_mes %}{{ alertas_mes }}{% else %}0{% endif %}</h4>
+                     <div class="card dashboard-card h-100 border-0 shadow-sm" style="border-left: 4px solid #e11d48 !important;">
+                         <div class="card-body p-3 d-flex align-items-center">
+                             <div class="icon-box bg-danger-subtle text-danger me-3 rounded-circle" style="width: 42px; height: 42px;">
+                                 <i class="fas fa-bell fs-5"></i>
+                             </div>
+                             <div>
+                                 <p class="text-muted mb-0 small fw-semibold text-uppercase tracking-wider" style="font-size: 0.7rem;">Alertas del Mes</p>
+                                 <h5 class="mb-0 fw-bold text-dark">
+                                     {% if alertas_mes %}
+                                         <span class="text-danger">{{ alertas_mes }}</span> pendientes
+                                     {% else %}
+                                         <span class="text-success"><i class="fas fa-check-circle me-1"></i>0 alertas</span>
+                                     {% endif %}
+                                 </h5>
+                             </div>
                          </div>
                      </div>
                  </div>
              </div>
+                       <!-- Widget de Clima Dinámico y Estación del Año -->
+            <div class="row g-3 mt-1">
+                <!-- Tarjeta de Clima -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 weather-card card-hover h-100" id="weatherWidget" style="position: relative; min-height: 102px; border-radius: 16px !important;">
+                        <div class="weather-effects" id="weatherEffects"></div>
+                        <div class="card-body p-3 position-relative text-white d-flex align-items-center justify-content-between" style="z-index: 2; height: 100%;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(255, 255, 255, 0.15); border-radius: 12px; backdrop-filter: blur(4px);">
+                                    <i class="fas fa-cloud-sun" id="weatherIcon" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <span class="text-uppercase fw-bold opacity-75 d-block" style="font-size: 0.65rem; letter-spacing: 0.05em;"><i class="fas fa-cloud-sun-rain me-1"></i>Clima en Finca</span>
+                                    <span id="weatherTemp" style="font-size: 1.35rem; font-weight: 800; line-height: 1.1; display: inline-block;">--°C</span>
+                                    <span class="ms-2 opacity-90 fw-semibold" id="weatherDesc" style="font-size: 0.75rem;">Cargando...</span>
+                                </div>
+                            </div>
+                            <div class="text-end" style="font-size: 0.72rem; line-height: 1.4;">
+                                <div class="opacity-90"><i class="fas fa-tint me-1 text-info"></i>Hum: <span id="weatherHum" class="fw-bold">--%</span></div>
+                                <div class="opacity-90"><i class="fas fa-wind me-1 text-light"></i>Viento: <span id="weatherWind" class="fw-bold">-- km/h</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tarjeta de Estación del Año -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 card-hover h-100 text-white season-card" id="seasonWidget" style="position: relative; min-height: 102px; overflow: hidden; border-radius: 16px !important;">
+                        <div class="season-effects" id="seasonEffects"></div>
+                        <div class="card-body p-3 position-relative d-flex align-items-center justify-content-between" style="z-index: 2; height: 100%;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: rgba(255, 255, 255, 0.15); border-radius: 12px; backdrop-filter: blur(4px);">
+                                    <i class="fas fa-seedling" id="seasonIcon" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <div>
+                                    <span class="text-uppercase fw-bold opacity-75 d-block" style="font-size: 0.65rem; letter-spacing: 0.05em;"><i class="fas fa-calendar-alt me-1"></i>Temporada Agrícola</span>
+                                    <span class="fw-bold" id="seasonName" style="font-size: 1.15rem; text-shadow: 0 1px 2px rgba(0,0,0,0.15);">Cargando...</span>
+                                    <div class="d-flex align-items-center gap-2 mt-0.5">
+                                        <span class="opacity-75" id="seasonAstronomical" style="font-size: 0.68rem;"><i class="fas fa-compass me-1"></i>Astro: --</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button class="btn btn-season border-0" id="btnTips" data-bs-toggle="modal" data-bs-target="#seasonModal">
+                                    <i class="fas fa-lightbulb text-warning"></i>
+                                    <span>Ver Consejos</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             
-            <!-- Tabla de Producción Reciente -->
-            <div class="card shadow-sm mt-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Producción Reciente</h6>
-                    <a href="{{ url_for('produccion') }}" class="btn btn-outline-primary btn-sm">Ver Todo</a>
+            <!-- Tabla de Producción Reciente Mejorada -->
+            <div class="card mt-3 dashboard-card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center pt-4 px-4 pb-2">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Producción Reciente</h6>
+                    <a href="{{ url_for('produccion') }}" class="btn btn-primary btn-sm rounded-pill px-3 py-1 shadow-sm" style="font-size: 0.8rem;">Ver Todo</a>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                            <thead class="border-bottom">
                                 <tr>
-                                    <th class="ps-3">Fecha</th>
-                                    <th>Animal</th>
-                                    <th>Tipo</th>
-                                    <th>Cantidad</th>
-                                    <th>Calidad</th>
+                                    <th class="ps-4 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Fecha</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Animal</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Tipo</th>
+                                    <th class="text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Cantidad</th>
+                                    <th class="pe-4 text-uppercase fw-bold" style="font-size: 0.85rem; color: #000000 !important;">Calidad</th>
                                 </tr>
                             </thead>
                             <tbody>
                             {% for prod, animal_id in produccion_reciente %}
-                                <tr>
-                                    <td class="ps-3">{{ prod.fecha.strftime('%d %b %Y') }}</td>
-                                    <td>{{ animal_id }}</td>
-                                    <td>{{ prod.tipo_produccion }}</td>
-                                    <td>{{ prod.cantidad }} {{ prod.unidad }}</td>
+                                <tr style="cursor: pointer; transition: background-color 0.2s;" class="hover-bg-light">
+                                    <td class="ps-4 fw-medium text-dark">{{ prod.fecha.strftime('%d %b %Y') }}</td>
                                     <td>
-                                        <span class="badge 
-                                        {% if prod.calidad == 'buena' %}bg-success-soft
-                                        {% elif prod.calidad == 'regular' %}bg-warning-soft
-                                        {% else %}bg-danger-soft{% endif %} text-dark">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                                                <i class="fas fa-cow text-primary" style="font-size: 0.6rem;"></i>
+                                            </div>
+                                            <span class="fw-bold">{{ animal_id }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ prod.tipo_produccion }}</td>
+                                    <td class="fw-bold">{{ prod.cantidad }} <span class="text-muted fw-normal">{{ prod.unidad }}</span></td>
+                                    <td class="pe-4">
+                                        <span class="badge rounded-pill px-2 py-1
+                                        {% if prod.calidad == 'excelente' %}bg-success-subtle text-success
+                                        {% elif prod.calidad == 'buena' %}bg-warning-subtle text-warning
+                                        {% elif prod.calidad == 'regular' %}bg-info-subtle text-info
+                                        {% else %}bg-danger-subtle text-danger{% endif %} border">
                                         {{ prod.calidad|capitalize }}
                                         </span>
                                     </td>
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="5" class="text-center p-4 text-muted">No hay registros de producción.</td>
+                                    <td colspan="5" class="text-center p-5 text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3 text-light"></i>
+                                        <p class="mb-0">No hay registros de producción recientes.</p>
+                                    </td>
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -264,49 +527,60 @@
 
         <!-- COLUMNA LATERAL (DERECHA) -->
         <div class="col-xl-4">
-            <!-- Acciones Rápidas -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header"><h6 class="mb-0">Acciones Rápidas</h6></div>
-                <div class="card-body">
+            <!-- Acciones Rápidas Premium -->
+            <div class="card dashboard-card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-2">
+                    <h6 class="fw-bold text-dark mb-0"><span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">⚡</span>Acciones Rápidas</h6>
+                </div>
+                <div class="card-body p-3">
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('nuevo_animal') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">🐄</span>Registrar Animal</a>
-                        <a href="{{ url_for('nueva_produccion') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">🥛</span>Anotar Producción</a>
-                        <a href="{{ url_for('nueva_vacunacion') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">💉</span>Registrar Vacuna</a>
-                        <a href="{{ url_for('nuevo_inventario') }}" class="btn btn-outline-primary btn-sm"><span style="font-size: 1rem; margin-right: 8px;">📦</span>Añadir Inventario</a>
+                        <a href="{{ url_for('nuevo_animal') }}" class="btn text-start p-3 shadow-none d-flex align-items-center rounded-3 border-0 bg-light hover-bg-white hover-shadow-sm transition-all">
+                            <div class="icon-box bg-primary text-white me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 8px;"><span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐄</span></div>
+                            <span class="fw-semibold text-dark">Registrar Animal</span>
+                            <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
+                        <a href="{{ url_for('nueva_produccion') }}" class="btn text-start p-3 shadow-none d-flex align-items-center rounded-3 border-0 bg-light hover-bg-white hover-shadow-sm transition-all">
+                            <div class="icon-box bg-info text-white me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 8px;"><span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">💧</span></div>
+                            <span class="fw-semibold text-dark">Anotar Producción</span>
+                            <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
+                        <a href="{{ url_for('nueva_vacuna') }}" class="btn text-start p-3 shadow-none d-flex align-items-center rounded-3 border-0 bg-light hover-bg-white hover-shadow-sm transition-all">
+                            <div class="icon-box bg-success text-white me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 8px;"><span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">💉</span></div>
+                            <span class="fw-semibold text-dark">Registrar Vacuna</span>
+                            <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
+                        <a href="{{ url_for('nuevo_inventario') }}" class="btn text-start p-3 shadow-none d-flex align-items-center rounded-3 border-0 bg-light hover-bg-white hover-shadow-sm transition-all">
+                            <div class="icon-box bg-warning text-white me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; border-radius: 8px;"><span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📦</span></div>
+                            <span class="fw-semibold text-dark">Añadir Inventario</span>
+                            <i class="fas fa-chevron-right ms-auto text-muted small"></i>
+                        </a>
                     </div>
                 </div>
             </div>
 
             <!-- Centro de Alertas -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header d-flex align-items-center">
-                    <i class="fa fa-bell me-2 text-primary"></i>
-                    <h6 class="mb-0">Centro de Alertas</h6>
+            <div class="card dashboard-card mb-3">
+                <div class="card-header bg-white border-0 pt-3 px-3 pb-0">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fa fa-bell text-danger me-2"></i>Alertas</h6>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0 mt-2">
                     <div class="list-group list-group-flush">
                         {% for alerta in alertas %}
-                        <a href="{{ alerta.url }}" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100">
-                                {% if alerta.tipo == 'vacuna' %}<i class="fas fa-syringe fa-2x text-warning me-3 align-self-center"></i>
-                                {% elif alerta.tipo == 'inventario_caduca' %}<i class="fas fa-calendar-times fa-2x text-danger me-3 align-self-center"></i>
-                                {% elif alerta.tipo == 'inventario_bajo' %}<i class="fas fa-box-open fa-2x text-info me-3 align-self-center"></i>
+                        <a href="{{ alerta.url }}" class="list-group-item list-group-item-action py-2">
+                            <div class="d-flex w-100 align-items-center">
+                                {% if alerta.tipo == 'vacuna' %}<i class="fas fa-syringe text-warning me-2"></i>
+                                {% elif alerta.tipo == 'inventario_caduca' %}<i class="fas fa-calendar-times text-danger me-2"></i>
+                                {% elif alerta.tipo == 'inventario_bajo' %}<i class="fas fa-box-open text-info me-2"></i>
                                 {% endif %}
                                 <div>
-                                    <h6 class="mb-1 small">
-                                        {% if alerta.tipo == 'vacuna' %}Vacuna Próxima
-                                        {% elif alerta.tipo == 'inventario_caduca' %}Producto por Caducar
-                                        {% elif alerta.tipo == 'inventario_bajo' %}Bajo Inventario
-                                        {% endif %}
-                                    </h6>
-                                    <small class="text-muted">{{ alerta.mensaje }}</small>
+                                    <p class="mb-0 small fw-medium text-dark">{{ alerta.mensaje }}</p>
                                 </div>
                             </div>
                         </a>
                         {% else %}
-                        <div class="text-center p-4">
-                            <i class="fa fa-check-circle fa-3x text-success mb-2"></i>
-                            <p class="text-muted mb-0">¡Todo en orden!</p>
+                        <div class="text-center p-3">
+                            <i class="fa fa-check-circle fa-2x text-success mb-1"></i>
+                            <p class="text-muted small mb-0">Sin alertas pendientes</p>
                         </div>
                         {% endfor %}
                     </div>
@@ -314,51 +588,53 @@
             </div>
 
             <!-- Inventario Bajo -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header"><h6 class="mb-0">Inventario Bajo</h6></div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
+            <div class="card dashboard-card mb-3">
+                <div class="card-header bg-white border-0 pt-3 px-3 pb-0">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Inventario Bajo</h6>
+                </div>
+                <div class="card-body p-0 mt-2">
+                    <div class="list-group list-group-flush">
                         {% for item in bajo_inventario_items %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <i class="fas fa-box-open text-warning me-2"></i>
-                                {{ item.producto }}
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-bottom">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-box-open text-danger me-2"></i>
+                                <span class="small fw-medium text-dark">{{ item.producto }}</span>
                             </div>
-                            <span class="badge bg-warning-soft rounded-pill">{{ item.cantidad|int }} {{ item.unidad }}</span>
-                        </li>
+                            <span class="badge bg-danger rounded-pill">{{ item.cantidad|int }} {{ item.unidad }}</span>
+                        </div>
                         {% else %}
-                        <li class="list-group-item text-muted text-center p-3">
-                            <i class="fas fa-check-circle text-success me-1"></i>
-                            Stock en niveles óptimos.
-                        </li>
+                        <div class="list-group-item text-muted text-center p-3 border-0">
+                            <i class="fas fa-check text-success me-1"></i>
+                            <span class="small">Stock en niveles óptimos.</span>
+                        </div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 </div>
                 {% if bajo_inventario_items %}
-                <div class="card-footer text-center py-2 bg-light">
-                    <a href="{{ url_for('inventario') }}" class="text-muted small">Gestionar inventario</a>
+                <div class="card-footer bg-white border-0 text-center pb-3">
+                    <a href="{{ url_for('inventario') }}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1" style="font-size: 0.75rem;">Gestionar inventario</a>
                 </div>
                 {% endif %}
-            </div>
-
-            <!-- Carga de Potreros -->
-            <div class="card shadow-sm">
-                <div class="card-header"><h6 class="mb-0">Carga de Potreros</h6></div>
-                <div class="card-body" style="max-height: 260px; overflow-y: auto;">
+               <!-- Carga de Potreros Mejorada -->
+            <div class="card dashboard-card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-2">
+                    <h6 class="fw-bold text-dark mb-0"><i class="fas fa-chart-pie text-success me-2"></i>Carga de Potreros</h6>
+                </div>
+                <div class="card-body p-4 pt-2" style="max-height: 300px; overflow-y: auto;">
                     {% if potreros_carga %}
                     <ul class="list-unstyled mb-0">
                         {% for potrero in potreros_carga %}
-                        <li class="mb-3">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span class="small"><strong>{{ potrero.nombre }}</strong></span>
-                                <span class="small text-muted">{{ potrero.ocupantes }} / {{ potrero.capacidad }}</span>
+                        <li class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="fw-semibold text-dark" style="font-size: 0.9rem;">{{ potrero.nombre }}</span>
+                                <span class="badge bg-light text-dark border">{{ potrero.ocupantes }} / {{ potrero.capacidad }}</span>
                             </div>
                             {% set progress_width = potrero.carga_percent|default(0) %}
                             {% set progress_class = 'bg-' + potrero.color if potrero.color else 'bg-primary' %}
-                            <div class="progress progress-custom">
+                            <div class="progress" style="height: 8px; border-radius: 10px; background-color: #f1f5f9;">
                                 <div class="progress-bar {{ progress_class }}" 
                                      role="progressbar" 
-                                     data-width="{{ progress_width }}"
+                                     style="width: {{ progress_width }}%; border-radius: 10px;"
                                      aria-valuenow="{{ progress_width }}" 
                                      aria-valuemin="0" 
                                      aria-valuemax="100">
@@ -368,7 +644,10 @@
                         {% endfor %}
                     </ul>
                     {% else %}
-                    <p class="text-muted text-center small py-4">No hay potreros para mostrar.</p>
+                    <div class="text-center p-4">
+                        <i class="fas fa-leaf fa-2x text-muted mb-2 opacity-50"></i>
+                        <p class="text-muted small mb-0">No hay potreros registrados.</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -378,35 +657,122 @@
     {% endif %}
 </div>
 
+<style>
+/* Animaciones y utilidades de la interfaz Premium */
+.hover-bg-white:hover {
+    background-color: #ffffff !important;
+}
+.hover-shadow-sm:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+}
+.transition-all {
+    transition: all 0.3s ease !important;
+}
+.hover-bg-light:hover {
+    background-color: #f8fafc !important;
+}
+</style>
+
 <!-- Modales de Resumen -->
 <!-- Modal Animales -->
-<div class="modal fade" id="animalesModal" tabindex="-1" style="z-index: 1055;"> <!-- Aumentar z-index para prioridad -->
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<!-- ==================== ESTILOS PREMIUM PARA MODALES ==================== -->
+<style>
+    .premium-modal .modal-content {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .premium-modal .modal-header {
+        border: none;
+        padding: 1.8rem 2rem;
+        position: relative;
+    }
+    .premium-modal .modal-title {
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: -0.5px;
+        color: white;
+    }
+    .premium-modal .btn-close-white {
+        filter: brightness(0) invert(1);
+        opacity: 0.8;
+    }
+    .premium-modal .modal-body {
+        background-color: #f8fafc;
+        padding: 2rem;
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+    .premium-modal .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+    .premium-modal .modal-body::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+    .premium-modal .modal-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .premium-modal .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    .premium-modal .modal-footer {
+        background-color: white;
+        border-top: 1px solid #f1f5f9;
+        padding: 1.25rem 2rem;
+    }
+    .premium-modal .btn-cerrar-premium {
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 0.6rem 1.5rem;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        background: white;
+    }
+    .premium-modal .btn-accion-premium {
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 0.6rem 1.5rem;
+        border: none;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+</style>
+
+<!-- Modal Animales -->
+<div class="modal fade premium-modal" id="animalesModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);">
-                <h5 class="modal-title text-white"><i class="fas fa-paw me-2"></i>Resumen de Animales</h5>
+            <div class="modal-header" style="background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);">
+                <h5 class="modal-title"><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">🐄</span>Resumen de Animales</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="animalesContent" style="max-height: 70vh; overflow-y: auto;">
+            <div class="modal-body" id="animalesContent">
                 <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
+                    <div class="spinner-border text-info" role="status">
                         <span class="visually-hidden">Cargando...</span>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a href="{{ url_for('animales') }}" class="btn btn-primary">Ver Todos</a>
+                <button type="button" class="btn btn-cerrar-premium" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('animales') }}" class="btn btn-accion-premium" style="background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);">
+                    Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modal Potreros -->
-<div class="modal fade" id="potrerosModal" tabindex="-1" style="z-index: 1055;">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade premium-modal" id="potrerosModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                <h5 class="modal-title text-white"><i class="fas fa-seedling me-2"></i>Resumen de Potreros</h5>
+            <div class="modal-header" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                <h5 class="modal-title"><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">🌱</span>Resumen de Potreros</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="potrerosContent">
                 <div class="text-center py-4">
@@ -416,21 +782,24 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a href="{{ url_for('potreros') }}" class="btn btn-success">Ver Todos</a>
+                <button type="button" class="btn btn-cerrar-premium" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('potreros') }}" class="btn btn-accion-premium" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                    Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modal Empleados -->
-<div class="modal fade" id="empleadosModal" tabindex="-1" style="z-index: 1055;">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal fade premium-modal" id="empleadosModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
-                <h5 class="modal-title text-white"><i class="fas fa-users me-2"></i>Resumen de Empleados</h5>
+            <div class="modal-header" style="background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);">
+                <h5 class="modal-title"><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">👥</span>Resumen de Empleados</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="empleadosContent" style="max-height: 70vh; overflow-y: auto;">
+            <div class="modal-body" id="empleadosContent">
                 <div class="text-center py-4">
                     <div class="spinner-border text-info" role="status">
                         <span class="visually-hidden">Cargando...</span>
@@ -438,21 +807,24 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a href="{{ url_for('empleados') }}" class="btn btn-info text-white">Ver Todos</a>
+                <button type="button" class="btn btn-cerrar-premium" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('empleados') }}" class="btn btn-accion-premium" style="background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);">
+                    Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modal Inventario -->
-<div class="modal fade" id="inventarioModal" tabindex="-1" style="z-index: 1055;">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal fade premium-modal" id="inventarioModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                <h5 class="modal-title text-white"><i class="fas fa-box-open me-2"></i>Resumen de Inventario</h5>
+            <div class="modal-header" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
+                <h5 class="modal-title"><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">📦</span>Resumen de Inventario</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="inventarioContent" style="max-height: 70vh; overflow-y: auto;">
+            <div class="modal-body" id="inventarioContent">
                 <div class="text-center py-4">
                     <div class="spinner-border text-warning" role="status">
                         <span class="visually-hidden">Cargando...</span>
@@ -460,26 +832,29 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a href="{{ url_for('inventario') }}" class="btn btn-warning">Ver Todos</a>
+                <button type="button" class="btn btn-cerrar-premium" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('inventario') }}" class="btn btn-accion-premium" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
+                    Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modal Parto -->
-<div class="modal fade" id="partoModal" tabindex="-1" style="z-index: 1055;">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade premium-modal" id="partoModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);">
-                <h5 class="modal-title text-white"><i class="fas fa-horse me-2"></i>Control de Partos</h5>
+            <div class="modal-header" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);">
+                <h5 class="modal-title"><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">🐮</span>Control de Partos</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="partoContent">
                 <div class="row">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="card-title text-success mb-4"><i class="fas fa-baby-carriage me-2"></i>Animales que han Parido</h5>
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <div class="card-body p-4">
+                                <h5 class="card-title text-success mb-4" style="font-weight: 700;"><i class="fas fa-baby-carriage me-2"></i>Animales que han Parido</h5>
                                 <div id="vacasParidas">
                                     <div class="text-center py-3">
                                         <div class="spinner-border text-success" role="status">
@@ -493,37 +868,74 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <a href="{{ url_for('eventos_salud') }}" class="btn btn-warning">Ver Todos</a>
+                <button type="button" class="btn btn-cerrar-premium" data-bs-dismiss="modal">Cerrar</button>
+                <a href="{{ url_for('eventos_salud') }}" class="btn btn-accion-premium" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);">
+                    Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modal Ubicación -->
-<div class="modal fade" id="ubicacionModal" tabindex="-1" style="z-index: 1055;">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade premium-modal" id="ubicacionModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
-                <h5 class="modal-title text-white"><i class="fas fa-map-marker-alt me-2"></i>Ubicación de Animales</h5>
+            <div class="modal-header" style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);">
+                <h5 class="modal-title"><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.2));">📍</span>Ubicación de Animales</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-4">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control" id="searchAnimal" placeholder="Escriba el nombre del animal...">
-                        <button class="btn btn-success" type="button" id="btnSearchAnimal">Buscar</button>
+                    <div class="input-group shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                        <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" class="form-control border-0" id="searchAnimal" placeholder="Escriba el nombre del animal..." style="box-shadow: none;">
+                        <button class="btn btn-success px-4" type="button" id="btnSearchAnimal" style="font-weight: 600;">Buscar</button>
                     </div>
                 </div>
                 <div id="ubicacionResult">
-                    <div class="text-center py-4">
-                        <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Ingrese el nombre del animal para ver su ubicación</p>
+                    <div class="text-center py-5">
+                        <div style="width: 80px; height: 80px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                            <i class="fas fa-map-marker-alt fa-2x text-success"></i>
+                        </div>
+                        <h6 style="color: #334155; font-weight: 700;">Buscar Animal</h6>
+                        <p class="text-muted">Ingrese el nombre del animal para ver su ubicación actual</p>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-cerrar-premium" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Consejos de la Temporada -->
+<div class="modal fade" id="seasonModal" tabindex="-1" style="z-index: 1055;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px !important; overflow: hidden;">
+            <div class="modal-header text-white" id="seasonModalHeader" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border-bottom: none;">
+                <h5 class="modal-title fw-bold" id="seasonModalTitle">
+                    <i class="fas fa-calendar-alt me-2"></i>Consejos Agrícolas
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="background-color: var(--bs-body-bg);">
+                <div class="mb-3 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0 text-success" id="seasonModalName" style="font-size: 1.1rem;">Cargando...</h5>
+                    <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1" id="seasonModalAstro" style="font-size: 0.72rem;"></span>
+                </div>
+                <p class="text-muted small mb-4" id="seasonDesc" style="line-height: 1.5; font-size: 0.8rem;"></p>
+                
+                <h6 class="fw-bold mb-3 text-success d-flex align-items-center" style="font-size: 0.9rem;">
+                    <i class="fas fa-clipboard-list me-2"></i>Recomendaciones Clave:
+                </h6>
+                <ul class="list-group list-group-flush border-0" id="tipsList" style="font-size: 0.82rem; line-height: 1.4; padding-left: 0;">
+                    <!-- Se llena dinámicamente -->
+                </ul>
+            </div>
+            <div class="modal-footer" style="border-top: none; background-color: var(--bs-body-bg);">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal" style="font-size: 0.85rem;">Entendido</button>
             </div>
         </div>
     </div>
@@ -539,13 +951,7 @@
     box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
 }
 
-/* Estilos adicionales para modales para evitar conflictos */
-.modal {
-    z-index: 1055 !important; /* Prioridad alta */
-}
-.modal-backdrop {
-    z-index: 1050 !important;
-}
+/* Los modales se mueven dinámicamente al body para evitar problemas de backdrop */
 
 /* Asegurar que el modal se pueda cerrar fácilmente */
 .modal-dialog {
@@ -584,6 +990,11 @@
 <!-- Combined JavaScript Functionality -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Mover todos los modales al final del body para evitar problemas de contexto de apilamiento (z-index backdrop bug)
+    document.querySelectorAll('.modal').forEach(modal => {
+        document.body.appendChild(modal);
+    });
+
     // Initialize chart data if available
     (function() {
         const fincaChart = document.getElementById('finca-chart');
@@ -600,13 +1011,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (cardParto) {
         cardParto.addEventListener('click', function() {
             loadPartoData();
-            new bootstrap.Modal(document.getElementById('partoModal')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('partoModal')).show();
         });
     }
     
     if (cardUbicacion) {
         cardUbicacion.addEventListener('click', function() {
-            new bootstrap.Modal(document.getElementById('ubicacionModal')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('ubicacionModal')).show();
         });
     }
     
@@ -717,4 +1128,182 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function fetchWeather(lat, lon) {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&timezone=auto`;
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                const weather = data.current_weather;
+                const temp = weather.temperature;
+                const code = weather.weathercode;
+                const wind = weather.windspeed;
+                const hum = data.hourly.relativehumidity_2m ? data.hourly.relativehumidity_2m[0] : 60; // aprox
+
+                document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                document.getElementById('weatherWind').innerText = `${wind} km/h`;
+                document.getElementById('weatherHum').innerText = `${hum}%`;
+
+                let desc = "Despejado";
+                let iconClass = "fa-sun";
+                let bgGradient = "linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%)";
+                let effectClass = "weather-sun";
+
+                if (code >= 1 && code <= 3) {
+                    desc = "Parcialmente Nublado";
+                    iconClass = "fa-cloud-sun";
+                } else if (code >= 45 && code <= 48) {
+                    desc = "Niebla";
+                    iconClass = "fa-smog";
+                    bgGradient = "linear-gradient(135deg, #94a3b8 0%, #475569 100%)";
+                    effectClass = "";
+                } else if (code >= 51 && code <= 67) {
+                    desc = "Lluvia";
+                    iconClass = "fa-cloud-showers-heavy";
+                    bgGradient = "linear-gradient(135deg, #475569 0%, #1e293b 100%)";
+                    effectClass = "weather-rain";
+                    
+                    if (window.showToast) {
+                        setTimeout(() => window.showToast("Alerta: Lluvia detectada en la finca. Proteja su maquinaria.", "warning"), 2000);
+                    }
+                } else if (code >= 71 && code <= 77) {
+                    desc = "Nieve";
+                    iconClass = "fa-snowflake";
+                } else if (code >= 80 && code <= 82) {
+                    desc = "Tormenta Fuerte";
+                    iconClass = "fa-poo-storm";
+                    bgGradient = "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)";
+                    effectClass = "weather-rain";
+                    if (window.showToast) {
+                        setTimeout(() => window.showToast("Alerta Severa: Tormenta detectada.", "warning"), 2000);
+                    }
+                }
+
+                document.getElementById('weatherDesc').innerText = desc;
+                document.getElementById('weatherIcon').className = `fas ${iconClass}`;
+                document.getElementById('weatherWidget').style.background = bgGradient;
+                document.getElementById('weatherEffects').className = `weather-effects ${effectClass}`;
+            })
+            .catch(err => console.error("Error fetching weather:", err));
+    }
+
+    function initSeasonWidget() {
+        const today = new Date();
+        const month = today.getMonth(); // 0 = Ene, 11 = Dic
+        const day = today.getDate();
+
+        // 1. Temporada Agrícola (Trópico: Lluvias vs Sequía)
+        // En Venezuela/Colombia (coordenadas de la finca):
+        // Lluvias (Invierno): Mayo a Noviembre (meses 4 a 10)
+        // Sequía (Verano): Diciembre a Abril (meses 11, 0, 1, 2, 3)
+        let agriculturalSeason = "";
+        let agriculturalDesc = "";
+        let agriculturalIcon = "";
+        let seasonGradient = "";
+        let seasonEffect = "";
+        let tips = [];
+
+        if (month >= 4 && month <= 10) {
+            // Época de Lluvias (Invierno)
+            agriculturalSeason = "Invierno (Época de Lluvias)";
+            agriculturalDesc = "Fase húmeda ideal para el rebrote y crecimiento de pasturas. Es vital vigilar la acumulación de agua, prevenir gabarro en las pezuñas y controlar parásitos internos.";
+            agriculturalIcon = "fa-cloud-showers-water";
+            seasonGradient = "linear-gradient(135deg, #059669 0%, #10b981 100%)"; // Gradiente esmeralda
+            seasonEffect = "season-rain-effect";
+            tips = [
+                "Implementar rotación intensiva de potreros para aprovechar el rebrote nutritivo de pasto.",
+                "Monitorear salud podal periódicamente para prevenir gabarro y bacterias por exceso de humedad.",
+                "Limpiar canales, zanjas y drenajes en potreros para evitar encharcamientos.",
+                "Aplicar desparasitantes internos preventivos y vigilar la proliferación de moscas y garrapatas."
+            ];
+        } else {
+            // Época de Sequía (Verano)
+            agriculturalSeason = "Verano (Época de Sequía)";
+            agriculturalDesc = "Período seco de alta radiación. Disminución drástica en el crecimiento de pasto. Prioridad en suplementación alimenticia de calidad, hidratación abundante y sombra.";
+            agriculturalIcon = "fa-sun";
+            seasonGradient = "linear-gradient(135deg, #ea580c 0%, #f59e0b 100%)"; // Gradiente ámbar-cálido
+            seasonEffect = "season-sun-effect";
+            tips = [
+                "Suministrar alimentación suplementaria (silo, heno o bloques multinutricionales) para cubrir el déficit.",
+                "Garantizar puntos de agua limpia, fresca y abundante en todos los potreros activos.",
+                "Mitigar el estrés calórico asegurando acceso a áreas sombreadas naturales o cobertizos.",
+                "Realizar mantenimiento correctivo a cercas y potreros antes de que regresen las lluvias."
+            ];
+        }
+
+        // 2. Estación Astronómica (Hemisferio Norte)
+        // Primavera: 21 Mar - 20 Jun (mes 2 a 5)
+        // Verano: 21 Jun - 22 Sep (mes 5 a 8)
+        // Otoño: 23 Sep - 20 Dic (mes 8 a 11)
+        // Invierno: 21 Dic - 20 Mar (mes 11 a 2)
+        let astronomicalSeason = "";
+        if ((month === 2 && day >= 21) || month === 3 || month === 4 || (month === 5 && day <= 20)) {
+            astronomicalSeason = "Primavera";
+        } else if ((month === 5 && day >= 21) || month === 6 || month === 7 || (month === 8 && day <= 22)) {
+            astronomicalSeason = "Verano";
+        } else if ((month === 8 && day >= 23) || month === 9 || month === 10 || (month === 11 && day <= 20)) {
+            astronomicalSeason = "Otoño";
+        } else {
+            astronomicalSeason = "Invierno";
+        }
+
+        // Renderizar a los elementos HTML
+        const seasonNameEl = document.getElementById('seasonName');
+        const seasonDescEl = document.getElementById('seasonDesc');
+        const seasonIconEl = document.getElementById('seasonIcon');
+        const seasonAstronomicalEl = document.getElementById('seasonAstronomical');
+        const seasonWidgetEl = document.getElementById('seasonWidget');
+        const seasonEffectsEl = document.getElementById('seasonEffects');
+        const tipsListEl = document.getElementById('tipsList');
+
+        if (seasonNameEl) seasonNameEl.innerText = agriculturalSeason;
+        if (seasonDescEl) seasonDescEl.innerText = agriculturalDesc;
+        if (seasonIconEl) {
+            seasonIconEl.className = `fas ${agriculturalIcon}`;
+            // Soft floating animation for weather/season icon
+            seasonIconEl.style.animation = month >= 4 && month <= 10 ? 'windSway 4s ease-in-out infinite alternate' : 'pulseSun 4s infinite alternate';
+        }
+        if (seasonAstronomicalEl) seasonAstronomicalEl.innerHTML = `<i class="fas fa-compass me-1"></i>Astro: ${astronomicalSeason}`;
+        if (seasonWidgetEl) seasonWidgetEl.style.background = seasonGradient;
+        if (seasonEffectsEl) seasonEffectsEl.className = `season-effects ${seasonEffect}`;
+
+        // Llenar lista de consejos
+        if (tipsListEl) {
+            tipsListEl.innerHTML = "";
+            tips.forEach(tip => {
+                const li = document.createElement('li');
+                li.className = "list-group-item bg-transparent border-0 px-0 d-flex align-items-start gap-2 mb-2";
+                li.innerHTML = `<i class="fas fa-check-circle text-success mt-1" style="font-size: 0.9rem; flex-shrink: 0;"></i><span class="text-body" style="font-size: 0.85rem;">${tip}</span>`;
+                tipsListEl.appendChild(li);
+            });
+        }
+
+        // Rellenar datos del modal dinámicamente al cargar la página
+        const modalHeader = document.getElementById('seasonModalHeader');
+        const modalName = document.getElementById('seasonModalName');
+        const modalAstro = document.getElementById('seasonModalAstro');
+        
+        if (modalHeader) modalHeader.style.background = seasonGradient;
+        if (modalName) {
+            modalName.innerText = agriculturalSeason;
+            if (month >= 4 && month <= 10) {
+                modalName.className = "fw-bold mb-0 text-success";
+            } else {
+                modalName.className = "fw-bold mb-0 text-warning";
+            }
+        }
+        if (modalAstro) modalAstro.innerHTML = `<i class="fas fa-compass me-1"></i>Astro: ${astronomicalSeason}`;
+    }
+
+    // Coordenadas fijas para Maracaibo, Venezuela
+    const maracaiboLat = 10.6316;
+    const maracaiboLon = -71.6406;
+    fetchWeather(maracaiboLat, maracaiboLon);
+    initSeasonWidget();
+});
+</script>
 {% endblock %}

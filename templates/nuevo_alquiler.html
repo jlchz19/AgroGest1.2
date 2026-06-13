@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Alquiler / Venta - AgroGest{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="fas fa-plus-circle text-success me-2"></i>
+                Registrar Alquiler o Venta
+            </h2>
+            <p class="text-muted mb-0">Ingresa los detalles de la transacción de potrero</p>
+        </div>
+        <a href="{{ url_for('alquileres') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a Alquileres
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Formulario -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" id="formCard">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit text-muted me-2"></i>
+                        Información de la Transacción
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('nuevo_alquiler') }}" method="POST" id="alquilerForm" novalidate>
+                        <div class="row g-3">
+                            <!-- Tipo de Transacción -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="tipo" name="tipo" required>
+                                        <option value="alquiler" selected>Alquiler</option>
+                                        <option value="venta">Venta</option>
+                                    </select>
+                                    <label for="tipo">Tipo de Transacción *</label>
+                                </div>
+                            </div>
+
+                            <!-- Potrero -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="potrero_id" name="potrero_id" required>
+                                        <option value="" disabled selected>Seleccione...</option>
+                                        {% for potrero in potreros %}
+                                        <option value="{{ potrero.id }}">{{ potrero.nombre }} (Cap: {{ potrero.capacidad }})</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label for="potrero_id">Potrero *</label>
+                                    <div class="invalid-feedback">Por favor selecciona un potrero.</div>
+                                </div>
+                            </div>
+
+                            <!-- Nombre del Cliente -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="nombre_cliente"
+                                           name="nombre_cliente" placeholder="Nombre del cliente" required>
+                                    <label for="nombre_cliente">Nombre del Cliente *</label>
+                                    <div class="invalid-feedback">Por favor escribe el nombre del cliente.</div>
+                                </div>
+                            </div>
+
+                            <!-- Teléfono del Cliente -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="telefono_cliente"
+                                           name="telefono_cliente" placeholder="Teléfono">
+                                    <label for="telefono_cliente">Teléfono del Cliente</label>
+                                </div>
+                            </div>
+
+                            <!-- Fecha Inicio -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="fecha_inicio"
+                                           name="fecha_inicio" placeholder="Fecha inicio" required>
+                                    <label for="fecha_inicio">Fecha de Inicio / Venta *</label>
+                                    <div class="invalid-feedback">Selecciona la fecha de inicio.</div>
+                                </div>
+                            </div>
+
+                            <!-- Fecha Fin -->
+                            <div class="col-md-6" id="fecha_fin_col">
+                                <div class="form-floating">
+                                    <input type="date" class="form-control" id="fecha_fin"
+                                           name="fecha_fin" placeholder="Fecha fin">
+                                    <label for="fecha_fin">Fecha Fin (Opcional)</label>
+                                </div>
+                            </div>
+
+                            <!-- ══ FORMA DE PAGO ══ -->
+                            <div class="col-12 mt-2">
+                                <div class="p-3 rounded-3 border bg-light-subtle" id="pagoSection">
+                                    <p class="fw-semibold text-secondary mb-3 small text-uppercase tracking-wider">
+                                        <i class="fas fa-money-bill-wave me-2 text-success"></i>Forma de Pago
+                                    </p>
+                                    <div class="row g-3">
+                                        <!-- Selector tipo de pago -->
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="forma_pago" name="forma_pago" required>
+                                                    <option value="dinero" selected>💵 Dinero en efectivo</option>
+                                                    <option value="transferencia">🏦 Transferencia bancaria</option>
+                                                    <option value="leche">🥛 Leche</option>
+                                                    <option value="queso">🧀 Queso</option>
+                                                    <option value="carne">🥩 Carne</option>
+                                                    <option value="animales">🐄 Animales</option>
+                                                    <option value="trabajo">👷 Trabajo / Mano de obra</option>
+                                                    <option value="mixto">🔄 Mixto (dinero + producción)</option>
+                                                    <option value="otro">📦 Otro producto</option>
+                                                </select>
+                                                <label for="forma_pago">Tipo de Pago *</label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Monto (visible solo si aplica dinero) -->
+                                        <div class="col-md-6" id="col_precio">
+                                            <div class="form-floating">
+                                                <input type="number" step="0.01" min="0" class="form-control"
+                                                       id="precio" name="precio" placeholder="0.00">
+                                                <label for="precio">Monto ($)</label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Descripción del pago (especie / detalle) -->
+                                        <div class="col-12" id="col_desc_pago">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="descripcion_pago"
+                                                       name="descripcion_pago"
+                                                       placeholder="Ej: 50 litros de leche por semana">
+                                                <label for="descripcion_pago">Detalle del pago</label>
+                                            </div>
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Especifica la cantidad, frecuencia o cualquier detalle del pago.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campo oculto para arrendatario_id (compatibilidad backend) -->
+                            <input type="hidden" name="arrendatario_id" id="arrendatario_id" value="0">
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg px-4" id="btnGuardar">
+                                <i class="fas fa-save me-2"></i><span>Guardar Transacción</span>
+                            </button>
+                            <a href="{{ url_for('alquileres') }}" class="btn btn-secondary text-white border-0 shadow-sm btn-lg">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Ayuda -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Guía de Registro
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-success">Tipo de Transacción</h6>
+                        <p class="small text-muted mb-2">
+                            Indica si se trata de un <strong>Alquiler</strong> temporal o una <strong>Venta</strong> definitiva del potrero.
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-warning">Datos del Cliente</h6>
+                        <p class="small text-muted mb-2">
+                            Escribe el nombre completo del cliente o arrendatario. Opcionalmente incluye su teléfono de contacto.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-info">Forma de Pago</h6>
+                        <p class="small text-muted mb-2">
+                            El pago no siempre es en dinero. Puedes registrar pagos en:
+                        </p>
+                        <ul class="small text-muted ps-3 mb-0">
+                            <li>💵 <strong>Dinero</strong> o transferencia</li>
+                            <li>🥛 <strong>Leche</strong> (litros / semana)</li>
+                            <li>🧀 <strong>Queso</strong> u otro lácteo</li>
+                            <li>🥩 <strong>Carne</strong> o animales</li>
+                            <li>👷 <strong>Trabajo</strong> / mano de obra</li>
+                            <li>🔄 <strong>Mixto</strong> (dinero + producción)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-primary">Fechas</h6>
+                        <p class="small text-muted mb-2">
+                            Para una venta, solo necesitas la fecha de inicio. Para un alquiler, puedes especificar la fecha de término.
+                        </p>
+                    </div>
+
+                    <hr>
+                    
+                    <h6 class="text-primary">Consejos</h6>
+                    <ul class="small text-muted">
+                        <li>Verifica los datos del cliente antes de guardar</li>
+                        <li>El precio debe reflejar el monto total acordado</li>
+                        <li>Para alquileres sin fecha fin, déjala en blanco</li>
+                        <li>Al guardar, el comprobante PDF se descarga automáticamente</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+/* Animaciones y diseño premium */
+#formCard {
+    transition: all 0.3s ease;
+}
+#formCard:hover {
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    transform: translateY(-2px);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+#btnGuardar {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+#btnGuardar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(25, 135, 84, 0.4);
+}
+#btnGuardar:active {
+    transform: translateY(0);
+}
+
+/* Validaciones visuales suaves */
+.form-control.is-invalid, .form-select.is-invalid {
+    border-color: #dc3545;
+    background-image: none;
+}
+.form-control.is-valid, .form-select.is-valid {
+    border-color: #198754;
+    background-image: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Mostrar/ocultar fecha fin según tipo ──
+    const tipoSelect  = document.getElementById('tipo');
+    const fechaFinCol = document.getElementById('fecha_fin_col');
+    const fechaFinIn  = document.getElementById('fecha_fin');
+
+    function toggleFechaFin() {
+        if (tipoSelect.value === 'venta') {
+            fechaFinCol.style.display = 'none';
+            fechaFinIn.value = '';
+        } else {
+            fechaFinCol.style.display = '';
+        }
+    }
+    tipoSelect.addEventListener('change', toggleFechaFin);
+    toggleFechaFin();
+
+    // ── Mostrar/ocultar campos según forma de pago ──
+    const formaPago   = document.getElementById('forma_pago');
+    const colPrecio   = document.getElementById('col_precio');
+    const colDescPago = document.getElementById('col_desc_pago');
+    const inputPrecio = document.getElementById('precio');
+
+    const PAGA_DINERO = ['dinero', 'transferencia', 'mixto'];
+    const PAGA_ESPECIE = ['leche', 'queso', 'carne', 'animales', 'trabajo', 'otro', 'mixto'];
+
+    function togglePago() {
+        const val = formaPago.value;
+        // Monto
+        if (PAGA_DINERO.includes(val)) {
+            colPrecio.style.display = '';
+        } else {
+            colPrecio.style.display = 'none';
+            inputPrecio.value = '0';
+        }
+        // Descripción extra siempre visible si es especie
+        colDescPago.style.display = PAGA_ESPECIE.includes(val) ? '' : 'none';
+
+        // Actualizar placeholder del detalle
+        const placeholders = {
+            leche: 'Ej: 50 litros de leche por semana',
+            queso: 'Ej: 5 kg de queso al mes',
+            carne: 'Ej: 1 novillo al finalizar el período',
+            animales: 'Ej: 2 terneros al año',
+            trabajo: 'Ej: 20 días de mano de obra por mes',
+            mixto: 'Ej: $200 + 30 litros de leche semanal',
+            otro: 'Describe el producto o servicio acordado',
+        };
+        const desc = document.getElementById('descripcion_pago');
+        desc.placeholder = placeholders[val] || 'Detalle del pago acordado';
+    }
+
+    formaPago.addEventListener('change', togglePago);
+    togglePago(); // estado inicial
+
+    const requiredInputs = document.querySelectorAll('#alquilerForm input[required], #alquilerForm select[required]');
+    requiredInputs.forEach(inp => {
+        inp.addEventListener('blur', function () {
+            if (!this.value || !this.value.toString().trim()) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+        inp.addEventListener('input', function () {
+            if (this.value && this.value.toString().trim()) {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+
+    // ── Submit con spinner ──
+    document.getElementById('alquilerForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        let valid = true;
+        requiredInputs.forEach(inp => {
+            if (!inp.value || !inp.value.toString().trim()) {
+                inp.classList.add('is-invalid');
+                valid = false;
+            }
+        });
+
+        if (!valid) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Datos Incompletos',
+                text: 'Por favor, completa los campos obligatorios (marcados con *).',
+                confirmButtonColor: '#0d6efd'
+            });
+            return;
+        }
+
+        const btn = document.getElementById('btnGuardar');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Guardando...';
+
+        setTimeout(() => this.submit(), 500);
+    });
+});
+</script>
+{% endblock %}

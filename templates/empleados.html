@@ -4,182 +4,255 @@
 {% block page_title %}Gestión de Empleados{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-    <h2 class="h4 mb-2 mb-md-0">Listado de Empleados</h2>
-    <a href="{{ url_for('nuevo_empleado') }}" class="btn btn-primary align-self-md-start">
-        <i class="fas fa-plus me-2"></i>Nuevo Empleado
-    </a>
-</div>
-
-<div class="row">
-    {% for empleado in empleados %}
-    <div class="col-12 col-sm-6 col-lg-4 mb-4">
-        <div class="card h-100 employee-card">
-            <div class="card-body text-center">
-                <div class="d-flex justify-content-center mb-3">
-                    {% if empleado.foto_empleado %}
-                        <img src="{{ url_for('static', filename=empleado.foto_empleado.replace('static/', '')) }}" 
-                             alt="Foto de {{ empleado.nombre }}" 
-                             class="rounded-circle border border-3 border-light shadow" 
-                             style="width: 100px; height: 100px; object-fit: cover;">
-                    {% else %}
-                        <div class="avatar avatar-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
-                             style="width: 100px; height: 100px;">
-                            {% if empleado.cargo == 'Veterinario' %}
-                                <i class="fas fa-stethoscope fa-2x"></i>
-                            {% elif empleado.cargo == 'Vaquero' %}
-                                <i class="fas fa-horse fa-2x"></i>
-                            {% elif empleado.cargo == 'Porquero' %}
-                                <i class="fas fa-bacon fa-2x"></i>
-                            {% elif empleado.cargo == 'Administrador' %}
-                                <i class="fas fa-briefcase fa-2x"></i>
-                            {% elif empleado.cargo == 'Supervisor' %}
-                                <i class="fas fa-binoculars fa-2x"></i>
-                            {% elif empleado.cargo == 'Operario' %}
-                                <i class="fas fa-tools fa-2x"></i>
-                            {% elif empleado.cargo == 'Contador' %}
-                                <i class="fas fa-chart-line fa-2x"></i>
-                            {% elif empleado.cargo == 'Secretario' %}
-                                <i class="fas fa-keyboard fa-2x"></i>
-                            {% elif empleado.cargo == 'Técnico Agrícola' %}
-                                <i class="fas fa-tractor fa-2x"></i>
-                            {% elif empleado.cargo == 'Mecánico' %}
-                                <i class="fas fa-wrench fa-2x"></i>
-                            {% elif empleado.cargo == 'Conductor' %}
-                                <i class="fas fa-truck fa-2x"></i>
-                            {% elif empleado.cargo == 'Auxiliar' %}
-                                <i class="fas fa-hands-helping fa-2x"></i>
-                            {% else %}
-                                <i class="fas fa-user fa-2x"></i>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                </div>
-                <h5 class="card-title">{{ empleado.nombre }} {{ empleado.apellido }}</h5>
-                <p class="card-text text-muted">{{ empleado.cargo }}</p>
-                <span class="badge rounded-pill {% if empleado.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">{{ empleado.estado|title }}</span>
+<div class="container-fluid py-4">
+    <!-- Encabezado y Filtro Premium -->
+    <div class="row mb-4 align-items-center g-3">
+        <div class="col-12 col-md-5">
+            <h3 class="fw-bold text-dark mb-0"><span style="font-size: 1.5rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">👥</span>Gestión de Empleados</h3>
+        </div>
+        <div class="col-12 col-md-7 d-flex justify-content-md-end gap-2 align-items-center flex-wrap">
+            <div class="position-relative flex-grow-1" style="max-width: 300px;">
+                <span class="position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.2rem; opacity: 0.5;">🔍</span>
+                <input type="text" id="filtroEmpleados" class="form-control rounded-pill border-0 shadow-sm" style="padding-left: 2.5rem; padding-top: 0.6rem; padding-bottom: 0.6rem;" placeholder="Buscar empleado o cargo...">
             </div>
-            <div class="card-footer bg-light">
-                <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-2" data-bs-toggle="modal" data-bs-target="#empleadoModal{{ empleado.id|e }}">
-                    Ver Detalles
-                </button>
-                <a href="{{ url_for('carta_trabajo_pdf', empleado_id=empleado.id) }}" class="btn btn-outline-success btn-sm w-100 mb-2" target="_blank">
-                    <i class="fas fa-file-pdf me-2"></i>Descargar Carta de Trabajo
-                </a>
-                <div class="btn-group w-100" role="group">
-                    <a href="{{ url_for('editar_empleado', empleado_id=empleado.id) }}" class="btn btn-outline-primary btn-sm" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ empleado.id|e }}" title="Eliminar">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>
-            </div>
+            <a href="{{ url_for('nuevo_empleado') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;">
+                <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">➕</span>Nuevo Empleado
+            </a>
         </div>
     </div>
 
-    <!-- Modal Detalles del Empleado -->
-    <div class="modal fade" id="empleadoModal{{ empleado.id|e }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Empleado</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="row g-4" id="empleadosContainer">
+        {% for empleado in empleados %}
+        <div class="col-12 col-sm-6 col-lg-4 mb-2 empleado-item" data-nombre="{{ empleado.nombre|lower }} {{ empleado.apellido|lower }}" data-cargo="{{ empleado.cargo|lower if empleado.cargo else '' }}">
+            <div class="card empleado-card h-100 border-0">
+                <!-- Acciones Rápidas (Superior) -->
+                <div class="empleado-actions-top">
+                    <a href="{{ url_for('editar_empleado', empleado_id=empleado.id) }}" class="btn-action-top text-primary" title="Editar">
+                        <span style="font-size: 1rem;">✏️</span>
+                    </a>
+                    <button type="button" class="btn-action-top text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ empleado.id|e }}" title="Eliminar">
+                        <span style="font-size: 1rem;">🗑️</span>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">Información Personal</h6>
-                            <p><strong>Nombre:</strong> {{ empleado.nombre }} {{ empleado.apellido }}</p>
-                            <p><strong>Cédula:</strong> {{ empleado.cedula }}</p>
-                            <p><strong>Teléfono:</strong> {{ empleado.telefono }}</p>
-                            <p><strong>Dirección:</strong> {{ empleado.direccion }}</p>
-                            {% if empleado.nacionalidad %}
-                            <p><strong>Nacionalidad:</strong> {{ empleado.nacionalidad }}</p>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-info mb-3">Información Laboral</h6>
-                            <p><strong>Cargo:</strong> {{ empleado.cargo }}</p>
-                            <p><strong>Estado:</strong> 
-                                <span class="badge rounded-pill {% if empleado.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %}">
-                                    {{ empleado.estado|title }}
-                                </span>
-                            </p>
-                            {% if empleado.fecha_contratacion %}
-                            <p><strong>Fecha Contratación:</strong> {{ empleado.fecha_contratacion.strftime('%d/%m/%Y') }}</p>
-                            {% endif %}
-                            {% if empleado.salario %}
-                            <p><strong>Salario:</strong> ${{ "{:,.2f}".format(empleado.salario) }}</p>
-                            {% endif %}
-                        </div>
+
+                <!-- Cuerpo Central de la Tarjeta -->
+                <div class="card-body text-center d-flex flex-column align-items-center pt-5">
+                    <!-- Avatar Prominente -->
+                    <div class="empleado-avatar-wrapper mb-3 position-relative">
+                        {% if empleado.foto_empleado %}
+                            <img src="{{ url_for('static', filename=empleado.foto_empleado.replace('static/', '')) }}" alt="{{ empleado.nombre }}">
+                        {% else %}
+                            <div class="avatar-fallback bg-gradient-blue text-white">
+                                {% if empleado.cargo == 'Veterinario' %}<span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🩺</span>
+                                {% elif empleado.cargo == 'Vaquero' %}<span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🤠</span>
+                                {% elif empleado.cargo == 'Porquero' %}<span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🐷</span>
+                                {% elif empleado.cargo == 'Administrador' %}<span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">💼</span>
+                                {% elif empleado.cargo == 'Contador' %}<span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📈</span>
+                                {% elif empleado.cargo == 'Técnico Agrícola' %}<span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">🚜</span>
+                                {% else %}<span style="font-size: 1.2rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">👤</span>{% endif %}
+                            </div>
+                        {% endif %}
+                        <!-- Estado como pequeño badge encima de la foto -->
+                        <span class="position-absolute bottom-0 start-50 translate-middle-x badge rounded-pill {% if empleado.estado == 'activo' %}bg-success{% else %}bg-danger{% endif %} border border-2 border-white shadow-sm" style="transform: translateY(50%) translateX(-50%) !important; font-size: 0.65rem; padding: 0.35em 0.8em; text-transform: uppercase;">
+                            {{ empleado.estado|title }}
+                        </span>
                     </div>
 
-                    <!-- Sección de Salud -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h6 class="text-warning mb-3">Información de Salud</h6>
-                            {% if empleado.condiciones_enfermedades %}
-                            <div class="mb-3">
-                                <p class="mb-1"><strong><i class="fas fa-notes-medical me-2"></i>Condiciones Médicas:</strong></p>
-                                <p class="ms-4">{{ empleado.condiciones_enfermedades }}</p>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="mb-3">
-                                <p class="mb-1"><strong><i class="fas fa-allergies me-2"></i>Alergias a Medicamentos:</strong></p>
-                                {% if empleado.alergico_medicamento %}
-                                    {% if empleado.alergias_medicamento %}
-                                    <p class="ms-4">{{ empleado.alergias_medicamento }}</p>
-                                    {% else %}
-                                    <p class="ms-4 text-muted">Sí (no especificadas)</p>
-                                    {% endif %}
-                                {% else %}
-                                <p class="ms-4 text-muted">No registra alergias</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Sección de Documentos -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h6 class="text-success mb-3">Documentos del Empleado</h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                {% if empleado.foto_cedula %}
-                                <a href="{{ url_for('download_file', filepath=empleado.foto_cedula) }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-id-card me-2"></i>Descargar Cédula
-                                </a>
-                                {% endif %}
-                                
-                                {% if empleado.referencia_file %}
-                                <a href="{{ url_for('download_file', filepath=empleado.referencia_file) }}" class="btn btn-outline-info btn-sm">
-                                    <i class="fas fa-file-alt me-2"></i>Referencia Personal
-                                </a>
-                                {% endif %}
-                                
-                                {% if empleado.curriculum %}
-                                <a href="{{ url_for('download_file', filepath=empleado.curriculum) }}" class="btn btn-outline-secondary btn-sm">
-                                    <i class="fas fa-file-pdf me-2"></i>Currículum
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Datos Principales -->
+                    <h5 class="fw-bold text-dark mt-2 mb-1">{{ empleado.nombre }} {{ empleado.apellido }}</h5>
+                    <p class="text-muted fw-semibold small text-uppercase" style="letter-spacing: 0.5px;">{{ empleado.cargo or 'Sin Cargo' }}</p>
                     
-                    {% if empleado.descripcion %}
-                    <div class="row mt-3">
+                    <!-- Mini Grid de Info Extra -->
+                    <div class="w-100 bg-light rounded-3 p-3 mt-3 mb-4 text-start">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small fw-bold"><span style="font-size: 1rem; margin-right: 0.2rem;">🪪</span> Cédula:</span>
+                            <span class="text-dark small fw-semibold">{{ empleado.cedula or 'N/A' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small fw-bold"><span style="font-size: 1rem; margin-right: 0.2rem;">📞</span> Telf:</span>
+                            <span class="text-dark small fw-semibold">{{ empleado.telefono or 'N/A' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small fw-bold"><span style="font-size: 1rem; margin-right: 0.2rem;">💵</span> Salario Base:</span>
+                            <span class="text-success small fw-bold">${{ "{:,.2f}".format(empleado.salario) if empleado.salario else '0.00' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small fw-bold"><span style="font-size: 1rem; margin-right: 0.2rem;">📝</span> Contrato:</span>
+                            <span class="text-dark small fw-semibold">{{ empleado.fecha_contratacion.strftime('%d/%m/%Y') if empleado.fecha_contratacion else 'N/A' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small fw-bold"><span style="font-size: 1rem; margin-right: 0.2rem;">🚀</span> Ingreso:</span>
+                            <span class="text-dark small fw-semibold">{{ empleado.fecha_ingreso.strftime('%d/%m/%Y') if empleado.fecha_ingreso else 'N/A' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción (Parte Inferior) -->
+                    <div class="mt-auto w-100 d-flex flex-column gap-2">
+                        <!-- Botón de Nómina Destacado -->
+                        <a href="{{ url_for('nomina_empleado', empleado_id=empleado.id) }}" class="btn btn-success fw-bold w-100 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                            <span style="font-size: 1rem; margin-right: 0.2rem;">💰</span>Ver Nómina
+                        </a>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-light border w-50 rounded-pill text-primary fw-semibold" style="font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#empleadoModal{{ empleado.id|e }}">
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">👤</span>Perfil
+                            </button>
+                            <a href="{{ url_for('carta_trabajo_pdf', empleado_id=empleado.id) }}" class="btn btn-light border w-50 rounded-pill text-secondary fw-semibold" style="font-size: 0.85rem;" target="_blank">
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">📄</span>Carta
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Modal Detalles del Empleado Premium -->
+    <div class="modal fade" id="empleadoModal{{ empleado.id|e }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:20px; overflow:hidden;">
+                <!-- Header del Modal con Degradado Azul Premium -->
+                <div class="modal-header text-white py-4 px-4 d-flex justify-content-between align-items-center bg-gradient-blue" style="border: none;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-circle bg-white bg-opacity-20 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden;">
+                            {% if empleado.foto_empleado %}
+                                <img src="{{ url_for('static', filename=empleado.foto_empleado.replace('static/', '')) }}" alt="{{ empleado.nombre }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <span style="font-size: 1.5rem;">👤</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white">{{ empleado.nombre }} {{ empleado.apellido }}</h5>
+                            <small class="text-white text-opacity-80 fw-semibold">{{ empleado.cargo }} - {{ empleado.estado|title }}</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4" style="background:#f8fafc;">
+
+                    <!-- Grid de métricas Premium de 3 Columnas -->
+                    <div class="row g-3 mb-4">
+                        <!-- Cargo -->
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <span style="font-size: 1.6rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); display: block; margin-bottom: 0.5rem;">🏷️</span>
+                                <div class="fw-bold text-dark small">{{ empleado.cargo }}</div>
+                                <small class="text-muted">Cargo</small>
+                            </div>
+                        </div>
+                        <!-- Cédula -->
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <span style="font-size: 1.6rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); display: block; margin-bottom: 0.5rem;">🪪</span>
+                                <div class="fw-bold text-dark small">{{ empleado.cedula or 'N/A' }}</div>
+                                <small class="text-muted">Cédula</small>
+                            </div>
+                        </div>
+                        <!-- Teléfono -->
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <span style="font-size: 1.6rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); display: block; margin-bottom: 0.5rem;">📞</span>
+                                <div class="fw-bold text-dark small">{{ empleado.telefono or 'N/A' }}</div>
+                                <small class="text-muted">Teléfono</small>
+                            </div>
+                        </div>
+                        <!-- Nacionalidad -->
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <span style="font-size: 1.6rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); display: block; margin-bottom: 0.5rem;">🚩</span>
+                                <div class="fw-bold text-dark small">{{ empleado.nacionalidad or 'N/A' }}</div>
+                                <small class="text-muted">Nacionalidad</small>
+                            </div>
+                        </div>
+                        <!-- Salario -->
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <span style="font-size: 1.6rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); display: block; margin-bottom: 0.5rem;">💵</span>
+                                <div class="fw-bold text-dark small">{% if empleado.salario %}${{ "{:,.2f}".format(empleado.salario) }}{% else %}N/A{% endif %}</div>
+                                <small class="text-muted">Salario</small>
+                            </div>
+                        </div>
+                        <!-- Contratación -->
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 p-3 shadow-xs text-center h-100">
+                                <span style="font-size: 1.6rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); display: block; margin-bottom: 0.5rem;">📅</span>
+                                <div class="fw-bold text-dark small">{% if empleado.fecha_contratacion %}{{ empleado.fecha_contratacion.strftime('%d/%m/%Y') }}{% else %}N/A{% endif %}</div>
+                                <small class="text-muted">Contratación</small>
+                            </div>
+                        </div>
+                        <!-- Dirección -->
+                        {% if empleado.direccion %}
                         <div class="col-12">
-                            <h6 class="text-warning mb-3">Descripción del Cargo</h6>
-                            <p>{{ empleado.descripcion }}</p>
+                            <div class="bg-white rounded-3 p-3 shadow-xs h-100">
+                                <small class="text-muted d-block mb-1"><span style="font-size: 1rem; margin-right: 0.2rem;">📍</span>Dirección</small>
+                                <span class="fw-bold text-dark small" style="line-height: 1.5;">{{ empleado.direccion }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Salud -->
+                    {% if empleado.condiciones_enfermedades or empleado.alergico_medicamento %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">❤️‍🩹</span>
+                            <small class="text-uppercase fw-semibold text-muted">Salud</small>
+                        </div>
+                        <div class="bg-white rounded-3 p-3 shadow-xs">
+                            {% if empleado.condiciones_enfermedades %}
+                            <div class="mb-2">
+                                <small class="text-muted"><span style="font-size: 1rem; margin-right: 0.2rem;">🩺</span>Condiciones:</small>
+                                <p class="mb-0 small text-dark">{{ empleado.condiciones_enfermedades }}</p>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <small class="text-muted"><span style="font-size: 1rem; margin-right: 0.2rem;">🤧</span>Alergias a medicamentos:</small>
+                                <p class="mb-0 small text-dark">
+                                    {% if empleado.alergico_medicamento %}
+                                        {{ empleado.alergias_medicamento or 'Sí (no especificadas)' }}
+                                    {% else %}
+                                        No registra alergias
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Documentos -->
+                    {% if empleado.foto_cedula or empleado.referencia_file or empleado.curriculum %}
+                    <div>
+                        <div class="d-flex align-items-center mb-2">
+                            <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">📂</span>
+                            <small class="text-uppercase fw-semibold text-muted">Documentos</small>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if empleado.foto_cedula %}
+                            <a href="{{ url_for('download_file', filepath=empleado.foto_cedula) }}" class="btn btn-outline-primary btn-sm rounded-pill">
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">🪪</span>Cédula
+                            </a>
+                            {% endif %}
+                            {% if empleado.referencia_file %}
+                            <a href="{{ url_for('download_file', filepath=empleado.referencia_file) }}" class="btn btn-outline-info btn-sm rounded-pill">
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">📝</span>Referencia
+                            </a>
+                            {% endif %}
+                            {% if empleado.curriculum %}
+                            <a href="{{ url_for('download_file', filepath=empleado.curriculum) }}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                                <span style="font-size: 1rem; margin-right: 0.2rem;">📄</span>Currículum
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                    <a href="{{ url_for('editar_empleado', empleado_id=empleado.id) }}" class="btn btn-primary">
-                        <i class="fas fa-edit me-2"></i>Editar
+
+                <div class="modal-footer bg-light border-0 py-3 px-4 d-flex justify-content-between" style="border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-semibold shadow-xs" data-bs-dismiss="modal">
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">❌</span>Cerrar
+                    </button>
+                    <a href="{{ url_for('editar_empleado', empleado_id=empleado.id) }}" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm">
+                        <span style="font-size: 1.2rem; margin-right: 0.5rem;">✏️</span>Editar Empleado
                     </a>
                 </div>
             </div>
@@ -199,7 +272,7 @@
                     <p><strong>Empleado:</strong> {{ empleado.nombre }} {{ empleado.apellido }}</p>
                     <p><strong>Cargo:</strong> {{ empleado.cargo or 'N/A' }}</p>
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Esta acción no se puede deshacer.
+                        <span style="font-size: 1rem; margin-right: 0.2rem;">⚠️</span>Esta acción no se puede deshacer.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -217,13 +290,123 @@
 </div>
 
 {% if not empleados %}
-<div class="text-center py-5">
-    <i class="fas fa-users fa-4x text-muted mb-3"></i>
-    <h5 class="text-muted mb-3">No hay empleados registrados</h5>
-    <p>Añade a tu equipo para empezar a gestionar.</p>
-    <a href="{{ url_for('nuevo_empleado') }}" class="btn btn-primary mt-2">
-        <i class="fas fa-plus me-2"></i>Registrar Empleado
-    </a>
-</div>
+    <div class="col-12 mt-3">
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-light">
+            <div class="mb-4" style="width: 120px; height: 120px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                <span style="font-size: 4rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2)); margin-bottom: 1rem; display: block; opacity: 0.5;">👥</span>
+            </div>
+            <h3 class="fw-bold text-dark mb-2">No hay empleados registrados</h3>
+            <p class="text-muted mb-4" style="font-size: 1.1rem;">Construye tu equipo de trabajo para gestionar la finca de manera eficiente.</p>
+            <a href="{{ url_for('nuevo_empleado') }}" class="btn btn-primary px-5 py-3 fw-bold rounded-pill shadow-sm" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;">
+                <span style="font-size: 1.2rem; margin-right: 0.5rem; filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.2));">➕</span>Registrar mi primer empleado
+            </a>
+        </div>
+    </div>
 {% endif %}
+</div>
+
+<style>
+.bg-gradient-blue { background: linear-gradient(135deg,#3b82f6,#1d4ed8) !important; }
+.bg-success-soft { background-color:rgba(16,185,129,.12) !important; color:#10b981 !important; }
+.bg-danger-soft  { background-color:rgba(239,68,68,.12) !important;  color:#ef4444 !important; }
+.shadow-xs { box-shadow:0 1px 3px rgba(0,0,0,.05) !important; }
+
+/* Tarjetas Premium de Empleados */
+.empleado-card {
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+    background: #ffffff;
+    border: 1px solid #f1f5f9 !important;
+    position: relative;
+    overflow: hidden;
+}
+.empleado-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: #e2e8f0 !important;
+}
+
+/* Avatar de Empleado */
+.empleado-avatar-wrapper {
+    width: 110px;
+    height: 110px;
+}
+.empleado-avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.avatar-fallback {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    border: 4px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Acciones en la esquina */
+.empleado-actions-top {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+.btn-action-top {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.btn-action-top:hover {
+    background: #ffffff;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Scrollbar modal */
+.modal-body::-webkit-scrollbar { width:6px; }
+.modal-body::-webkit-scrollbar-track { background:#f8fafc; }
+.modal-body::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:10px; }
+.modal-body::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputFiltro = document.getElementById('filtroEmpleados');
+    const tarjetas = document.querySelectorAll('.empleado-item');
+    
+    if(inputFiltro) {
+        inputFiltro.addEventListener('keyup', function() {
+            const valor = this.value.toLowerCase().trim();
+            
+            tarjetas.forEach(function(tarjeta) {
+                const nombre = tarjeta.getAttribute('data-nombre');
+                const cargo = tarjeta.getAttribute('data-cargo');
+                
+                if (nombre.includes(valor) || cargo.includes(valor)) {
+                    tarjeta.style.display = '';
+                } else {
+                    tarjeta.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

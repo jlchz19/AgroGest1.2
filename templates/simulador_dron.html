@@ -1,0 +1,2764 @@
+{% extends "base.html" %}
+
+{% block title %}Simulador Realista de Dron - AgroGest{% endblock %}
+{% block page_title %}Monitoreo Aéreo 3D{% endblock %}
+
+{% block content %}
+<!-- Overlay de conexión -->
+<div id="connection-overlay" class="connection-overlay">
+    <div class="terminal-text">
+        <p>> INICIANDO PROTOCOLO DE ENLACE...</p>
+        <p class="delay-1">> BUSCANDO DRON: {{ dron.nombre | upper }}</p>
+        <p class="delay-2">> MODELO: {{ dron.modelo | upper }}</p>
+        <p class="delay-3">> ESTABLECIENDO CONEXIÓN RTSP SECURA...</p>
+        <p class="delay-4">> RECIBIENDO TELEMETRÍA (BATERÍA: {{ dron.bateria }}%)</p>
+        <p class="delay-5 text-success">> CONEXIÓN ESTABLECIDA EXITOSAMENTE.</p>
+        <div class="loader-bar delay-3"></div>
+    </div>
+</div>
+
+<div class="simulator-container">
+    <div id="hud">
+        <!-- Overlay superior -->
+        <div class="hud-top">
+            <div class="hud-item text-warning fw-bold">{{ dron.nombre | upper }}</div>
+            <div class="hud-item"><span class="rec-dot"></span> LIVE </div>
+            <div class="hud-item"><i class="fas fa-satellite-dish"></i> GPS 14 </div>
+            <div class="hud-item"><i class="fas fa-signal"></i> 98% </div>
+            <div class="hud-battery"><i class="fas fa-battery-half"></i> {{ dron.bateria }}%</div>
+        </div>
+
+        <!-- Retícula sutil -->
+        <div class="crosshair-center"></div>
+
+        <!-- Telemetría estilo Drone Real -->
+        <div class="hud-bottom">
+            <div class="telemetry-box">
+                <span class="t-label">ALTITUD</span>
+                <span class="t-value"><span id="alt-val">0.0</span> <small>m</small></span>
+            </div>
+            <div class="telemetry-box">
+                <span class="t-label">VELOCIDAD</span>
+                <span class="t-value"><span id="spd-val">0.0</span> <small>km/h</small></span>
+            </div>
+            <div class="telemetry-box">
+                <span class="t-label">DISTANCIA</span>
+                <span class="t-value"><span id="dist-val">0.0</span> <small>m</small></span>
+            </div>
+        </div>
+
+        <!-- Detector de animales -->
+        <div class="animal-detector" id="animal-detector" style="display: none;">
+            <div class="detector-header">
+                <i class="fas fa-crosshairs text-success"></i> ANIMAL DETECTADO
+            </div>
+            <div class="detector-content">
+                <div class="animal-info">
+                    <span class="info-label">ID:</span>
+                    <span class="info-value" id="animal-id">-</span>
+                </div>
+                <div class="animal-info">
+                    <span class="info-label">Nombre:</span>
+                    <span class="info-value" id="animal-nombre">-</span>
+                </div>
+                <div class="animal-info">
+                    <span class="info-label">Tipo:</span>
+                    <span class="info-value" id="animal-tipo">-</span>
+                </div>
+                <div class="animal-info">
+                    <span class="info-label">Raza:</span>
+                    <span class="info-value" id="animal-raza">-</span>
+                </div>
+                <div class="animal-info">
+                    <span class="info-label">Peso:</span>
+                    <span class="info-value" id="animal-peso">-</span>
+                </div>
+                <div class="animal-info">
+                    <span class="info-label">Distancia:</span>
+                    <span class="info-value" id="animal-distancia">-</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Instrucciones -->
+        <div class="hud-instructions" id="instructions">
+            <h5><i class="fas fa-gamepad"></i> Controles del Dron</h5>
+            <hr class="border-secondary my-2">
+            <div class="d-flex justify-content-between mb-1"><span>Avanzar / Retroceder</span> <b>W / S</b></div>
+            <div class="d-flex justify-content-between mb-1"><span>Desplazamiento Lateral</span> <b>A / D</b></div>
+            <div class="d-flex justify-content-between mb-1"><span>Subir / Bajar</span> <b>&uarr; / &darr;</b></div>
+            <div class="d-flex justify-content-between mb-1"><span>Girar Dron</span> <b>&larr; / &rarr;</b></div>
+            <div class="d-flex justify-content-between text-warning mt-2"><span>Freno automático</span> <b>Soltar teclas</b></div>
+            <p class="text-center mt-3 mb-0 fs-6 animate-pulse"><i>Haz clic para activar controles</i></p>
+            <p class="text-center text-info mt-1 mb-0 mobile-only-text" style="display: none;"><i>En móviles: Toca la pantalla para activar y usa los joysticks</i></p>
+        </div>
+    </div>
+    <!-- Joysticks Móviles -->
+    <div id="joystick-left" class="joystick-zone"></div>
+    <div id="joystick-right" class="joystick-zone"></div>
+    <div id="canvas-container"></div>
+</div>
+
+<style>
+    .content { padding: 0 !important; overflow: hidden; }
+    
+    /* PANTALLA DE CONEXIÓN */
+    .connection-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: #0a0a0a; z-index: 9999;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        transition: opacity 1s ease-out;
+    }
+    .terminal-text {
+        font-family: 'Courier New', Courier, monospace;
+        color: #0ea5e9; font-size: 1.2rem; width: 600px; max-width: 90%;
+    }
+    .terminal-text p { margin: 5px 0; opacity: 0; animation: typeIn 0.1s forwards; }
+    .delay-1 { animation-delay: 0.5s !important; }
+    .delay-2 { animation-delay: 1.0s !important; }
+    .delay-3 { animation-delay: 1.8s !important; }
+    .delay-4 { animation-delay: 2.6s !important; }
+    .delay-5 { animation-delay: 3.5s !important; }
+    
+    @keyframes typeIn { to { opacity: 1; } }
+    
+    .loader-bar {
+        height: 4px; background: #0ea5e9; margin-top: 20px; width: 0%;
+        animation: loadBar 2s forwards; opacity: 0;
+    }
+    @keyframes loadBar { 0% { width: 0%; opacity: 1; } 100% { width: 100%; opacity: 1; } }
+
+    .simulator-container {
+        position: relative;
+        width: 100%;
+        height: calc(100dvh - 70px);
+        background-color: #87CEEB;
+        overflow: hidden;
+    }
+
+    #canvas-container {
+        width: 100%; height: 100%; display: block;
+    }
+    #canvas-container canvas {
+        display: block; width: 100% !important; height: 100% !important;
+        outline: none;
+    }
+
+    /* HUD ESTILOS MEJORADOS */
+    #hud {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none; z-index: 10;
+        color: #ffffff;
+        font-family: 'Outfit', sans-serif;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        box-shadow: inset 0 0 100px rgba(0,0,0,0.3);
+    }
+
+    .hud-top {
+        position: absolute; top: 20px; left: 30px; right: 30px;
+        display: flex; gap: 20px;
+        font-size: 1.1rem; font-weight: 600;
+        background: rgba(0,0,0,0.4);
+        padding: 8px 20px; border-radius: 30px;
+        backdrop-filter: blur(4px);
+        width: fit-content; margin: 0 auto;
+    }
+
+    .hud-item { display: flex; align-items: center; gap: 8px; }
+    .rec-dot {
+        display: inline-block; width: 10px; height: 10px;
+        background-color: #ff3333; border-radius: 50%;
+        box-shadow: 0 0 8px #ff3333;
+        animation: blink 1s infinite;
+    }
+    @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.3;} 100% {opacity: 1;} }
+
+    .crosshair-center {
+        position: absolute; top: 50%; left: 50%;
+        width: 12px; height: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        border-radius: 50%; transform: translate(-50%, -50%);
+    }
+    .crosshair-center::after {
+        content: ''; position: absolute; top: 50%; left: 50%;
+        width: 2px; height: 2px; background: white;
+        transform: translate(-50%, -50%);
+    }
+
+    .hud-bottom {
+        position: absolute; bottom: 30px; left: 50%;
+        transform: translateX(-50%);
+        display: flex; gap: 30px;
+    }
+
+    .telemetry-box {
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(5px);
+        padding: 10px 20px;
+        border-radius: 12px;
+        border-bottom: 3px solid #0ea5e9;
+        display: flex; flex-direction: column; align-items: center;
+        min-width: 120px;
+    }
+
+    .t-label { font-size: 0.75rem; color: #bae6fd; letter-spacing: 1px; }
+    .t-value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
+    .t-value small { font-size: 0.9rem; font-weight: 500; opacity: 0.8; }
+
+    .hud-instructions {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(15, 23, 42, 0.85);
+        padding: 30px; border-radius: 15px;
+        color: white; text-shadow: none;
+        pointer-events: auto; cursor: pointer;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        min-width: 320px; transition: opacity 0.3s ease;
+    }
+    
+    .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+    /* Detector de animales */
+    .animal-detector {
+        position: absolute;
+        top: 100px;
+        right: 30px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 2px solid #22c55e;
+        border-radius: 12px;
+        padding: 15px;
+        color: white;
+        min-width: 280px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .detector-header {
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(34, 197, 94, 0.3);
+        letter-spacing: 1px;
+    }
+
+    .detector-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .animal-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+    }
+
+    .info-label {
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #22c55e;
+        font-weight: 600;
+    }
+
+    /* Mobile Touch Joysticks */
+    .joystick-zone {
+        position: absolute;
+        bottom: 50px;
+        width: 150px;
+        height: 150px;
+        z-index: 20;
+        display: none; /* Hidden by default on desktop */
+    }
+    #joystick-left { left: 20px; }
+    #joystick-right { right: 20px; }
+    
+    @media (max-width: 800px), (pointer: coarse) {
+        .simulator-container {
+            height: calc(100dvh - 60px);
+        }
+        .joystick-zone {
+            display: block;
+        }
+        .hud-instructions .d-flex {
+            display: none !important;
+        }
+        .mobile-only-text {
+            display: block !important;
+        }
+        .hud-top {
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            gap: 10px;
+        }
+        .hud-bottom {
+            bottom: 15px;
+            gap: 10px;
+        }
+        .telemetry-box {
+            padding: 5px 10px;
+            min-width: 80px;
+        }
+        .t-value {
+            font-size: 1.2rem;
+        }
+        /* Espacio para joysticks táctiles y que no tapen la telemetría */
+        #joystick-left, #joystick-right {
+            bottom: 75px;
+            width: 120px;
+            height: 120px;
+        }
+        .animal-detector {
+            top: 60px;
+            right: 10px;
+            min-width: 220px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Pantalla de carga inmersiva
+    setTimeout(() => {
+        const overlay = document.getElementById('connection-overlay');
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.style.display = 'none', 1000);
+    }, 4500); // 4.5 segundos de carga simulada
+
+    // Ocultar sidebar
+    const sidebar = document.getElementById('sidebar');
+    if(sidebar && window.innerWidth > 768) {
+        sidebar.classList.add('active');
+        const content = document.getElementById('content');
+        if(content) content.classList.add('active');
+    }
+
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    
+    // Cielo con gradiente más realista usando shader
+    const skyGeo = new THREE.SphereGeometry(2000, 32, 32);
+    const skyMat = new THREE.ShaderMaterial({
+        uniforms: {
+            topColor: { value: new THREE.Color(0x0077ff) },
+            bottomColor: { value: new THREE.Color(0x87CEEB) },
+            offset: { value: 33 },
+            exponent: { value: 0.6 }
+        },
+        vertexShader: `
+            varying vec3 vWorldPosition;
+            void main() {
+                vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                vWorldPosition = worldPosition.xyz;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 topColor;
+            uniform vec3 bottomColor;
+            uniform float offset;
+            uniform float exponent;
+            varying vec3 vWorldPosition;
+            void main() {
+                float h = normalize(vWorldPosition + offset).y;
+                gl_FragColor = vec4(mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0)), 1.0);
+            }
+        `,
+        side: THREE.BackSide
+    });
+    const sky = new THREE.Mesh(skyGeo, skyMat);
+    scene.add(sky);
+    
+    scene.fog = new THREE.FogExp2(0x87CEEB, 0.001);
+
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 4000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.bias = -0.0001;
+    // Tono cinematográfico realista
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    container.appendChild(renderer.domElement);
+
+    // --- LUZ ATMOSFÉRICA (FOTOREALISTA MEJORADA) ---
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
+    hemiLight.position.set(0, 500, 0);
+    scene.add(hemiLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.4);
+    sunLight.position.set(400, 600, 300);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 4096;
+    sunLight.shadow.mapSize.height = 4096;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 3000;
+    sunLight.shadow.camera.left = -1000;
+    sunLight.shadow.camera.right = 1000;
+    sunLight.shadow.camera.top = 1000;
+    sunLight.shadow.camera.bottom = -1000;
+    sunLight.shadow.bias = -0.0001;
+    sunLight.shadow.normalBias = 0.02;
+    scene.add(sunLight);
+
+    // Luz de relleno suave (azulada para contraste)
+    const fillLight = new THREE.DirectionalLight(0xe6f0ff, 0.3);
+    fillLight.position.set(-200, 300, -200);
+    scene.add(fillLight);
+
+    // Luz de relleno cálida (naranja para calidez)
+    const warmFill = new THREE.DirectionalLight(0xffeedd, 0.25);
+    warmFill.position.set(200, 200, 200);
+    scene.add(warmFill);
+
+    // Luz ambiental cálida
+    const ambientLight = new THREE.AmbientLight(0xffeedd, 0.25);
+    scene.add(ambientLight);
+
+    // --- CARGADOR DE TEXTURAS PROCEDURAL (Sin errores de red) ---
+    // Pasto Fotorealista generado en memoria
+    function createAdvancedGrass() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 2048; canvas.height = 2048;
+        const ctx = canvas.getContext('2d');
+        
+        // Fondo base con múltiples capas
+        const gradient = ctx.createRadialGradient(1024, 1024, 0, 1024, 1024, 1024);
+        gradient.addColorStop(0, '#4a7c3a');
+        gradient.addColorStop(0.5, '#3d6b2e');
+        gradient.addColorStop(1, '#2d5c1e');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 2048, 2048);
+        
+        // Capa de tierra base
+        for(let i=0; i<30000; i++) {
+            ctx.fillStyle = `rgba(${80 + Math.random()*40}, ${60 + Math.random()*30}, ${40 + Math.random()*20}, ${Math.random()*0.3 + 0.1})`;
+            ctx.fillRect(Math.random()*2048, Math.random()*2048, Math.random()*8+2, Math.random()*8+2);
+        }
+        
+        // Capas de pasto con diferentes tonos
+        for(let i=0; i<120000; i++) {
+            const rand = Math.random();
+            if(rand > 0.9) {
+                ctx.fillStyle = '#6ba44a'; // Pasto claro
+            } else if(rand > 0.75) {
+                ctx.fillStyle = '#4a8a3a'; // Pasto medio
+            } else if(rand > 0.5) {
+                ctx.fillStyle = '#3a6a2a'; // Pasto oscuro
+            } else if(rand > 0.3) {
+                ctx.fillStyle = '#5c7a3a'; // Verde oliva
+            } else {
+                ctx.fillStyle = '#4a5a2a'; // Amarillento
+            }
+            ctx.globalAlpha = Math.random() * 0.5 + 0.3;
+            const size = Math.random() * 4 + 1;
+            ctx.fillRect(Math.random()*2048, Math.random()*2048, size, size);
+        }
+        
+        // Detalles de hojas individuales
+        for(let i=0; i<40000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? '#3a7a2a' : '#5a9a4a';
+            ctx.globalAlpha = Math.random() * 0.4 + 0.2;
+            const x = Math.random()*2048;
+            const y = Math.random()*2048;
+            const length = Math.random()*6+2;
+            ctx.fillRect(x, y, 1, length);
+        }
+        
+        // Flores silvestres variadas
+        const flowerColors = ['#ffff00', '#ffffff', '#ff69b4', '#ffa500', '#ff6347'];
+        for(let i=0; i<1500; i++) {
+            ctx.fillStyle = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+            ctx.globalAlpha = 0.7;
+            ctx.beginPath();
+            ctx.arc(Math.random()*2048, Math.random()*2048, Math.random()*3 + 1, 0, Math.PI*2);
+            ctx.fill();
+        }
+        
+        // Pequeñas piedras
+        for(let i=0; i<2000; i++) {
+            ctx.fillStyle = `rgba(${100 + Math.random()*50}, ${100 + Math.random()*50}, ${100 + Math.random()*50}, ${Math.random()*0.5 + 0.3})`;
+            ctx.globalAlpha = Math.random() * 0.4 + 0.3;
+            ctx.beginPath();
+            ctx.arc(Math.random()*2048, Math.random()*2048, Math.random()*2 + 0.5, 0, Math.PI*2);
+            ctx.fill();
+        }
+        
+        ctx.globalAlpha = 1.0;
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.wrapS = THREE.RepeatWrapping; 
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(150, 150);
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        return tex;
+    }
+
+    // Vaca Realista generada en memoria (Silueta detallada)
+    function createCowSpriteTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512; canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Sombra suave
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(256, 400, 120, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Cuerpo principal (blanco crema)
+        ctx.fillStyle = '#f5f5dc';
+        ctx.beginPath();
+        ctx.ellipse(256, 250, 140, 85, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Cabeza
+        ctx.beginPath();
+        ctx.ellipse(110, 170, 55, 45, -Math.PI/6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Cuello
+        ctx.beginPath();
+        ctx.moveTo(140, 160);
+        ctx.lineTo(200, 195);
+        ctx.lineTo(145, 245);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Patas (más detalladas)
+        ctx.fillStyle = '#f5f5dc';
+        // Delantera izquierda
+        ctx.fillRect(175, 310, 22, 95);
+        ctx.fillRect(178, 395, 8, 15); // Pezuña
+        // Delantera derecha
+        ctx.fillRect(205, 310, 22, 88);
+        ctx.fillRect(208, 388, 8, 15);
+        // Trasera izquierda
+        ctx.fillRect(315, 310, 26, 95);
+        ctx.fillRect(318, 395, 10, 15);
+        // Trasera derecha
+        ctx.fillRect(355, 310, 22, 88);
+        ctx.fillRect(358, 388, 8, 15);
+        
+        // Ubre
+        ctx.fillStyle = '#ffb6c1';
+        ctx.beginPath();
+        ctx.ellipse(295, 325, 32, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Cola
+        ctx.fillStyle = '#f5f5dc';
+        ctx.beginPath();
+        ctx.moveTo(390, 250);
+        ctx.quadraticCurveTo(430, 280, 420, 350);
+        ctx.quadraticCurveTo(415, 370, 400, 340);
+        ctx.quadraticCurveTo(395, 300, 390, 250);
+        ctx.fill();
+        
+        // Punta de la cola (negra)
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.ellipse(415, 355, 12, 8, Math.PI/4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Manchas Negras (Holstein) - más realistas
+        ctx.fillStyle = '#1a1a1a';
+        // Mancha grande del cuerpo
+        ctx.beginPath();
+        ctx.ellipse(230, 245, 45, 55, Math.PI/5, 0, Math.PI*2);
+        ctx.fill();
+        // Mancha trasera
+        ctx.beginPath();
+        ctx.ellipse(310, 235, 55, 65, -Math.PI/5, 0, Math.PI*2);
+        ctx.fill();
+        // Mancha de la cabeza
+        ctx.beginPath();
+        ctx.ellipse(115, 165, 28, 22, 0, 0, Math.PI*2);
+        ctx.fill();
+        // Mancha del cuello
+        ctx.beginPath();
+        ctx.ellipse(160, 200, 20, 25, -Math.PI/4, 0, Math.PI*2);
+        ctx.fill();
+        
+        // Ojo
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(95, 160, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(93, 158, 2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Orejas
+        ctx.fillStyle = '#f5f5dc';
+        ctx.beginPath();
+        ctx.ellipse(70, 140, 15, 8, -Math.PI/3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(75, 195, 15, 8, Math.PI/4, 0, Math.PI*2);
+        ctx.fill();
+        
+        // Hocico
+        ctx.fillStyle = '#ffb6c1';
+        ctx.beginPath();
+        ctx.ellipse(60, 175, 18, 12, -Math.PI/6, 0, Math.PI*2);
+        ctx.fill();
+        
+        // Narinas
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(52, 172, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(58, 178, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        return new THREE.CanvasTexture(canvas);
+    }
+    
+    const grassTex = createAdvancedGrass();
+    const cowTex = createCowSpriteTexture();
+
+    // --- TERRENO (POTREROS) ---
+    const planeGeo = new THREE.PlaneGeometry(3000, 3000, 256, 256);
+    planeGeo.rotateX(-Math.PI / 2);
+    
+    const simplex = new SimplexNoise();
+    const pos = planeGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i); const z = pos.getZ(i);
+        // Terreno más variado y realista
+        let y = simplex.noise2D(x * 0.0008, z * 0.0008) * 50;  // Colinas grandes
+        y += simplex.noise2D(x * 0.003, z * 0.003) * 15;   // Colinas medianas
+        y += simplex.noise2D(x * 0.01, z * 0.01) * 3;      // Detalles pequeños
+        
+        // Crear valles suaves
+        const distFromCenter = Math.sqrt(x*x + z*z);
+        if(distFromCenter < 300) {
+            y *= 0.3; // Área más plana cerca del centro
+        }
+        
+        pos.setY(i, y);
+    }
+    planeGeo.computeVertexNormals();
+
+    const grassMat = new THREE.MeshStandardMaterial({ 
+        map: grassTex,
+        roughness: 1.0, metalness: 0.0
+    });
+    
+    const ground = new THREE.Mesh(planeGeo, grassMat);
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Función para obtener la altura del suelo en cualquier (X,Z)
+    function getGroundHeight(x, z) {
+        let y = simplex.noise2D(x * 0.0008, z * 0.0008) * 50;
+        y += simplex.noise2D(x * 0.003, z * 0.003) * 15;
+        y += simplex.noise2D(x * 0.01, z * 0.01) * 3;
+        
+        const distFromCenter = Math.sqrt(x*x + z*z);
+        if(distFromCenter < 300) {
+            y *= 0.3;
+        }
+        
+        return y;
+    }
+
+    // --- CERCAS (DELIMITANDO POTREROS) ---
+    const fenceMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 1.0 });
+    const postGeo = new THREE.CylinderGeometry(0.35, 0.4, 4.5, 8);
+    const wireGeo = new THREE.CylinderGeometry(0.06, 0.06, 50, 4);
+    wireGeo.rotateZ(Math.PI / 2);
+
+    const fences = new THREE.Group();
+    // Crear una cuadrícula de potreros de 200x200
+    for (let x = -600; x <= 600; x += 200) {
+        for (let z = -600; z <= 600; z += 50) {
+            if (z % 200 !== 0 && x % 200 !== 0) continue; // Solo contornos
+            
+            // Postes cada 50 metros
+            const h = getGroundHeight(x, z);
+            const post = new THREE.Mesh(postGeo, fenceMat);
+            post.position.set(x, h + 2.25, z);
+            post.castShadow = true;
+            post.receiveShadow = true;
+            fences.add(post);
+
+            // Alambres horizontales (3 niveles para más realismo)
+            if (z < 600 && x % 200 === 0) {
+                const midH = (getGroundHeight(x, z) + getGroundHeight(x, z+50)) / 2;
+                for(let level = 0; level < 3; level++) {
+                    const wire = new THREE.Mesh(wireGeo, new THREE.MeshStandardMaterial({color:0x777777, metalness: 0.3}));
+                    wire.position.set(x, midH + 0.8 + level * 1.2, z + 25);
+                    wire.rotation.y = Math.PI / 2;
+                    fences.add(wire);
+                }
+            }
+            if (x < 600 && z % 200 === 0) {
+                const midH = (getGroundHeight(x, z) + getGroundHeight(x+50, z)) / 2;
+                for(let level = 0; level < 3; level++) {
+                    const wire = new THREE.Mesh(wireGeo, new THREE.MeshStandardMaterial({color:0x777777, metalness: 0.3}));
+                    wire.position.set(x + 25, midH + 0.8 + level * 1.2, z);
+                    fences.add(wire);
+                }
+            }
+        }
+    }
+    scene.add(fences);
+
+    // --- CARGAR ANIMALES REALES DEL SISTEMA ---
+    let realAnimales = [];
+    let animalSprites = [];
+    
+    async function loadRealAnimales() {
+        console.log('Iniciando carga de animales...');
+        try {
+            const response = await fetch('/api/animales_simulador');
+            console.log('Respuesta recibida, status:', response.status);
+            const result = await response.json();
+            
+            console.log('Respuesta API animales:', result);
+            
+            if (result.success && result.data && result.data.length > 0) {
+                realAnimales = result.data;
+                console.log(`✓ Cargados ${realAnimales.length} animales del sistema`);
+                createRealAnimalSprites();
+            } else {
+                console.log('✗ No hay animales en el sistema o respuesta vacía, usando animales simulados');
+                createSimulatedAnimales();
+            }
+        } catch (error) {
+            console.error('✗ Error al cargar animales:', error);
+            // Si falla, usar animales simulados
+            console.log('Usando animales simulados debido a error');
+            createSimulatedAnimales();
+        }
+    }
+    
+    function getAnimalTexture(tipo) {
+        // Retornar la textura apropiada según el tipo de animal
+        if (tipo.toLowerCase().includes('vaca') || tipo.toLowerCase().includes('bovino')) {
+            return cowTex;
+        } else if (tipo.toLowerCase().includes('cerdo') || tipo.toLowerCase().includes('porcino')) {
+            return pigTex;
+        } else if (tipo.toLowerCase().includes('gallina') || tipo.toLowerCase().includes('pollo') || tipo.toLowerCase().includes('ave')) {
+            return chickenTex;
+        } else if (tipo.toLowerCase().includes('caballo') || tipo.toLowerCase().includes('equino')) {
+            return horseTex;
+        } else if (tipo.toLowerCase().includes('oveja') || tipo.toLowerCase().includes('carnero') || tipo.toLowerCase().includes('ovino')) {
+            return sheepTex;
+        } else {
+            return cowTex; // Default
+        }
+    }
+    
+    function createRealAnimalSprites() {
+        console.log(`✓ Creando sprites para ${realAnimales.length} animales`);
+        realAnimales.forEach((animal, index) => {
+            const tex = getAnimalTexture(animal.tipo);
+            const material = new THREE.SpriteMaterial({ map: tex, color: 0xffffff, transparent: true });
+            const sprite = new THREE.Sprite(material);
+            
+            // Escala según tipo
+            let scale = 4;
+            if (animal.tipo.toLowerCase().includes('cerdo')) scale = 2.5;
+            else if (animal.tipo.toLowerCase().includes('gallina')) scale = 2;
+            else if (animal.tipo.toLowerCase().includes('caballo')) scale = 5;
+            else if (animal.tipo.toLowerCase().includes('oveja')) scale = 2.8;
+            
+            sprite.scale.set(scale, scale, 1);
+            
+            // Posición desde la API
+            const x = animal.pos_x;
+            const z = animal.pos_z;
+            const y = getGroundHeight(x, z);
+            
+            sprite.position.set(x, y, z);
+            
+            console.log(`  Sprite ${index}: ${animal.identificacion} (${animal.tipo}) en (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
+            
+            // Guardar datos del animal en el sprite
+            sprite.userData = {
+                animalId: animal.id,
+                identificacion: animal.identificacion,
+                nombre: animal.nombre,
+                tipo: animal.tipo,
+                raza: animal.raza,
+                peso: animal.peso,
+                sexo: animal.sexo,
+                offset: Math.random() * 100,
+                speed: Math.random() * 0.005 + 0.002
+            };
+            
+            scene.add(sprite);
+            animalSprites.push(sprite);
+        });
+        console.log(`✓ Total sprites creados y agregados a escena: ${animalSprites.length}`);
+        
+        // Mostrar alerta visual si no hay sprites
+        if (animalSprites.length === 0) {
+            console.warn('⚠ No se crearon sprites de animales');
+        }
+    }
+    
+    function createSimulatedAnimales() {
+        console.log('Creando animales simulados (fallback)');
+        // --- VACAS (SPRITES / BILLBOARDS REALISTAS) ---
+        const cowMaterial = new THREE.SpriteMaterial({ map: cowTex, color: 0xffffff, transparent: true });
+        
+        function createCow() {
+            const sprite = new THREE.Sprite(cowMaterial);
+            sprite.scale.set(4, 4, 1);
+            const shadowPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(3, 1.5), 
+                new THREE.MeshBasicMaterial({color: 0x000000, transparent: true, opacity: 0.4})
+            );
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.y = -1.8;
+            sprite.add(shadowPlane);
+            return sprite;
+        }
+
+        for(let i=0; i<80; i++) {
+            const cow = createCow();
+            const cx = (Math.random() - 0.5) * 1000;
+            const cz = (Math.random() - 0.5) * 1000;
+            const cy = getGroundHeight(cx, cz);
+            
+            cow.position.set(cx, cy, cz);
+            cow.userData = { 
+                animalId: null,
+                identificacion: 'SIM-' + i,
+                nombre: 'Vaca Simulada',
+                tipo: 'Vaca',
+                raza: 'Holstein',
+                peso: 500,
+                sexo: 'Hembra',
+                offset: Math.random() * 100, 
+                speed: Math.random() * 0.005 + 0.002 
+            };
+            scene.add(cow);
+            animalSprites.push(cow);
+        }
+        console.log(`Total animales simulados creados: ${animalSprites.length}`);
+    }
+    
+    // --- ÁRBOLES REALISTAS ---
+    function createRealisticTree(x, z, type = 'oak') {
+        const treeGroup = new THREE.Group();
+        const h = Math.random() * 15 + 10;
+        
+        const trunkMat = new THREE.MeshStandardMaterial({color: 0x4a3728, roughness: 0.95});
+        
+        // Tronco con irregularidades
+        const trunkGeo = new THREE.CylinderGeometry(0.4, 0.7, h, 12);
+        const pos = trunkGeo.attributes.position;
+        for(let i = 0; i < pos.count; i++) {
+            const x = pos.getX(i);
+            const y = pos.getY(i);
+            const z = pos.getZ(i);
+            const noise = simplex.noise3D(x * 0.5, y * 0.5, z * 0.5) * 0.1;
+            pos.setX(i, x + noise);
+            pos.setZ(i, z + noise);
+        }
+        trunkGeo.computeVertexNormals();
+        const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = h/2;
+        trunk.castShadow = true;
+        treeGroup.add(trunk);
+        
+        // Copa del árbol con múltiples esferas superpuestas para aspecto orgánico
+        const leavesMat = new THREE.MeshStandardMaterial({color: type === 'pine' ? 0x2d5a2d : 0x3a6a2a, roughness: 0.9});
+        
+        if(type === 'pine') {
+            // Pino: conos superpuestos
+            for(let i = 0; i < 4; i++) {
+                const cone = new THREE.Mesh(
+                    new THREE.ConeGeometry(h * (0.35 - i * 0.05), h * 0.4, 8),
+                    leavesMat
+                );
+                cone.position.y = h * 0.6 + i * h * 0.25;
+                cone.castShadow = true;
+                treeGroup.add(cone);
+            }
+        } else if(type === 'oak') {
+            // Roble: múltiples esferas irregulares
+            for(let i = 0; i < 8; i++) {
+                const size = h * (0.3 + Math.random() * 0.2);
+                const sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(size, 8, 8),
+                    leavesMat
+                );
+                sphere.position.set(
+                    (Math.random() - 0.5) * h * 0.4,
+                    h * 0.8 + (Math.random() - 0.5) * h * 0.2,
+                    (Math.random() - 0.5) * h * 0.4
+                );
+                sphere.castShadow = true;
+                treeGroup.add(sphere);
+            }
+        } else {
+            // Caducifolio: forma más redondeada
+            for(let i = 0; i < 6; i++) {
+                const size = h * (0.35 + Math.random() * 0.15);
+                const sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(size, 12, 12),
+                    leavesMat
+                );
+                sphere.position.set(
+                    (Math.random() - 0.5) * h * 0.3,
+                    h * 0.75 + (Math.random() - 0.5) * h * 0.15,
+                    (Math.random() - 0.5) * h * 0.3
+                );
+                sphere.castShadow = true;
+                treeGroup.add(sphere);
+            }
+        }
+        
+        const ty = getGroundHeight(x, z);
+        treeGroup.position.set(x, ty, z);
+        
+        return treeGroup;
+    }
+    
+    // Árboles variados y más orgánicos
+    const treeTypes = ['oak', 'pine', 'deciduous'];
+    for(let i=0; i<80; i++) {
+        const tx = (Math.random() - 0.5) * 1800;
+        const tz = (Math.random() - 0.5) * 1800;
+        const type = treeTypes[Math.floor(Math.random() * treeTypes.length)];
+        const tree = createRealisticTree(tx, tz, type);
+        scene.add(tree);
+    }
+
+    // --- AGREGAR ESTRUCTURAS DE LA FINCA AL PAISAJE ---
+    
+    // Casa principal (cerca del centro)
+    const house = createHouse();
+    const houseX = 50, houseZ = 50;
+    const houseY = getGroundHeight(houseX, houseZ);
+    house.position.set(houseX, houseY, houseZ);
+    house.rotation.y = Math.PI / 4;
+    scene.add(house);
+
+    // Segunda casa (casa del capataz)
+    const house2 = createHouse();
+    const house2X = 300, house2Z = -250;
+    const house2Y = getGroundHeight(house2X, house2Z);
+    house2.position.set(house2X, house2Y, house2Z);
+    house2.rotation.y = -Math.PI / 3;
+    house2.scale.set(0.8, 0.8, 0.8);
+    scene.add(house2);
+
+    // Establo (barn) más grande
+    const barn = createBarn();
+    const barnX = -80, barnZ = 100;
+    const barnY = getGroundHeight(barnX, barnZ);
+    barn.position.set(barnX, barnY, barnZ);
+    barn.rotation.y = -Math.PI / 6;
+    scene.add(barn);
+
+    // Segundo establo (para caballos)
+    const barn2 = createBarn();
+    const barn2X = 250, barn2Z = 200;
+    const barn2Y = getGroundHeight(barn2X, barn2Z);
+    barn2.position.set(barn2X, barn2Y, barn2Z);
+    barn2.rotation.y = Math.PI / 4;
+    barn2.scale.set(0.85, 0.85, 0.85);
+    scene.add(barn2);
+
+    // Gallinero (chicken coop)
+    const chickenCoop = createChickenCoop();
+    const coopX = 120, coopZ = -60;
+    const coopY = getGroundHeight(coopX, coopZ);
+    chickenCoop.position.set(coopX, coopY, coopZ);
+    scene.add(chickenCoop);
+
+    // Segundo gallinero
+    const chickenCoop2 = createChickenCoop();
+    const coop2X = -200, coop2Z = 150;
+    const coop2Y = getGroundHeight(coop2X, coop2Z);
+    chickenCoop2.position.set(coop2X, coop2Y, coop2Z);
+    chickenCoop2.rotation.y = Math.PI / 2;
+    scene.add(chickenCoop2);
+
+    // Corrales adicionales para ganado
+    const corral1 = createCorral(60, 50);
+    const corral1X = -150, corral1Z = -100;
+    const corral1Y = getGroundHeight(corral1X, corral1Z);
+    corral1.position.set(corral1X, corral1Y, corral1Z);
+    scene.add(corral1);
+
+    const corral2 = createCorral(50, 40);
+    const corral2X = 200, corral2Z = 150;
+    const corral2Y = getGroundHeight(corral2X, corral2Z);
+    corral2.position.set(corral2X, corral2Y, corral2Z);
+    scene.add(corral2);
+
+    const corral3 = createCorral(45, 35);
+    const corral3X = -250, corral3Z = 50;
+    const corral3Y = getGroundHeight(corral3X, corral3Z);
+    corral3.position.set(corral3X, corral3Y, corral3Z);
+    scene.add(corral3);
+
+    const corral4 = createCorral(55, 45);
+    const corral4X = 350, corral4Z = -100;
+    const corral4Y = getGroundHeight(corral4X, corral4Z);
+    corral4.position.set(corral4X, corral4Y, corral4Z);
+    scene.add(corral4);
+
+    // Montañas en el horizonte (lejanas)
+    const mountain1 = createMountain(150, 120);
+    mountain1.position.set(-800, 0, -800);
+    scene.add(mountain1);
+
+    const mountain2 = createMountain(180, 100);
+    mountain2.position.set(900, 0, -700);
+    scene.add(mountain2);
+
+    const mountain3 = createMountain(130, 90);
+    mountain3.position.set(0, 0, -1000);
+    scene.add(mountain3);
+
+    const mountain4 = createMountain(100, 70);
+    mountain4.position.set(-600, 0, 600);
+    scene.add(mountain4);
+
+    const mountain5 = createMountain(110, 85);
+    mountain5.position.set(700, 0, 800);
+    scene.add(mountain5);
+
+    const mountain6 = createMountain(90, 60);
+    mountain6.position.set(-900, 0, -200);
+    scene.add(mountain6);
+
+    // Potreros delimitados (finca plots)
+    const farmPlot1 = createFarmPlot(250, 250);
+    const plot1X = -300, plot1Z = 300;
+    const plot1Y = getGroundHeight(plot1X, plot1Z);
+    farmPlot1.position.set(plot1X, plot1Y, plot1Z);
+    scene.add(farmPlot1);
+
+    const farmPlot2 = createFarmPlot(200, 200);
+    const plot2X = 400, plot2Z = -200;
+    const plot2Y = getGroundHeight(plot2X, plot2Z);
+    farmPlot2.position.set(plot2X, plot2Y, plot2Z);
+    scene.add(farmPlot2);
+
+    const farmPlot3 = createFarmPlot(180, 180);
+    const plot3X = -450, plot3Z = -200;
+    const plot3Y = getGroundHeight(plot3X, plot3Z);
+    farmPlot3.position.set(plot3X, plot3Y, plot3Z);
+    scene.add(farmPlot3);
+
+    const farmPlot4 = createFarmPlot(220, 220);
+    const plot4X = 500, plot4Z = 350;
+    const plot4Y = getGroundHeight(plot4X, plot4Z);
+    farmPlot4.position.set(plot4X, plot4Y, plot4Z);
+    scene.add(farmPlot4);
+
+    // --- CAMINO DE TIERRA ---
+    function createDirtPath() {
+        const pathGroup = new THREE.Group();
+        
+        // Textura de tierra para el camino
+        const dirtCanvas = document.createElement('canvas');
+        dirtCanvas.width = 256; dirtCanvas.height = 256;
+        const dirtCtx = dirtCanvas.getContext('2d');
+        dirtCtx.fillStyle = '#8b7355';
+        dirtCtx.fillRect(0, 0, 256, 256);
+        // Textura de tierra
+        for(let i = 0; i < 5000; i++) {
+            dirtCtx.fillStyle = `rgba(${100 + Math.random()*50}, ${80 + Math.random()*40}, ${50 + Math.random()*30}, 0.4)`;
+            dirtCtx.fillRect(Math.random()*256, Math.random()*256, Math.random()*4+1, Math.random()*4+1);
+        }
+        // Huellas
+        for(let i = 0; i < 50; i++) {
+            dirtCtx.fillStyle = `rgba(${60 + Math.random()*30}, ${50 + Math.random()*30}, ${40 + Math.random()*20}, 0.3)`;
+            dirtCtx.beginPath();
+            dirtCtx.ellipse(Math.random()*256, Math.random()*256, Math.random()*4+2, Math.random()*2+1, Math.random()*Math.PI, 0, Math.PI*2);
+            dirtCtx.fill();
+        }
+        const dirtTex = new THREE.CanvasTexture(dirtCanvas);
+        dirtTex.wrapS = THREE.RepeatWrapping;
+        dirtTex.wrapT = THREE.RepeatWrapping;
+        dirtTex.repeat.set(4, 20);
+        
+        const pathMat = new THREE.MeshStandardMaterial({map: dirtTex, roughness: 1.0});
+        
+        // Camino principal desde la casa al establo
+        const pathGeo = new THREE.PlaneGeometry(10, 150);
+        pathGeo.rotateX(-Math.PI / 2);
+        const path = new THREE.Mesh(pathGeo, pathMat);
+        
+        // Posicionar y rotar el camino
+        const midX = (houseX + barnX) / 2;
+        const midZ = (houseZ + barnZ) / 2;
+        const midY = getGroundHeight(midX, midZ);
+        path.position.set(midX, midY + 0.15, midZ);
+        path.rotation.y = Math.atan2(barnZ - houseZ, barnX - houseX);
+        
+        pathGroup.add(path);
+        
+        // Piedras en el camino
+        for(let i = 0; i < 20; i++) {
+            const t = Math.random();
+            const px = houseX + (barnX - houseX) * t;
+            const pz = houseZ + (barnZ - houseZ) * t;
+            const py = getGroundHeight(px, pz);
+            
+            const rock = createRock();
+            rock.scale.multiplyScalar(0.2 + Math.random() * 0.2);
+            rock.position.set(
+                px + (Math.random() - 0.5) * 6,
+                py + 0.1,
+                pz + (Math.random() - 0.5) * 6
+            );
+            pathGroup.add(rock);
+        }
+        
+        return pathGroup;
+    }
+    
+    const dirtPath = createDirtPath();
+    scene.add(dirtPath);
+
+    // --- CAMINOS ADICIONALES ---
+    function createAdditionalPath(startX, startZ, endX, endZ) {
+        const pathGroup = new THREE.Group();
+        
+        const dirtCanvas = document.createElement('canvas');
+        dirtCanvas.width = 256; dirtCanvas.height = 256;
+        const dirtCtx = dirtCanvas.getContext('2d');
+        dirtCtx.fillStyle = '#8b7355';
+        dirtCtx.fillRect(0, 0, 256, 256);
+        for(let i = 0; i < 5000; i++) {
+            dirtCtx.fillStyle = `rgba(${100 + Math.random()*50}, ${80 + Math.random()*40}, ${50 + Math.random()*30}, 0.4)`;
+            dirtCtx.fillRect(Math.random()*256, Math.random()*256, Math.random()*4+1, Math.random()*4+1);
+        }
+        const dirtTex = new THREE.CanvasTexture(dirtCanvas);
+        dirtTex.wrapS = THREE.RepeatWrapping;
+        dirtTex.wrapT = THREE.RepeatWrapping;
+        
+        const pathMat = new THREE.MeshStandardMaterial({map: dirtTex, roughness: 1.0});
+        
+        const dx = endX - startX;
+        const dz = endZ - startZ;
+        const length = Math.sqrt(dx*dx + dz*dz);
+        const angle = Math.atan2(dz, dx);
+        
+        const pathGeo = new THREE.PlaneGeometry(8, length);
+        pathGeo.rotateX(-Math.PI / 2);
+        const path = new THREE.Mesh(pathGeo, pathMat);
+        
+        const midX = (startX + endX) / 2;
+        const midZ = (startZ + endZ) / 2;
+        const midY = getGroundHeight(midX, midZ);
+        path.position.set(midX, midY + 0.1, midZ);
+        path.rotation.y = angle;
+        
+        pathGroup.add(path);
+        return pathGroup;
+    }
+    
+    // Camino casa a gallinero
+    const path2 = createAdditionalPath(houseX, houseZ, coopX, coopZ);
+    scene.add(path2);
+    
+    // Camino casa a establo 2
+    const path3 = createAdditionalPath(houseX, houseZ, barn2X, barn2Z);
+    scene.add(path3);
+    
+    // Declarar coordenadas para almacén y taller (antes de usarlas)
+    const warehouseX = 150, warehouseZ = -150;
+    const workshopX = -300, workshopZ = -50;
+    
+    // Camino almacén a taller
+    const path4 = createAdditionalPath(warehouseX, warehouseZ, workshopX, workshopZ);
+    scene.add(path4);
+
+    // --- CERCAS ADICIONALES DELIMITANDO ÁREAS ---
+    function createFenceLine(startX, startZ, endX, endZ) {
+        const fenceGroup = new THREE.Group();
+        const postMat = new THREE.MeshStandardMaterial({color: 0x5c4033, roughness: 1.0});
+        const postGeo = new THREE.CylinderGeometry(0.3, 0.35, 3.5, 8);
+        const wireMat = new THREE.MeshStandardMaterial({color: 0x777777, metalness: 0.3});
+        const wireGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 4);
+        wireGeo.rotateZ(Math.PI / 2);
+        
+        const dx = endX - startX;
+        const dz = endZ - startZ;
+        const length = Math.sqrt(dx*dx + dz*dz);
+        const numPosts = Math.floor(length / 8) + 1;
+        
+        for(let i = 0; i <= numPosts; i++) {
+            const t = i / numPosts;
+            const x = startX + dx * t;
+            const z = startZ + dz * t;
+            const y = getGroundHeight(x, z);
+            
+            const post = new THREE.Mesh(postGeo, postMat);
+            post.position.set(x, y + 1.75, z);
+            post.castShadow = true;
+            fenceGroup.add(post);
+        }
+        
+        // Alambres
+        for(let level = 0; level < 2; level++) {
+            const wire = new THREE.Mesh(wireGeo, wireMat);
+            wire.scale.set(length, 1, 1);
+            const midX = (startX + endX) / 2;
+            const midZ = (startZ + endZ) / 2;
+            const midY = getGroundHeight(midX, midZ);
+            wire.position.set(midX, midY + 1 + level * 0.8, midZ);
+            wire.rotation.y = Math.atan2(dz, dx);
+            fenceGroup.add(wire);
+        }
+        
+        return fenceGroup;
+    }
+    
+    // Cercas perimetrales adicionales
+    const fenceLine1 = createFenceLine(-500, -500, 500, -500);
+    scene.add(fenceLine1);
+    const fenceLine2 = createFenceLine(500, -500, 500, 500);
+    scene.add(fenceLine2);
+    const fenceLine3 = createFenceLine(500, 500, -500, 500);
+    scene.add(fenceLine3);
+    const fenceLine4 = createFenceLine(-500, 500, -500, -500);
+    scene.add(fenceLine4);
+
+    // --- PEQUEÑO ESTANQUE / LAGUNA ---
+    function createPond() {
+        const pondGroup = new THREE.Group();
+        const waterMat = new THREE.MeshStandardMaterial({
+            color: 0x4a90d9,
+            transparent: true,
+            opacity: 0.7,
+            roughness: 0.02,
+            metalness: 0.6
+        });
+        
+        // Forma orgánica del estanque usando ruido
+        const pondGeo = new THREE.CircleGeometry(25, 64);
+        pondGeo.rotateX(-Math.PI / 2);
+        const pos = pondGeo.attributes.position;
+        for(let i = 0; i < pos.count; i++) {
+            const x = pos.getX(i);
+            const z = pos.getZ(i);
+            const dist = Math.sqrt(x*x + z*z);
+            const noise = simplex.noise2D(x * 0.1, z * 0.1) * 5;
+            const scale = 1 + noise * 0.2;
+            pos.setX(i, x * scale);
+            pos.setZ(i, z * scale);
+        }
+        pondGeo.computeVertexNormals();
+        
+        const pond = new THREE.Mesh(pondGeo, waterMat);
+        pond.position.y = 0.05;
+        pondGroup.add(pond);
+        
+        // Reflexión del cielo en el agua (plano semitransparente)
+        const reflectionMat = new THREE.MeshStandardMaterial({
+            color: 0x87CEEB,
+            transparent: true,
+            opacity: 0.3,
+            roughness: 0.1,
+            metalness: 0.8
+        });
+        const reflection = new THREE.Mesh(pondGeo.clone(), reflectionMat);
+        reflection.position.y = 0.02;
+        pondGroup.add(reflection);
+        
+        // Orilla del estanque con piedras
+        const shoreMat = new THREE.MeshStandardMaterial({color: 0x8b7355, roughness: 1.0});
+        for(let i = 0; i < 30; i++) {
+            const angle = (i / 30) * Math.PI * 2;
+            const radius = 25 + Math.random() * 8;
+            const rock = createRock();
+            rock.scale.multiplyScalar(0.3);
+            rock.position.set(
+                Math.cos(angle) * radius,
+                0.1,
+                Math.sin(angle) * radius
+            );
+            pondGroup.add(rock);
+        }
+        
+        // Vegetación alrededor del estanque
+        for(let i = 0; i < 15; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = 28 + Math.random() * 10;
+            const bush = createBush();
+            bush.scale.multiplyScalar(0.6);
+            bush.position.set(
+                Math.cos(angle) * radius,
+                0,
+                Math.sin(angle) * radius
+            );
+            pondGroup.add(bush);
+        }
+        
+        return pondGroup;
+    }
+    
+    const pond = createPond();
+    const pondX = -200, pondZ = 200;
+    const pondY = getGroundHeight(pondX, pondZ);
+    pond.position.set(pondX, pondY, pondZ);
+    scene.add(pond);
+
+    // Puente de madera sobre el estanque
+    function createBridge() {
+        const bridgeGroup = new THREE.Group();
+        const woodMat = new THREE.MeshStandardMaterial({color: 0x8b4513, roughness: 0.9});
+        
+        // Tablas del puente
+        for(let i = 0; i < 8; i++) {
+            const plank = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 0.8), woodMat);
+            plank.position.set(0, 0.5, -3 + i * 0.85);
+            plank.castShadow = true;
+            bridgeGroup.add(plank);
+        }
+        
+        // Barandales
+        const railMat = new THREE.MeshStandardMaterial({color: 0x5c4033, roughness: 0.9});
+        for(let side of [-1.5, 1.5]) {
+            for(let i = 0; i < 9; i++) {
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 8), railMat);
+                post.position.set(side, 1.1, -3.5 + i * 0.85);
+                bridgeGroup.add(post);
+            }
+            // Barandal horizontal
+            const rail = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 7), railMat);
+            rail.position.set(side, 1.6, 0);
+            bridgeGroup.add(rail);
+        }
+        
+        return bridgeGroup;
+    }
+    
+    const bridge = createBridge();
+    bridge.position.set(pondX, pondY + 0.1, pondZ);
+    bridge.rotation.y = Math.PI / 4;
+    scene.add(bridge);
+
+    // --- SILOS DE ALMACENAMIENTO ---
+    function createSilo(height = 30, radius = 8) {
+        const siloGroup = new THREE.Group();
+        
+        // Textura metálica
+        const metalCanvas = document.createElement('canvas');
+        metalCanvas.width = 256; metalCanvas.height = 256;
+        const metalCtx = metalCanvas.getContext('2d');
+        metalCtx.fillStyle = '#708090';
+        metalCtx.fillRect(0, 0, 256, 256);
+        // Efecto metálico
+        for(let y = 0; y < 256; y++) {
+            const brightness = 100 + Math.sin(y * 0.1) * 50;
+            metalCtx.fillStyle = `rgba(${brightness}, ${brightness + 20}, ${brightness + 40}, 0.3)`;
+            metalCtx.fillRect(0, y, 256, 1);
+        }
+        // Remaches
+        for(let y = 0; y < 256; y += 20) {
+            for(let x = 0; x < 256; x += 20) {
+                metalCtx.fillStyle = '#4a4a5a';
+                metalCtx.beginPath();
+                metalCtx.arc(x, y, 3, 0, Math.PI*2);
+                metalCtx.fill();
+            }
+        }
+        const metalTex = new THREE.CanvasTexture(metalCanvas);
+        metalTex.wrapS = THREE.RepeatWrapping;
+        metalTex.wrapT = THREE.RepeatWrapping;
+        metalTex.repeat.set(2, 4);
+        
+        const siloMat = new THREE.MeshStandardMaterial({map: metalTex, metalness: 0.6, roughness: 0.4});
+        
+        // Cilindro principal
+        const siloGeo = new THREE.CylinderGeometry(radius, radius, height, 32);
+        const silo = new THREE.Mesh(siloGeo, siloMat);
+        silo.position.y = height / 2;
+        silo.castShadow = true;
+        siloGroup.add(silo);
+        
+        // Techo cónico
+        const roofGeo = new THREE.ConeGeometry(radius + 2, 8, 32);
+        const roof = new THREE.Mesh(roofGeo, siloMat);
+        roof.position.y = height + 4;
+        roof.castShadow = true;
+        siloGroup.add(roof);
+        
+        // Anillo de refuerzo
+        const ringMat = new THREE.MeshStandardMaterial({color: 0x4a4a5a, metalness: 0.7, roughness: 0.3});
+        for(let i = 0; i < 3; i++) {
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(radius + 0.2, 0.3, 8, 32), ringMat);
+            ring.rotation.x = Math.PI / 2;
+            ring.position.y = height * (0.25 + i * 0.25);
+            siloGroup.add(ring);
+        }
+        
+        return siloGroup;
+    }
+    
+    const silo1 = createSilo(35, 10);
+    const silo1X = -100, silo1Z = -150;
+    const silo1Y = getGroundHeight(silo1X, silo1Z);
+    silo1.position.set(silo1X, silo1Y, silo1Z);
+    scene.add(silo1);
+
+    const silo2 = createSilo(28, 7);
+    const silo2X = -120, silo2Z = -170;
+    const silo2Y = getGroundHeight(silo2X, silo2Z);
+    silo2.position.set(silo2X, silo2Y, silo2Z);
+    scene.add(silo2);
+
+    // Tercer silo
+    const silo3 = createSilo(32, 9);
+    const silo3X = -140, silo3Z = -190;
+    const silo3Y = getGroundHeight(silo3X, silo3Z);
+    silo3.position.set(silo3X, silo3Y, silo3Z);
+    scene.add(silo3);
+
+    // --- ALMACÉN/GRANERO ---
+    function createWarehouse() {
+        const warehouse = new THREE.Group();
+        
+        // Textura de metal para el almacén
+        const metalCanvas = document.createElement('canvas');
+        metalCanvas.width = 256; metalCanvas.height = 256;
+        const metalCtx = metalCanvas.getContext('2d');
+        metalCtx.fillStyle = '#708090';
+        metalCtx.fillRect(0, 0, 256, 256);
+        // Efecto metálico
+        for(let y = 0; y < 256; y++) {
+            const brightness = 100 + Math.sin(y * 0.15) * 40;
+            metalCtx.fillStyle = `rgba(${brightness}, ${brightness + 20}, ${brightness + 40}, 0.3)`;
+            metalCtx.fillRect(0, y, 256, 1);
+        }
+        const metalTex = new THREE.CanvasTexture(metalCanvas);
+        metalTex.wrapS = THREE.RepeatWrapping;
+        metalTex.wrapT = THREE.RepeatWrapping;
+        metalTex.repeat.set(2, 1);
+        
+        const wallMat = new THREE.MeshStandardMaterial({map: metalTex, metalness: 0.5, roughness: 0.5});
+        const body = new THREE.Mesh(new THREE.BoxGeometry(30, 10, 20), wallMat);
+        body.position.y = 5;
+        body.castShadow = true;
+        warehouse.add(body);
+        
+        // Techo metálico
+        const roofMat = new THREE.MeshStandardMaterial({color: 0x4a4a5a, metalness: 0.6, roughness: 0.4});
+        const roof = new THREE.Mesh(new THREE.CylinderGeometry(0, 16, 6, 4), roofMat);
+        roof.position.y = 13;
+        roof.rotation.y = Math.PI / 4;
+        roof.castShadow = true;
+        warehouse.add(roof);
+        
+        // Puerta grande de metal
+        const doorMat = new THREE.MeshStandardMaterial({color: 0x3a3a4a, metalness: 0.7, roughness: 0.3});
+        const door = new THREE.Mesh(new THREE.BoxGeometry(6, 7, 0.5), doorMat);
+        door.position.set(0, 3.5, 10.2);
+        warehouse.add(door);
+        
+        return warehouse;
+    }
+    
+    const warehouse = createWarehouse();
+    const warehouseY = getGroundHeight(warehouseX, warehouseZ);
+    warehouse.position.set(warehouseX, warehouseY, warehouseZ);
+    warehouse.rotation.y = Math.PI / 6;
+    scene.add(warehouse);
+
+    // --- TALLER MECÁNICO ---
+    function createWorkshop() {
+        const workshop = new THREE.Group();
+        
+        // Paredes de concreto
+        const concreteCanvas = document.createElement('canvas');
+        concreteCanvas.width = 256; concreteCanvas.height = 256;
+        const concCtx = concreteCanvas.getContext('2d');
+        concCtx.fillStyle = '#a0a0a0';
+        concCtx.fillRect(0, 0, 256, 256);
+        // Textura de concreto
+        for(let i = 0; i < 3000; i++) {
+            concCtx.fillStyle = `rgba(${80 + Math.random()*40}, ${80 + Math.random()*40}, ${80 + Math.random()*40}, 0.3)`;
+            concCtx.fillRect(Math.random()*256, Math.random()*256, Math.random()*3+1, Math.random()*3+1);
+        }
+        const concreteTex = new THREE.CanvasTexture(concreteCanvas);
+        concreteTex.wrapS = THREE.RepeatWrapping;
+        concreteTex.wrapT = THREE.RepeatWrapping;
+        concreteTex.repeat.set(2, 1);
+        
+        const wallMat = new THREE.MeshStandardMaterial({map: concreteTex, roughness: 0.95});
+        const body = new THREE.Mesh(new THREE.BoxGeometry(18, 6, 14), wallMat);
+        body.position.y = 3;
+        body.castShadow = true;
+        workshop.add(body);
+        
+        // Techo plano
+        const roofMat = new THREE.MeshStandardMaterial({color: 0x505050, roughness: 0.9});
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(19, 0.5, 15), roofMat);
+        roof.position.y = 6.25;
+        roof.castShadow = true;
+        workshop.add(roof);
+        
+        // Puerta de garaje
+        const garageMat = new THREE.MeshStandardMaterial({color: 0x3a3a3a, metalness: 0.6, roughness: 0.4});
+        const garageDoor = new THREE.Mesh(new THREE.BoxGeometry(5, 4.5, 0.4), garageMat);
+        garageDoor.position.set(0, 2.25, 7.15);
+        workshop.add(garageDoor);
+        
+        // Ventanas
+        const windowMat = new THREE.MeshStandardMaterial({color: 0x87ceeb, roughness: 0.1, metalness: 0.3, transparent: true, opacity: 0.6});
+        const window1 = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 0.1), windowMat);
+        window1.position.set(-5, 4, 7.1);
+        workshop.add(window1);
+        const window2 = window1.clone();
+        window2.position.set(5, 4, 7.1);
+        workshop.add(window2);
+        
+        return workshop;
+    }
+    
+    const workshop = createWorkshop();
+    const workshopY = getGroundHeight(workshopX, workshopZ);
+    workshop.position.set(workshopX, workshopY, workshopZ);
+    workshop.rotation.y = -Math.PI / 4;
+    scene.add(workshop);
+
+    // --- ARBUSTOS Y VEGETACIÓN ---
+    function createBush() {
+        const bushGroup = new THREE.Group();
+        const bushMat = new THREE.MeshStandardMaterial({color: 0x2d5a2d, roughness: 0.95});
+        
+        // Múltiples esferas superpuestas para aspecto orgánico
+        for(let i = 0; i < 7; i++) {
+            const size = Math.random() * 1.5 + 0.8;
+            const bush = new THREE.Mesh(new THREE.SphereGeometry(size, 8, 8), bushMat);
+            bush.position.set(
+                (Math.random() - 0.5) * 2.5,
+                size * 0.4,
+                (Math.random() - 0.5) * 2.5
+            );
+            bush.scale.y = 0.7;
+            bush.castShadow = true;
+            bushGroup.add(bush);
+        }
+        return bushGroup;
+    }
+    
+    for(let i = 0; i < 50; i++) {
+        const bush = createBush();
+        const bx = (Math.random() - 0.5) * 1500;
+        const bz = (Math.random() - 0.5) * 1500;
+        const by = getGroundHeight(bx, bz);
+        bush.position.set(bx, by, bz);
+        scene.add(bush);
+    }
+
+    // --- ROCAS ORGÁNICAS ---
+    function createRock() {
+        const rockMat = new THREE.MeshStandardMaterial({color: 0x696969, roughness: 0.95});
+        const size = Math.random() * 2.5 + 0.8;
+        
+        // Usar Icosahedron con deformación para aspecto natural
+        const rockGeo = new THREE.IcosahedronGeometry(size, 1);
+        const pos = rockGeo.attributes.position;
+        for(let i = 0; i < pos.count; i++) {
+            const x = pos.getX(i);
+            const y = pos.getY(i);
+            const z = pos.getZ(i);
+            const noise = simplex.noise3D(x * 0.8, y * 0.8, z * 0.8) * 0.3;
+            pos.setX(i, x + noise);
+            pos.setY(i, y + noise);
+            pos.setZ(i, z + noise);
+        }
+        rockGeo.computeVertexNormals();
+        
+        const rock = new THREE.Mesh(rockGeo, rockMat);
+        rock.scale.set(1, 0.5, 1);
+        rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+        rock.castShadow = true;
+        return rock;
+    }
+    
+    for(let i = 0; i < 40; i++) {
+        const rock = createRock();
+        const rx = (Math.random() - 0.5) * 1200;
+        const rz = (Math.random() - 0.5) * 1200;
+        const ry = getGroundHeight(rx, rz);
+        rock.position.set(rx, ry, rz);
+        scene.add(rock);
+    }
+
+    // --- NUBES EN EL CIELO ---
+    function createCloud() {
+        const cloudGroup = new THREE.Group();
+        const cloudMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.85,
+            roughness: 1.0
+        });
+        
+        // Crear nube con múltiples esferas de diferentes tamaños
+        const numParts = 8 + Math.floor(Math.random() * 5);
+        for(let i = 0; i < numParts; i++) {
+            const size = Math.random() * 20 + 15;
+            const cloudPart = new THREE.Mesh(new THREE.SphereGeometry(size, 12, 12), cloudMat);
+            cloudPart.position.set(
+                (Math.random() - 0.5) * 50,
+                Math.random() * 8,
+                (Math.random() - 0.5) * 30
+            );
+            cloudPart.scale.set(1, 0.4 + Math.random() * 0.2, 1);
+            cloudGroup.add(cloudPart);
+        }
+        return cloudGroup;
+    }
+    
+    for(let i = 0; i < 20; i++) {
+        const cloud = createCloud();
+        cloud.position.set(
+            (Math.random() - 0.5) * 2500,
+            350 + Math.random() * 250,
+            (Math.random() - 0.5) * 2500
+        );
+        cloud.userData = { speed: Math.random() * 0.015 + 0.005 };
+        scene.add(cloud);
+    }
+
+    // --- GALLINAS (SPRITES) ---
+    function createChickenSpriteTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(128, 200, 35, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffa500';
+        ctx.beginPath();
+        ctx.ellipse(128, 140, 40, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffa500';
+        ctx.beginPath();
+        ctx.arc(90, 110, 15, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffff00';
+        ctx.beginPath();
+        ctx.moveTo(75, 110);
+        ctx.lineTo(60, 115);
+        ctx.lineTo(75, 120);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(90, 95, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(85, 108, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffa500';
+        ctx.fillRect(110, 165, 4, 20);
+        ctx.fillRect(130, 165, 4, 20);
+        
+        return new THREE.CanvasTexture(canvas);
+    }
+    
+    const chickenTex = createChickenSpriteTexture();
+
+    // --- CABALLOS (SPRITES) ---
+    function createHorseSpriteTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512; canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Sombra
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(256, 400, 100, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Cuerpo
+        ctx.fillStyle = '#8b4513';
+        ctx.beginPath();
+        ctx.ellipse(256, 250, 120, 60, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Cuello
+        ctx.beginPath();
+        ctx.moveTo(320, 220);
+        ctx.lineTo(380, 180);
+        ctx.lineTo(360, 260);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Cabeza
+        ctx.beginPath();
+        ctx.ellipse(400, 170, 35, 25, Math.PI/6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Patas
+        ctx.fillRect(200, 290, 15, 100);
+        ctx.fillRect(230, 290, 15, 95);
+        ctx.fillRect(280, 290, 18, 100);
+        ctx.fillRect(310, 290, 15, 95);
+        
+        // Crin
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.moveTo(350, 160);
+        ctx.quadraticCurveTo(340, 130, 360, 100);
+        ctx.quadraticCurveTo(380, 130, 370, 160);
+        ctx.fill();
+        
+        // Cola
+        ctx.beginPath();
+        ctx.moveTo(130, 250);
+        ctx.quadraticCurveTo(80, 280, 70, 350);
+        ctx.quadraticCurveTo(80, 370, 100, 340);
+        ctx.quadraticCurveTo(110, 300, 130, 250);
+        ctx.fill();
+        
+        // Ojo
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(410, 165, 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        return new THREE.CanvasTexture(canvas);
+    }
+    
+    const horseTex = createHorseSpriteTexture();
+
+    // --- CERDOS (SPRITES) ---
+    function createPigSpriteTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(128, 200, 40, 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffb6c1';
+        ctx.beginPath();
+        ctx.ellipse(128, 150, 45, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.ellipse(80, 130, 25, 20, -Math.PI/6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ffa0b0';
+        ctx.beginPath();
+        ctx.ellipse(60, 115, 10, 6, -Math.PI/3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(65, 140, 10, 6, Math.PI/4, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#ff90a0';
+        ctx.beginPath();
+        ctx.ellipse(55, 130, 12, 10, -Math.PI/6, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#cc8090';
+        ctx.beginPath();
+        ctx.arc(50, 128, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(55, 132, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(75, 120, 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#ffb6c1';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(170, 150);
+        ctx.quadraticCurveTo(185, 140, 180, 155);
+        ctx.quadraticCurveTo(175, 165, 170, 155);
+        ctx.stroke();
+        
+        ctx.fillStyle = '#ffb6c1';
+        ctx.fillRect(100, 170, 8, 25);
+        ctx.fillRect(130, 170, 8, 25);
+        ctx.fillRect(150, 170, 8, 25);
+        ctx.fillRect(115, 170, 8, 25);
+        
+        return new THREE.CanvasTexture(canvas);
+    }
+    
+    const pigTex = createPigSpriteTexture();
+
+    // --- OVEJAS (SPRITES) ---
+    function createSheepSpriteTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(128, 200, 35, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#f0f0f0';
+        ctx.beginPath();
+        ctx.ellipse(128, 145, 42, 32, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        for(let i = 0; i < 100; i++) {
+            ctx.fillStyle = `rgba(${240 + Math.random()*15}, ${240 + Math.random()*15}, ${240 + Math.random()*15}, 0.5)`;
+            ctx.beginPath();
+            ctx.arc(90 + Math.random()*76, 115 + Math.random()*60, Math.random()*8+3, 0, Math.PI*2);
+            ctx.fill();
+        }
+        
+        ctx.fillStyle = '#2a2a2a';
+        ctx.beginPath();
+        ctx.ellipse(85, 125, 18, 15, -Math.PI/6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.beginPath();
+        ctx.ellipse(70, 115, 8, 5, -Math.PI/3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(72, 135, 8, 5, Math.PI/4, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(80, 120, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.ellipse(68, 128, 6, 4, -Math.PI/6, 0, Math.PI*2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(105, 165, 6, 28);
+        ctx.fillRect(130, 165, 6, 28);
+        ctx.fillRect(150, 165, 6, 28);
+        ctx.fillRect(118, 165, 6, 28);
+        
+        ctx.fillStyle = '#2a2a2a';
+        ctx.beginPath();
+        ctx.ellipse(165, 145, 8, 5, 0, 0, Math.PI*2);
+        ctx.fill();
+        
+        return new THREE.CanvasTexture(canvas);
+    }
+    
+    const sheepTex = createSheepSpriteTexture();
+
+    // Cargar animales reales después de definir todas las texturas
+    loadRealAnimales();
+
+    // --- PARTÍCULAS DE POLVO/POLEN ---
+    function createDustParticles() {
+        const particleCount = 500;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        
+        for(let i = 0; i < particleCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 2000;     // x
+            positions[i * 3 + 1] = Math.random() * 100 + 10;     // y
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 2000; // z
+        }
+        
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        
+        const material = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.5,
+            transparent: true,
+            opacity: 0.4,
+            sizeAttenuation: true
+        });
+        
+        const particles = new THREE.Points(geometry, material);
+        return particles;
+    }
+    
+    const dustParticles = createDustParticles();
+    scene.add(dustParticles);
+
+/* ====================================================
+   Building Generation Functions (Optional)
+   These functions create 3D models for various farm structures.
+   They are defined here but NOT added to the scene automatically.
+   Use them later with scene.add(createHouse()); etc.
+   ==================================================== */
+
+// House (Casa) – casa con textura procedural y detalles realistas
+function createHouse() {
+    const house = new THREE.Group();
+    
+    // Textura procedural de ladrillos realistas
+    const wallCanvas = document.createElement('canvas');
+    wallCanvas.width = 512; wallCanvas.height = 512;
+    const wctx = wallCanvas.getContext('2d');
+    
+    // Base de mortero
+    wctx.fillStyle = '#b0a090';
+    wctx.fillRect(0, 0, 512, 512);
+    
+    // Ladrillos con variaciones tonales y ruido
+    for(let y = 0; y < 512; y += 32) {
+        for(let x = 0; x < 512; x += 64) {
+            const offset = (y / 32) % 2 === 0 ? 0 : 32;
+            const rx = x + offset;
+            
+            // Variación de color del ladrillo
+            const r = 180 + Math.random() * 40;
+            const g = 100 + Math.random() * 30;
+            const b = 80 + Math.random() * 20;
+            wctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            wctx.fillRect(rx + 2, y + 2, 60, 28);
+            
+            // Textura interna del ladrillo
+            for(let i=0; i<50; i++) {
+                wctx.fillStyle = `rgba(0,0,0,${Math.random()*0.15})`;
+                wctx.fillRect(rx + 2 + Math.random()*58, y + 2 + Math.random()*26, 2, 2);
+            }
+        }
+    }
+    
+    const wallTex = new THREE.CanvasTexture(wallCanvas);
+    wallTex.wrapS = THREE.RepeatWrapping;
+    wallTex.wrapT = THREE.RepeatWrapping;
+    wallTex.repeat.set(2, 1.5);
+    
+    const baseMat = new THREE.MeshStandardMaterial({
+        map: wallTex, 
+        roughness: 0.9,
+        bumpMap: wallTex,
+        bumpScale: 0.05
+    });
+    
+    const baseGeo = new THREE.BoxGeometry(16, 8, 12);
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.y = 4;
+    base.castShadow = true;
+    base.receiveShadow = true;
+    house.add(base);
+    
+    // Techo con tejas fotorrealistas
+    const roofCanvas = document.createElement('canvas');
+    roofCanvas.width = 512; roofCanvas.height = 512;
+    const rctx = roofCanvas.getContext('2d');
+    rctx.fillStyle = '#3a2020'; // Base oscura
+    rctx.fillRect(0, 0, 512, 512);
+    
+    // Tejas curvas superpuestas
+    for(let y = 0; y < 512; y += 16) {
+        for(let x = 0; x < 512; x += 32) {
+            const c = 100 + Math.random() * 40;
+            rctx.fillStyle = `rgb(${c}, ${c*0.6}, ${c*0.4})`;
+            
+            rctx.beginPath();
+            rctx.arc(x + 16, y + 16, 16, Math.PI, 0);
+            rctx.fill();
+            
+            // Sombra bajo la teja
+            rctx.fillStyle = 'rgba(0,0,0,0.4)';
+            rctx.fillRect(x, y + 14, 32, 4);
+        }
+    }
+    const roofTex = new THREE.CanvasTexture(roofCanvas);
+    roofTex.wrapS = THREE.RepeatWrapping;
+    roofTex.wrapT = THREE.RepeatWrapping;
+    roofTex.repeat.set(4, 3);
+    
+    const roofMat = new THREE.MeshStandardMaterial({
+        map: roofTex, 
+        roughness: 0.7,
+        bumpMap: roofTex,
+        bumpScale: 0.1
+    });
+    
+    // Techo a dos aguas (Prisma triangular)
+    const roofShape = new THREE.Shape();
+    roofShape.moveTo(-9, 0);
+    roofShape.lineTo(0, 5);
+    roofShape.lineTo(9, 0);
+    roofShape.lineTo(-9, 0);
+    
+    const extrudeSettings = { depth: 14, bevelEnabled: false };
+    const roofGeo = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
+    roofGeo.translate(0, 0, -7);
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.y = 8;
+    roof.castShadow = true;
+    roof.receiveShadow = true;
+    house.add(roof);
+    
+    // Porche frontal (Porch)
+    const woodMat = new THREE.MeshStandardMaterial({color: 0x5c4033, roughness: 1.0});
+    const porchFloor = new THREE.Mesh(new THREE.BoxGeometry(16, 0.5, 4), woodMat);
+    porchFloor.position.set(0, 0.25, 8);
+    porchFloor.receiveShadow = true;
+    house.add(porchFloor);
+    
+    // Columnas del porche
+    for(let i of [-7, -2.5, 2.5, 7]) {
+        const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4.5, 0.5), woodMat);
+        pillar.position.set(i, 2.5, 9.5);
+        pillar.castShadow = true;
+        house.add(pillar);
+    }
+    
+    // Techo del porche
+    const porchRoofGeo = new THREE.BoxGeometry(16.5, 0.5, 4.5);
+    const porchRoof = new THREE.Mesh(porchRoofGeo, roofMat);
+    porchRoof.position.set(0, 4.8, 8);
+    porchRoof.rotation.x = 0.1;
+    porchRoof.castShadow = true;
+    house.add(porchRoof);
+    
+    // Puerta Principal
+    const doorMat = new THREE.MeshStandardMaterial({color: 0x3d2314, roughness: 0.6});
+    const door = new THREE.Mesh(new THREE.BoxGeometry(3, 5, 0.2), doorMat);
+    door.position.set(0, 2.5, 6.1);
+    house.add(door);
+    
+    // Pomo de la puerta
+    const knobMat = new THREE.MeshStandardMaterial({color: 0xffd700, metalness: 0.9, roughness: 0.2});
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.15), knobMat);
+    knob.position.set(1.2, 2.5, 6.2);
+    house.add(knob);
+    
+    // Ventanas Realistas
+    const glassMat = new THREE.MeshStandardMaterial({
+        color: 0x87ceeb, 
+        roughness: 0.05, 
+        metalness: 0.8, 
+        transparent: true, 
+        opacity: 0.85
+    });
+    const frameMat = new THREE.MeshStandardMaterial({color: 0xffffff, roughness: 0.5});
+    
+    function createWindowDetail(x, y, z) {
+        const winGroup = new THREE.Group();
+        const glass = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3, 0.1), glassMat);
+        winGroup.add(glass);
+        
+        // Marco exterior
+        const outerFrame = new THREE.Mesh(new THREE.BoxGeometry(2.8, 3.3, 0.2), frameMat);
+        winGroup.add(outerFrame);
+        
+        // Divisiones interiores (Window grids)
+        const hDiv = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.15, 0.25), frameMat);
+        winGroup.add(hDiv);
+        
+        const vDiv = new THREE.Mesh(new THREE.BoxGeometry(0.15, 3, 0.25), frameMat);
+        winGroup.add(vDiv);
+        
+        winGroup.position.set(x, y, z);
+        return winGroup;
+    }
+    
+    house.add(createWindowDetail(-5, 3.5, 6.1));
+    house.add(createWindowDetail(5, 3.5, 6.1));
+    
+    return house;
+}
+
+// Barn (Establo) – maderas texturizadas e interior estructurado
+function createBarn() {
+    const barn = new THREE.Group();
+    
+    // Textura de madera rústica (Barn Wood)
+    const woodCanvas = document.createElement('canvas');
+    woodCanvas.width = 512; woodCanvas.height = 512;
+    const ctx = woodCanvas.getContext('2d');
+    ctx.fillStyle = '#8a2be2'; // Base
+    
+    // Gradientes rojos/marrones rústicos
+    for(let i=0; i<512; i+=16) {
+        const isRed = Math.random() > 0.3;
+        ctx.fillStyle = isRed ? `rgb(${140+Math.random()*40}, ${40+Math.random()*20}, ${30+Math.random()*20})` 
+                              : `rgb(${100+Math.random()*20}, ${60+Math.random()*20}, ${40+Math.random()*20})`;
+        ctx.fillRect(0, i, 512, 15);
+        
+        // Clavos
+        ctx.fillStyle = '#222';
+        ctx.fillRect(10, i+7, 4, 4);
+        ctx.fillRect(500, i+7, 4, 4);
+    }
+    
+    const woodTex = new THREE.CanvasTexture(woodCanvas);
+    woodTex.wrapS = THREE.RepeatWrapping; woodTex.wrapT = THREE.RepeatWrapping;
+    woodTex.repeat.set(4, 4);
+    
+    const barnMat = new THREE.MeshStandardMaterial({
+        map: woodTex, roughness: 0.95, bumpMap: woodTex, bumpScale: 0.08
+    });
+    
+    // Cuerpo del establo
+    const body = new THREE.Mesh(new THREE.BoxGeometry(30, 14, 22), barnMat);
+    body.position.y = 7;
+    body.castShadow = true; body.receiveShadow = true;
+    barn.add(body);
+    
+    // Techo estilo Gambrel (Clásico de establo americano)
+    const roofShape = new THREE.Shape();
+    roofShape.moveTo(-16, 0);
+    roofShape.lineTo(-10, 6);
+    roofShape.lineTo(10, 6);
+    roofShape.lineTo(16, 0);
+    roofShape.lineTo(-16, 0);
+    
+    const extSet = { depth: 24, bevelEnabled: false };
+    const roofGeo = new THREE.ExtrudeGeometry(roofShape, extSet);
+    roofGeo.translate(0, 0, -12);
+    
+    const roofCanvas = document.createElement('canvas');
+    roofCanvas.width = 128; roofCanvas.height = 128;
+    const rctx = roofCanvas.getContext('2d');
+    rctx.fillStyle = '#3a3a3a'; rctx.fillRect(0,0,128,128);
+    for(let i=0; i<128; i+=4) {
+        rctx.fillStyle = `rgba(0,0,0,${Math.random()*0.3})`;
+        rctx.fillRect(0, i, 128, 2);
+    }
+    const roofTex = new THREE.CanvasTexture(roofCanvas);
+    roofTex.wrapS = THREE.RepeatWrapping; roofTex.wrapT = THREE.RepeatWrapping;
+    roofTex.repeat.set(10, 10);
+    const roofMat = new THREE.MeshStandardMaterial({map: roofTex, roughness: 0.8, bumpMap: roofTex, bumpScale: 0.02});
+    
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.y = 14;
+    roof.castShadow = true; roof.receiveShadow = true;
+    barn.add(roof);
+    
+    // Puertas correderas dobles frontales con marco blanco y cruz en X
+    const whiteWood = new THREE.MeshStandardMaterial({color: 0xeeeeee, roughness: 0.9});
+    const doorGroup = new THREE.Group();
+    
+    for(let sign of [-1, 1]) {
+        const door = new THREE.Mesh(new THREE.BoxGeometry(6, 10, 0.3), barnMat);
+        door.position.set(sign * 3.1, 5, 11.2);
+        
+        // Marco blanco
+        const dFrame = new THREE.Mesh(new THREE.BoxGeometry(6.4, 10.4, 0.2), whiteWood);
+        dFrame.position.set(sign * 3.1, 5, 11.1);
+        
+        // Cruz en X (Beams)
+        const xBeam1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 11.5, 0.4), whiteWood);
+        xBeam1.rotation.z = Math.PI / 4.8; // Approx angle
+        xBeam1.position.set(sign * 3.1, 5, 11.3);
+        
+        const xBeam2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 11.5, 0.4), whiteWood);
+        xBeam2.rotation.z = -Math.PI / 4.8;
+        xBeam2.position.set(sign * 3.1, 5, 11.3);
+        
+        barn.add(door);
+        barn.add(dFrame);
+        barn.add(xBeam1);
+        barn.add(xBeam2);
+    }
+    
+    // Riel metálico para las puertas
+    const metalMat = new THREE.MeshStandardMaterial({color: 0x555555, metalness: 0.8});
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(14, 0.3, 0.5), metalMat);
+    rail.position.set(0, 10.5, 11.3);
+    barn.add(rail);
+    
+    // Ventana superior de pajar
+    const hayWin = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 0.2), whiteWood);
+    hayWin.position.set(0, 12, 11.1);
+    barn.add(hayWin);
+    
+    const hayHole = new THREE.Mesh(new THREE.BoxGeometry(3.5, 3.5, 0.3), new THREE.MeshStandardMaterial({color: 0x111111}));
+    hayHole.position.set(0, 12, 11.15);
+    barn.add(hayHole);
+    
+    return barn;
+}
+
+// Corral – Cercas de madera robustas y fotorrealistas
+function createCorral(width = 50, depth = 40) {
+    const corral = new THREE.Group();
+    
+    // Textura de madera cruda
+    const postMat = new THREE.MeshStandardMaterial({color: 0x5c4033, roughness: 1.0});
+    const plankMat = new THREE.MeshStandardMaterial({color: 0x6e4a3a, roughness: 1.0});
+    
+    const postGeo = new THREE.CylinderGeometry(0.4, 0.4, 4.5, 8);
+    const plankGeo = new THREE.BoxGeometry(5.2, 0.3, 0.15);
+    
+    const step = 5;
+    
+    // Perímetro en Z (Lados izquierdo y derecho)
+    for (let x of [-width/2, width/2]) {
+        for (let z = -depth/2; z <= depth/2; z += step) {
+            const h = getGroundHeight(x, z);
+            const post = new THREE.Mesh(postGeo, postMat);
+            post.position.set(x, h + 2.25, z);
+            post.castShadow = true;
+            corral.add(post);
+            
+            // Tablones horizontales
+            if (z < depth/2) {
+                const hNext = getGroundHeight(x, z + step);
+                const midH = (h + hNext) / 2;
+                
+                for(let level of [1, 2.2, 3.4]) {
+                    const plank = new THREE.Mesh(plankGeo, plankMat);
+                    plank.position.set(x, midH + level, z + step/2);
+                    plank.rotation.y = Math.PI / 2;
+                    // Inclinación si el terreno baja
+                    plank.rotation.z = Math.atan2(hNext - h, step);
+                    plank.castShadow = true;
+                    corral.add(plank);
+                }
+            }
+        }
+    }
+    
+    // Perímetro en X (Frente y fondo)
+    for (let z of [-depth/2, depth/2]) {
+        for (let x = -width/2; x <= width/2; x += step) {
+            // Evitar duplicar postes en las esquinas
+            if(x > -width/2 && x < width/2) {
+                const h = getGroundHeight(x, z);
+                const post = new THREE.Mesh(postGeo, postMat);
+                post.position.set(x, h + 2.25, z);
+                post.castShadow = true;
+                corral.add(post);
+            }
+            
+            if (x < width/2) {
+                const h = getGroundHeight(x, z);
+                const hNext = getGroundHeight(x + step, z);
+                const midH = (h + hNext) / 2;
+                
+                for(let level of [1, 2.2, 3.4]) {
+                    const plank = new THREE.Mesh(plankGeo, plankMat);
+                    plank.position.set(x + step/2, midH + level, z);
+                    plank.rotation.z = Math.atan2(hNext - h, step);
+                    plank.castShadow = true;
+                    corral.add(plank);
+                }
+            }
+        }
+    }
+    return corral;
+}
+
+// Chicken Coop (Gallinero)
+function createChickenCoop() {
+    const coop = new THREE.Group();
+    
+    // Textura de madera clara
+    const baseMat = new THREE.MeshStandardMaterial({color: 0xdeb887, roughness: 0.9});
+    const base = new THREE.Mesh(new THREE.BoxGeometry(8, 4, 6), baseMat);
+    base.position.y = 2;
+    base.castShadow = true;
+    coop.add(base);
+    
+    // Malla de alambre (Simulada con transparencia)
+    const wireMat = new THREE.MeshStandardMaterial({
+        color: 0xaaaaaa, metalness: 0.8, transparent: true, opacity: 0.5, wireframe: true
+    });
+    const runArea = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 6), wireMat);
+    runArea.position.set(7, 1.5, 0);
+    coop.add(runArea);
+    
+    // Techo
+    const roofMat = new THREE.MeshStandardMaterial({color: 0x8b4513, roughness: 0.8});
+    const roof1 = new THREE.Mesh(new THREE.BoxGeometry(9, 0.5, 7), roofMat);
+    roof1.position.set(0, 4.5, 0);
+    roof1.rotation.x = Math.PI / 8;
+    roof1.castShadow = true;
+    coop.add(roof1);
+    
+    const roof2 = roof1.clone();
+    roof2.rotation.x = -Math.PI / 8;
+    coop.add(roof2);
+    
+    return coop;
+}
+
+// Mountain (Montaña) – montaña con textura procedural y más detalle
+function createMountain(radius = 120, height = 80) {
+    const geometry = new THREE.ConeGeometry(radius, height, 128, 1, true);
+    const simplex = new SimplexNoise();
+    const pos = geometry.attributes.position;
+    const colors = [];
+    
+    for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const y = pos.getY(i);
+        const z = pos.getZ(i);
+        
+        // Múltiples capas de ruido para más detalle
+        let offset = simplex.noise2D(x * 0.01, z * 0.01) * 20;
+        offset += simplex.noise2D(x * 0.03, z * 0.03) * 10;
+        offset += simplex.noise2D(x * 0.08, z * 0.08) * 5;
+        
+        pos.setY(i, y + offset);
+        
+        // Color basado en altura con más transiciones
+        const heightRatio = (y + offset) / height;
+        if(heightRatio > 0.75) {
+            // Nieve con variación
+            const snowVar = Math.random() * 0.1;
+            colors.push(1 - snowVar, 1 - snowVar, 1 - snowVar);
+        } else if(heightRatio > 0.55) {
+            // Roca con nieve
+            const rockVar = Math.random() * 0.15;
+            colors.push(0.7 - rockVar, 0.7 - rockVar, 0.75 - rockVar);
+        } else if(heightRatio > 0.35) {
+            // Roca gris
+            const grayVar = Math.random() * 0.2;
+            colors.push(0.5 - grayVar, 0.5 - grayVar, 0.55 - grayVar);
+        } else if(heightRatio > 0.15) {
+            // Vegetación en laderas
+            const greenVar = Math.random() * 0.15;
+            colors.push(0.25 - greenVar, 0.35 - greenVar, 0.2 - greenVar);
+        } else {
+            // Base oscura
+            const darkVar = Math.random() * 0.1;
+            colors.push(0.2 - darkVar, 0.25 - darkVar, 0.15 - darkVar);
+        }
+    }
+    
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.computeVertexNormals();
+    
+    const material = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.9
+    });
+    const mountain = new THREE.Mesh(geometry, material);
+    mountain.position.y = height/2;
+    mountain.castShadow = true;
+    return mountain;
+}
+
+// Farm Plot (Finca) – simple rectangular field with a fence outline
+function createFarmPlot(width = 200, depth = 200) {
+    const plot = new THREE.Group();
+    const fence = createCorral(width, depth);
+    plot.add(fence);
+    return plot;
+}
+
+/* ---------------------------------------------------- */
+
+        
+
+    // --- MODELO DEL DRON (PROCEDURAL) ---
+    const droneMesh = new THREE.Group();
+    
+    // Cuerpo principal
+    const bodyGeo = new THREE.BoxGeometry(1.2, 0.6, 2);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.3, roughness: 0.4 });
+    const dBody = new THREE.Mesh(bodyGeo, bodyMat);
+    dBody.castShadow = true;
+    droneMesh.add(dBody);
+
+    // Cámara/Gimbal
+    const camGeo = new THREE.SphereGeometry(0.3, 16, 16);
+    const camMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.1 });
+    const dCam = new THREE.Mesh(camGeo, camMat);
+    dCam.position.set(0, -0.4, 0.8);
+    droneMesh.add(dCam);
+
+    // Brazos y Hélices
+    const armGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.8, 8);
+    armGeo.rotateX(Math.PI / 2);
+    const armMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const propGeo = new THREE.BoxGeometry(1.4, 0.02, 0.1);
+    const propMat = new THREE.MeshStandardMaterial({ color: 0x111111, transparent: true, opacity: 0.8 });
+    const motorGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.3, 12);
+    const motorMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 0.8 });
+    
+    const propPivots = []; // Para animar giro
+
+    const armPositions = [
+        {x: 1, z: 1.2, rotY: Math.PI/4, led: 0xff0000}, // Delantero Der (Rojo)
+        {x: -1, z: 1.2, rotY: -Math.PI/4, led: 0xff0000}, // Delantero Izq (Rojo)
+        {x: 1, z: -1.2, rotY: -Math.PI/4, led: 0x00ff00}, // Trasero Der (Verde)
+        {x: -1, z: -1.2, rotY: Math.PI/4, led: 0x00ff00}  // Trasero Izq (Verde)
+    ];
+
+    armPositions.forEach(pos => {
+        const arm = new THREE.Mesh(armGeo, armMat);
+        arm.position.set(pos.x/2, 0, pos.z/2);
+        arm.rotation.y = pos.rotY;
+        droneMesh.add(arm);
+
+        const motor = new THREE.Mesh(motorGeo, motorMat);
+        motor.position.set(pos.x, 0.1, pos.z);
+        droneMesh.add(motor);
+
+        const propPivot = new THREE.Group();
+        propPivot.position.set(pos.x, 0.25, pos.z);
+        const prop = new THREE.Mesh(propGeo, propMat);
+        propPivot.add(prop);
+        droneMesh.add(propPivot);
+        propPivots.push(propPivot);
+
+        // Luces LED
+        const led = new THREE.Mesh(new THREE.SphereGeometry(0.08), new THREE.MeshBasicMaterial({color: pos.led}));
+        led.position.set(pos.x, -0.1, pos.z);
+        droneMesh.add(led);
+    });
+
+    scene.add(droneMesh);
+
+    // --- FÍSICAS Y CONTROL ---
+    const drone = {
+        position: new THREE.Vector3(0, 50, 0),
+        velocity: new THREE.Vector3(0, 0, 0),
+        rotation: new THREE.Euler(0, 0, 0, 'YXZ'),
+        pitch: 0, roll: 0, yaw: 0,
+        maxTilt: 0.45,
+        thrust: 0, gravity: 0.2, drag: 0.94
+    };
+    droneMesh.position.copy(drone.position);
+
+    const keys = { w:0, s:0, a:0, d:0, up:0, down:0, left:0, right:0 };
+    
+    // Estado de los joysticks táctiles
+    const joyState = { thrust: 0, yaw: 0, pitch: 0, roll: 0 };
+    
+    // Estado del Gamepad (Mando físico PS4/Xbox)
+    const padState = { thrust: 0, yaw: 0, pitch: 0, roll: 0, active: false };
+    
+    // Leer mando físico si está conectado
+    function updateGamepad() {
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        let pad = null;
+        for (let i = 0; i < gamepads.length; i++) {
+            if (gamepads[i]) { pad = gamepads[i]; break; }
+        }
+        
+        if (pad) {
+            padState.active = true;
+            const deadzone = 0.15;
+            
+            let ly = pad.axes[1]; // Left Stick Y
+            padState.thrust = Math.abs(ly) > deadzone ? -ly : 0;
+            
+            let lx = pad.axes[0]; // Left Stick X
+            padState.yaw = Math.abs(lx) > deadzone ? lx : 0;
+            
+            let ry = pad.axes[3]; // Right Stick Y
+            padState.pitch = Math.abs(ry) > deadzone ? ry : 0;
+            
+            let rx = pad.axes[2]; // Right Stick X
+            padState.roll = Math.abs(rx) > deadzone ? rx : 0;
+            
+            // Activar al presionar un botón (botón 0 usualmente es X/A)
+            if(pad.buttons && pad.buttons.length > 0 && pad.buttons[0].pressed && !active) {
+                document.getElementById('instructions').click();
+            }
+        } else {
+            padState.active = false;
+        }
+    }
+    
+    // Inicializar joysticks táctiles si el dispositivo lo soporta
+    function initJoysticks() {
+        const leftZone = document.getElementById('joystick-left');
+        const rightZone = document.getElementById('joystick-right');
+        
+        if (window.getComputedStyle(leftZone).display !== 'none' && typeof nipplejs !== 'undefined') {
+            const managerL = nipplejs.create({
+                zone: leftZone,
+                mode: 'static',
+                position: { left: '50%', top: '50%' },
+                color: 'white',
+                size: 100
+            });
+            managerL.on('move', (evt, data) => {
+                // Izquierdo: Arriba/Abajo para Altitud (Thrust), Izquierda/Derecha para Rotación (Yaw)
+                joyState.thrust = Math.sin(data.angle.radian) * (data.distance / 50);
+                joyState.yaw = -Math.cos(data.angle.radian) * (data.distance / 50);
+            });
+            managerL.on('end', () => { joyState.thrust = 0; joyState.yaw = 0; });
+            
+            const managerR = nipplejs.create({
+                zone: rightZone,
+                mode: 'static',
+                position: { left: '50%', top: '50%' },
+                color: 'white',
+                size: 100
+            });
+            managerR.on('move', (evt, data) => {
+                // Derecho: Arriba/Abajo para Avanzar/Retroceder (Pitch), Izquierda/Derecha para Desplazamiento Lateral (Roll)
+                joyState.pitch = Math.sin(data.angle.radian) * (data.distance / 50);
+                joyState.roll = Math.cos(data.angle.radian) * (data.distance / 50);
+            });
+            managerR.on('end', () => { joyState.pitch = 0; joyState.roll = 0; });
+        }
+    }
+    
+    setTimeout(initJoysticks, 1000);
+
+    document.addEventListener('keydown', (e) => {
+        if(e.key.toLowerCase() === 'w') keys.w = 1;
+        if(e.key.toLowerCase() === 's') keys.s = 1;
+        if(e.key.toLowerCase() === 'a') keys.a = 1;
+        if(e.key.toLowerCase() === 'd') keys.d = 1;
+        if(e.key === 'ArrowUp') keys.up = 1;
+        if(e.key === 'ArrowDown') keys.down = 1;
+        if(e.key === 'ArrowLeft') keys.left = 1;
+        if(e.key === 'ArrowRight') keys.right = 1;
+        if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if(e.key.toLowerCase() === 'w') keys.w = 0;
+        if(e.key.toLowerCase() === 's') keys.s = 0;
+        if(e.key.toLowerCase() === 'a') keys.a = 0;
+        if(e.key.toLowerCase() === 'd') keys.d = 0;
+        if(e.key === 'ArrowUp') keys.up = 0;
+        if(e.key === 'ArrowDown') keys.down = 0;
+        if(e.key === 'ArrowLeft') keys.left = 0;
+        if(e.key === 'ArrowRight') keys.right = 0;
+    });
+
+    let active = false;
+    document.getElementById('instructions').addEventListener('click', function() {
+        this.style.opacity = '0';
+        setTimeout(() => this.style.display = 'none', 300);
+        active = true;
+        // Iniciar en un punto seguro
+        drone.position.set(0, getGroundHeight(0,0) + 20, 0);
+    });
+
+    const elAlt = document.getElementById('alt-val');
+    const elSpd = document.getElementById('spd-val');
+    const elDist = document.getElementById('dist-val');
+    let homePos = new THREE.Vector3(0, 0, 0);
+
+    // Cámara persecutora (Chase Camera)
+    const cameraTarget = new THREE.Vector3();
+    const cameraOffset = new THREE.Vector3(0, 3, -8); // Atrás y arriba
+    
+    // Variables de tiempo para animaciones
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        const time = clock.getElapsedTime();
+
+        if (active) {
+            updateGamepad();
+            
+            // Controles de aceleración (Teclado, Táctil o Gamepad)
+            if (keys.up) drone.thrust = 0.35;
+            else if (keys.down) drone.thrust = 0.05;
+            else if (joyState.thrust !== 0) drone.thrust = drone.gravity + (0.15 * joyState.thrust);
+            else if (padState.thrust !== 0) drone.thrust = drone.gravity + (0.15 * padState.thrust);
+            else drone.thrust = drone.gravity; // Hover natural (mantiene altura)
+
+            // Controles de Rotación
+            if (keys.left) drone.yaw += 0.03;
+            if (keys.right) drone.yaw -= 0.03;
+            drone.yaw += joyState.yaw * 0.03;
+            drone.yaw -= padState.yaw * 0.03;
+
+            // Controles de Inclinación (Pitch / Roll)
+            if (keys.w) drone.pitch = THREE.MathUtils.lerp(drone.pitch, drone.maxTilt, 0.1);
+            else if (keys.s) drone.pitch = THREE.MathUtils.lerp(drone.pitch, -drone.maxTilt, 0.1);
+            else if (Math.abs(joyState.pitch) > 0.05) drone.pitch = THREE.MathUtils.lerp(drone.pitch, drone.maxTilt * joyState.pitch, 0.1);
+            else if (Math.abs(padState.pitch) > 0.05) drone.pitch = THREE.MathUtils.lerp(drone.pitch, -drone.maxTilt * padState.pitch, 0.1);
+            else drone.pitch = THREE.MathUtils.lerp(drone.pitch, 0, 0.08);
+
+            if (keys.a) drone.roll = THREE.MathUtils.lerp(drone.roll, -drone.maxTilt, 0.1);
+            else if (keys.d) drone.roll = THREE.MathUtils.lerp(drone.roll, drone.maxTilt, 0.1);
+            else if (Math.abs(joyState.roll) > 0.05) drone.roll = THREE.MathUtils.lerp(drone.roll, drone.maxTilt * joyState.roll, 0.1);
+            else if (Math.abs(padState.roll) > 0.05) drone.roll = THREE.MathUtils.lerp(drone.roll, drone.maxTilt * padState.roll, 0.1);
+            else drone.roll = THREE.MathUtils.lerp(drone.roll, 0, 0.08);
+
+            // Calcular aceleración basada en inclinación
+            // Nota: en Three.js el frente suele ser +Z local o -Z local dependiendo del modelo. 
+            // Para nuestro modelo, +Z es el frente.
+            const accel = new THREE.Vector3(
+                -drone.roll * 0.6, 
+                drone.thrust - drone.gravity, 
+                drone.pitch * 0.6
+            );
+            
+            // Transformar aceleración local a mundo basado en YAW
+            accel.applyEuler(new THREE.Euler(0, drone.yaw, 0));
+
+            drone.velocity.add(accel);
+            drone.velocity.multiplyScalar(drone.drag);
+            drone.position.add(drone.velocity);
+
+            // Suelo (Colisión suave)
+            const gh = getGroundHeight(drone.position.x, drone.position.z);
+            if (drone.position.y < gh + 0.5) {
+                drone.position.y = gh + 0.5;
+                drone.velocity.y = 0;
+                drone.velocity.x *= 0.8; // Fricción piso
+                drone.velocity.z *= 0.8;
+                // Si está en el piso, apagar hélices
+                drone.thrust = 0;
+            }
+
+            // Aplicar al Mesh
+            droneMesh.position.copy(drone.position);
+            // El mesh del dron tiene su propia rotación local
+            droneMesh.rotation.set(drone.pitch, drone.yaw, drone.roll, 'YXZ');
+
+            // --- ANIMACIONES ---
+            // Hélices (Giran rápido en vuelo, despacio en piso)
+            const propSpeed = (drone.thrust > 0) ? 20 : (drone.velocity.length() > 0.1 ? 5 : 0);
+            propPivots.forEach((p, idx) => {
+                // Sentidos inversos para estabilidad realista
+                p.rotation.y += (idx%2===0 ? propSpeed : -propSpeed) * delta * 10;
+            });
+            
+            // Animar todos los animales (reales y simulados)
+            animalSprites.forEach(sprite => {
+                sprite.position.x += Math.sin(sprite.userData.offset + time) * sprite.userData.speed;
+                sprite.position.z += Math.cos(sprite.userData.offset + time) * sprite.userData.speed;
+                
+                // Ajustar altura según terreno
+                let yOffset = 1.0;
+                if (sprite.userData.tipo && sprite.userData.tipo.toLowerCase().includes('gallina')) yOffset = 0.5;
+                else if (sprite.userData.tipo && sprite.userData.tipo.toLowerCase().includes('caballo')) yOffset = 1.5;
+                else if (sprite.userData.tipo && sprite.userData.tipo.toLowerCase().includes('cerdo')) yOffset = 0.8;
+                
+                sprite.position.y = getGroundHeight(sprite.position.x, sprite.position.z) + yOffset + (Math.sin(time * 2 + sprite.userData.offset) * 0.05);
+            });
+
+            // --- DETECCIÓN DE ANIMALES CERCANOS ---
+            const detector = document.getElementById('animal-detector');
+            let closestAnimal = null;
+            let closestDistance = Infinity;
+            const detectionRange = 50; // metros
+            
+            animalSprites.forEach(sprite => {
+                const distance = drone.position.distanceTo(sprite.position);
+                if (distance < detectionRange && distance < closestDistance) {
+                    closestDistance = distance;
+                    closestAnimal = sprite.userData;
+                }
+            });
+            
+            if (closestAnimal) {
+                detector.style.display = 'block';
+                document.getElementById('animal-id').textContent = closestAnimal.identificacion;
+                document.getElementById('animal-nombre').textContent = closestAnimal.nombre;
+                document.getElementById('animal-tipo').textContent = closestAnimal.tipo;
+                document.getElementById('animal-raza').textContent = closestAnimal.raza;
+                document.getElementById('animal-peso').textContent = closestAnimal.peso + ' kg';
+                document.getElementById('animal-distancia').textContent = closestDistance.toFixed(1) + ' m';
+            } else {
+                detector.style.display = 'none';
+            }
+
+            // Partículas de polvo (movimiento suave)
+            const positions = dustParticles.geometry.attributes.position.array;
+            for(let i = 0; i < positions.length; i += 3) {
+                positions[i] += Math.sin(time * 0.5 + i) * 0.02;  // x
+                positions[i + 1] += Math.cos(time * 0.3 + i) * 0.01; // y
+                positions[i + 2] += Math.sin(time * 0.4 + i) * 0.02; // z
+                
+                // Mantener dentro de los límites
+                if(positions[i] > 1000) positions[i] = -1000;
+                if(positions[i] < -1000) positions[i] = 1000;
+                if(positions[i + 1] > 150) positions[i + 1] = 10;
+                if(positions[i + 1] < 10) positions[i + 1] = 150;
+                if(positions[i + 2] > 1000) positions[i + 2] = -1000;
+                if(positions[i + 2] < -1000) positions[i + 2] = 1000;
+            }
+            dustParticles.geometry.attributes.position.needsUpdate = true;
+
+            // Nubes (movimiento lento)
+            scene.children.forEach(child => {
+                if(child.userData && child.userData.speed) {
+                    child.position.x += child.userData.speed;
+                    // Reiniciar posición si se sale del rango
+                    if(child.position.x > 1500) child.position.x = -1500;
+                }
+            });
+
+            // --- CÁMARA PERSECUTORA (CHASE CAM) ---
+            // Calcular posición deseada de la cámara detrás del dron
+            const idealOffset = cameraOffset.clone().applyEuler(new THREE.Euler(0, drone.yaw, 0));
+            const idealPos = drone.position.clone().add(idealOffset);
+            
+            // Evitar que la cámara atraviese el suelo
+            const camGh = getGroundHeight(idealPos.x, idealPos.z);
+            if(idealPos.y < camGh + 1) idealPos.y = camGh + 1;
+
+            camera.position.lerp(idealPos, 0.1);
+            
+            // Mirar un poco por delante del dron
+            const lookTarget = drone.position.clone().add(new THREE.Vector3(0,0,2).applyEuler(new THREE.Euler(0, drone.yaw, 0)));
+            cameraTarget.lerp(lookTarget, 0.2);
+            camera.lookAt(cameraTarget);
+
+            // --- HUD UPDATES ---
+            const alt = Math.max(0, drone.position.y - gh).toFixed(1);
+            const spd = (Math.sqrt(drone.velocity.x**2 + drone.velocity.z**2) * 36).toFixed(0);
+            const dist = drone.position.distanceTo(homePos).toFixed(0);
+
+            elAlt.innerText = alt;
+            elSpd.innerText = spd;
+            elDist.innerText = dist;
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    animate();
+});
+</script>
+{% endblock %}
