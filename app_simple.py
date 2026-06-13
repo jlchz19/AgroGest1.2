@@ -2256,6 +2256,61 @@ def nuevo_alquiler():
         potreros = Potrero.query.join(Finca).filter(Finca.usuario_id == user_id).all()
     return render_template('nuevo_alquiler.html', potreros=potreros)
 
+
+
+@app.route('/alquiler/editar/<int:id>', methods=['GET', 'POST'])
+@login_required
+def editar_alquiler(id):
+    user_id = session.get('user_id')
+    alquiler = Alquiler.query.filter_by(id=id, propietario_id=user_id).first_or_404()
+    
+    if request.method == 'POST':
+        alquiler.potrero_id = request.form.get('potrero_id')
+        alquiler.nombre_cliente = request.form.get('nombre_cliente', '').strip()
+        alquiler.telefono_cliente = request.form.get('telefono_cliente', '').strip()
+        
+        fecha_inicio_str = request.form.get('fecha_inicio')
+        if fecha_inicio_str:
+            alquiler.fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+            
+        fecha_fin_str = request.form.get('fecha_fin')
+        if fecha_fin_str:
+            alquiler.fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
+        else:
+            alquiler.fecha_fin = None
+            
+        alquiler.forma_pago = request.form.get('forma_pago', 'dinero')
+        alquiler.descripcion_pago = request.form.get('descripcion_pago', '').strip()
+        
+        try:
+            alquiler.precio = float(request.form.get('precio', '0') or '0')
+        except ValueError:
+            alquiler.precio = 0.0
+            
+        alquiler.tipo = request.form.get('tipo', 'alquiler')
+        
+        db.session.commit()
+        flash('Alquiler actualizado exitosamente.', 'success')
+        return redirect(url_for('alquileres'))
+        
+    finca_id = session.get('finca_id')
+    if finca_id:
+        potreros = Potrero.query.filter_by(finca_id=finca_id).all()
+    else:
+        potreros = Potrero.query.join(Finca).filter(Finca.usuario_id == user_id).all()
+        
+    return render_template('editar_alquiler.html', alquiler=alquiler, potreros=potreros)
+
+@app.route('/alquiler/eliminar/<int:id>', methods=['POST'])
+@login_required
+def eliminar_alquiler(id):
+    user_id = session.get('user_id')
+    alquiler = Alquiler.query.filter_by(id=id, propietario_id=user_id).first_or_404()
+    db.session.delete(alquiler)
+    db.session.commit()
+    flash('Alquiler eliminado exitosamente.', 'success')
+    return redirect(url_for('alquileres'))
+
 @app.route('/alquiler/<int:id>/factura')
 @login_required
 def alquiler_factura(id):
@@ -2264,7 +2319,7 @@ def alquiler_factura(id):
         return redirect(url_for('fincas'))
         
     alquiler = Alquiler.query.get_or_404(id)
-    if alquiler.finca_id != session['finca_id']:
+    if alquiler.potrero and alquiler.potrero.finca_id != session['finca_id']:
         flash('Factura no encontrada en esta finca', 'error')
         return redirect(url_for('alquileres'))
         
