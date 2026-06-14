@@ -6722,7 +6722,11 @@ def nuevo_empleado():
 
             fecha_ingreso = datetime.strptime(request.form['fecha_ingreso'], '%Y-%m-%d').date()
 
-
+        # Validar que fecha de ingreso sea mayor o igual a fecha de contratación
+        if fecha_ingreso and fecha_contratacion:
+            if fecha_ingreso < fecha_contratacion:
+                flash('La fecha de ingreso debe ser mayor o igual a la fecha de contratación', 'danger')
+                return redirect(url_for('nuevo_empleado'))
 
         empleado = Empleado(
 
@@ -6758,9 +6762,7 @@ def nuevo_empleado():
 
             alergias_medicamento=request.form.get('alergias_medicamento'),
 
-            fecha_ingreso=fecha_ingreso,
-
-            descripcion=request.form.get('descripcion')
+            fecha_ingreso=fecha_ingreso
 
         )
 
@@ -6902,7 +6904,11 @@ def editar_empleado(empleado_id):
 
             empleado.fecha_ingreso = datetime.strptime(request.form['fecha_ingreso'], '%Y-%m-%d').date()
 
-
+        # Validar que fecha de ingreso sea mayor o igual a fecha de contratación
+        if empleado.fecha_ingreso and empleado.fecha_contratacion:
+            if empleado.fecha_ingreso < empleado.fecha_contratacion:
+                flash('La fecha de ingreso debe ser mayor o igual a la fecha de contratación', 'danger')
+                return redirect(url_for('editar_empleado', empleado_id=empleado_id))
 
         # Handle files
 
