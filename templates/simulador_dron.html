@@ -151,20 +151,32 @@
         color: #ffffff;
         font-family: 'Outfit', sans-serif;
         text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-        box-shadow: inset 0 0 100px rgba(0,0,0,0.3);
+        box-shadow: inset 0 0 150px rgba(0,0,0,0.8); /* Vignette */
+    }
+
+    #hud::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+        background-size: 100% 4px;
+        z-index: -1;
+        pointer-events: none;
+        opacity: 0.35;
     }
 
     .hud-top {
         position: absolute; top: 20px; left: 30px; right: 30px;
         display: flex; gap: 20px;
         font-size: 1.1rem; font-weight: 600;
-        background: rgba(0,0,0,0.4);
-        padding: 8px 20px; border-radius: 30px;
-        backdrop-filter: blur(4px);
+        background: rgba(15, 23, 42, 0.6);
+        padding: 8px 25px; border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(8px);
         width: fit-content; margin: 0 auto;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
 
-    .hud-item { display: flex; align-items: center; gap: 8px; }
+    .hud-item { display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
     .rec-dot {
         display: inline-block; width: 10px; height: 10px;
         background-color: #ff3333; border-radius: 50%;
@@ -192,18 +204,20 @@
     }
 
     .telemetry-box {
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(5px);
-        padding: 10px 20px;
-        border-radius: 12px;
-        border-bottom: 3px solid #0ea5e9;
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+        padding: 12px 25px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-top: 3px solid #0ea5e9;
         display: flex; flex-direction: column; align-items: center;
-        min-width: 120px;
+        min-width: 140px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     }
 
-    .t-label { font-size: 0.75rem; color: #bae6fd; letter-spacing: 1px; }
-    .t-value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
-    .t-value small { font-size: 0.9rem; font-weight: 500; opacity: 0.8; }
+    .t-label { font-size: 0.75rem; color: #94a3b8; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; }
+    .t-value { font-size: 2rem; font-weight: 700; line-height: 1.1; color: #f8fafc; font-family: 'Courier New', monospace; }
+    .t-value small { font-size: 0.9rem; font-weight: 500; opacity: 0.7; font-family: 'Outfit', sans-serif; }
 
     .hud-instructions {
         position: absolute; top: 50%; left: 50%;
@@ -401,29 +415,37 @@ document.addEventListener("DOMContentLoaded", function() {
     renderer.shadowMap.bias = -0.0001;
     // Tono cinematográfico realista
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
+    renderer.toneMappingExposure = 1.15; // Exposición mejorada
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
     // --- LUZ ATMOSFÉRICA (FOTOREALISTA MEJORADA) ---
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
     hemiLight.position.set(0, 500, 0);
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.4);
-    sunLight.position.set(400, 600, 300);
+    const sunLight = new THREE.DirectionalLight(0xfffaeb, 1.8);
+    sunLight.position.set(500, 800, 400);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 4096;
     sunLight.shadow.mapSize.height = 4096;
     sunLight.shadow.camera.near = 0.5;
-    sunLight.shadow.camera.far = 3000;
-    sunLight.shadow.camera.left = -1000;
-    sunLight.shadow.camera.right = 1000;
-    sunLight.shadow.camera.top = 1000;
-    sunLight.shadow.camera.bottom = -1000;
-    sunLight.shadow.bias = -0.0001;
-    sunLight.shadow.normalBias = 0.02;
+    sunLight.shadow.camera.far = 3500;
+    sunLight.shadow.camera.left = -1500;
+    sunLight.shadow.camera.right = 1500;
+    sunLight.shadow.camera.top = 1500;
+    sunLight.shadow.camera.bottom = -1500;
+    sunLight.shadow.bias = -0.0005;
+    sunLight.shadow.normalBias = 0.05;
     scene.add(sunLight);
+
+    // Esfera visible para el sol
+    const sunSphere = new THREE.Mesh(
+        new THREE.SphereGeometry(60, 32, 32),
+        new THREE.MeshBasicMaterial({color: 0xffffff, fog: false})
+    );
+    sunSphere.position.set(1250, 2000, 1000); // En la misma dirección que la luz
+    scene.add(sunSphere);
 
     // Luz de relleno suave (azulada para contraste)
     const fillLight = new THREE.DirectionalLight(0xe6f0ff, 0.3);
@@ -656,11 +678,16 @@ document.addEventListener("DOMContentLoaded", function() {
         y += simplex.noise2D(x * 0.003, z * 0.003) * 15;   // Colinas medianas
         y += simplex.noise2D(x * 0.01, z * 0.01) * 3;      // Detalles pequeños
         
-        // Crear valles suaves
+        // Crear una extensa zona plana perfecta para la granja (evita flotación)
         const distFromCenter = Math.sqrt(x*x + z*z);
-        if(distFromCenter < 300) {
-            y *= 0.3; // Área más plana cerca del centro
+        let falloff = 1.0;
+        if(distFromCenter < 900) {
+            falloff = 0.0; // Totalmente plano
+        } else if(distFromCenter < 1500) {
+            let t = (distFromCenter - 900) / 600;
+            falloff = t * t * (3 - 2 * t); // Transición suave a colinas
         }
+        y *= falloff;
         
         pos.setY(i, y);
     }
@@ -682,9 +709,14 @@ document.addEventListener("DOMContentLoaded", function() {
         y += simplex.noise2D(x * 0.01, z * 0.01) * 3;
         
         const distFromCenter = Math.sqrt(x*x + z*z);
-        if(distFromCenter < 300) {
-            y *= 0.3;
+        let falloff = 1.0;
+        if(distFromCenter < 900) {
+            falloff = 0.0;
+        } else if(distFromCenter < 1500) {
+            let t = (distFromCenter - 900) / 600;
+            falloff = t * t * (3 - 2 * t);
         }
+        y *= falloff;
         
         return y;
     }
@@ -844,10 +876,13 @@ document.addEventListener("DOMContentLoaded", function() {
             return sprite;
         }
 
-        for(let i=0; i<80; i++) {
+        for(let i=0; i<150; i++) { // Aumentar cantidad para que se vea más lleno
             const cow = createCow();
-            const cx = (Math.random() - 0.5) * 1000;
-            const cz = (Math.random() - 0.5) * 1000;
+            // Agrupar animales en la finca principal (radio 400)
+            const angle = Math.random() * Math.PI * 2;
+            const r = Math.random() * 400;
+            const cx = Math.cos(angle) * r;
+            const cz = Math.sin(angle) * r;
             const cy = getGroundHeight(cx, cz);
             
             cow.position.set(cx, cy, cz);
@@ -946,15 +981,67 @@ document.addEventListener("DOMContentLoaded", function() {
         return treeGroup;
     }
     
-    // Árboles variados y más orgánicos
+    // Árboles variados y orgánicos (Bosques periféricos)
     const treeTypes = ['oak', 'pine', 'deciduous'];
-    for(let i=0; i<80; i++) {
-        const tx = (Math.random() - 0.5) * 1800;
-        const tz = (Math.random() - 0.5) * 1800;
+    for(let i=0; i<60; i++) {
+        const tx = (Math.random() - 0.5) * 2000;
+        const tz = (Math.random() - 0.5) * 2000;
+        if (Math.abs(tx) < 400 && Math.abs(tz) < 400) continue; // Dejar el centro despejado
         const type = treeTypes[Math.floor(Math.random() * treeTypes.length)];
         const tree = createRealisticTree(tx, tz, type);
         scene.add(tree);
     }
+
+    // Cultivos frutales ordenados (Orchards)
+    function createOrchard(startX, startZ, rows, cols, spacingX, spacingZ) {
+        for(let r=0; r<rows; r++) {
+            for(let c=0; c<cols; c++) {
+                const tx = startX + r * spacingX + (Math.random() * 2 - 1); // ligera variación natural
+                const tz = startZ + c * spacingZ + (Math.random() * 2 - 1);
+                const tree = createRealisticTree(tx, tz, 'deciduous');
+                tree.scale.set(0.6, 0.6, 0.6); // Árboles frutales más pequeños y uniformes
+                scene.add(tree);
+            }
+        }
+    }
+    
+    createOrchard(-400, -300, 5, 8, 20, 20); // Huerto 1
+    createOrchard(250, -400, 4, 10, 22, 22); // Huerto 2
+
+    // --- CAMPOS CULTIVADOS (Crops) ---
+    function createCropField(width, depth, colorHex) {
+        // Textura de surcos
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = colorHex;
+        ctx.fillRect(0, 0, 256, 256);
+        for(let y=0; y<256; y+=16) {
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.fillRect(0, y, 256, 8);
+        }
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(width/20, depth/20);
+        
+        const geo = new THREE.PlaneGeometry(width, depth);
+        geo.rotateX(-Math.PI / 2);
+        const mat = new THREE.MeshStandardMaterial({map: tex, roughness: 1.0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1});
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.receiveShadow = true;
+        return mesh;
+    }
+    
+    const crop1 = createCropField(300, 200, '#6b8e23'); // Verde oliva
+    const c1X = -350, c1Z = 200;
+    crop1.position.set(c1X, getGroundHeight(c1X, c1Z) + 0.1, c1Z);
+    crop1.rotation.y = Math.PI/12;
+    scene.add(crop1);
+
+    const crop2 = createCropField(250, 250, '#8b7355'); // Tierra arada
+    const c2X = 350, c2Z = 300;
+    crop2.position.set(c2X, getGroundHeight(c2X, c2Z) + 0.1, c2Z);
+    scene.add(crop2);
 
     // --- AGREGAR ESTRUCTURAS DE LA FINCA AL PAISAJE ---
     
@@ -1652,6 +1739,39 @@ document.addEventListener("DOMContentLoaded", function() {
         );
         cloud.userData = { speed: Math.random() * 0.015 + 0.005 };
         scene.add(cloud);
+    }
+
+    // --- AVES VOLANDO ---
+    const birds = [];
+    function createBird() {
+        const birdGroup = new THREE.Group();
+        const wingMat = new THREE.MeshBasicMaterial({color: 0x111111, side: THREE.DoubleSide});
+        const wingGeo = new THREE.BufferGeometry();
+        const vertices = new Float32Array([
+            0, 0, 0,
+            -3, 1, 1.5,
+            -0.5, 0, 4
+        ]);
+        wingGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+        const wing1 = new THREE.Mesh(wingGeo, wingMat);
+        const wing2 = new THREE.Mesh(wingGeo, wingMat);
+        wing2.scale.x = -1;
+        birdGroup.add(wing1);
+        birdGroup.add(wing2);
+        
+        birdGroup.userData = { offset: Math.random() * 100, speed: 0.6 + Math.random() * 0.4 };
+        return birdGroup;
+    }
+
+    for(let i=0; i<25; i++) {
+        const bird = createBird();
+        bird.position.set(
+            (Math.random() - 0.5) * 1500,
+            120 + Math.random() * 150,
+            (Math.random() - 0.5) * 1500
+        );
+        scene.add(bird);
+        birds.push(bird);
     }
 
     // --- GALLINAS (SPRITES) ---
@@ -2449,6 +2569,24 @@ function createFarmPlot(width = 200, depth = 200) {
 
     scene.add(droneMesh);
 
+    // --- SOMBRA DEL DRON ---
+    const shadowGeo = new THREE.PlaneGeometry(2.5, 2.5);
+    const shadowCanvas = document.createElement('canvas');
+    shadowCanvas.width = 64; shadowCanvas.height = 64;
+    const shadowCtx = shadowCanvas.getContext('2d');
+    const grad = shadowCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(0,0,0,0.8)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    shadowCtx.fillStyle = grad;
+    shadowCtx.fillRect(0,0,64,64);
+    const shadowMat = new THREE.MeshBasicMaterial({
+        map: new THREE.CanvasTexture(shadowCanvas),
+        transparent: true, depthWrite: false
+    });
+    const droneShadow = new THREE.Mesh(shadowGeo, shadowMat);
+    droneShadow.rotation.x = -Math.PI / 2;
+    scene.add(droneShadow);
+
     // --- FÍSICAS Y CONTROL ---
     const drone = {
         position: new THREE.Vector3(0, 50, 0),
@@ -2722,6 +2860,26 @@ function createFarmPlot(width = 200, depth = 200) {
                     if(child.position.x > 1500) child.position.x = -1500;
                 }
             });
+
+            // Animar aves
+            birds.forEach(bird => {
+                bird.position.x += bird.userData.speed;
+                bird.position.z += bird.userData.speed * 0.5;
+                bird.position.y += Math.sin(time * 2 + bird.userData.offset) * 0.1;
+                // Aleteo
+                const flap = Math.sin(time * 15 + bird.userData.offset) * 0.5;
+                bird.children[0].rotation.z = flap;
+                bird.children[1].rotation.z = -flap;
+                
+                if(bird.position.x > 1500) bird.position.x = -1500;
+                if(bird.position.z > 1500) bird.position.z = -1500;
+            });
+
+            // Actualizar Sombra del dron
+            droneShadow.position.set(drone.position.x, gh + 0.1, drone.position.z);
+            const shadowScale = Math.max(0.1, 1 - (drone.position.y - gh) / 60);
+            droneShadow.scale.set(shadowScale, shadowScale, shadowScale);
+            droneShadow.material.opacity = 0.8 * shadowScale;
 
             // --- CÁMARA PERSECUTORA (CHASE CAM) ---
             // Calcular posición deseada de la cámara detrás del dron
